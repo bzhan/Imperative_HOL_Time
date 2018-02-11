@@ -536,32 +536,6 @@ lemma hoare_tripleE'':
   @obtain \<sigma>' r' t' where "run c (Some (heapOf h)) \<sigma>' r' t'"
 @qed
 
-(* Since all operations use up time credits, nothing is strictly "heap preserving" *)
-definition heap_preserving :: "'a Heap \<Rightarrow> bool" where [rewrite]:
-  "heap_preserving c = (\<forall>h h' r n. effect c h h' r n \<longrightarrow> h = h')"
-
-setup {* add_forward_prfstep @{thm effectI} *}
-lemma heap_preservingD [forward]:
-  "heap_preserving c \<Longrightarrow> success_run c (pHeap h as n) (pHeap h' as' n') r \<Longrightarrow> h = h' \<and> as = as'" by auto2
-setup {* del_prfstep_thm @{thm effectI} *}
-
-lemma heap_preserving_effectD:
-  "heap_preserving c \<Longrightarrow> effect c h h' r n \<Longrightarrow> h = h'" by auto2
-
-lemma effect_bind [forward]:
-  "effect (f \<bind> g) h h'' r' t \<Longrightarrow> \<exists>h' r t'. effect f h h' r t' \<and> effect (g r) h' h'' r' (t-t')"
-  by (metis diff_add_inverse effect_bindE)
-
-lemma hoare_tripleE'_preserve:
-  "heap_preserving c \<Longrightarrow>
-   \<exists>h' as'. pHeap h' as' n \<Turnstile> Q \<and> \<sigma> = Some h' \<and> success_run c (pHeap h as n) (pHeap h' as' n') r \<Longrightarrow>
-   pHeap h as n \<Turnstile> Q \<and> \<sigma> = Some h \<and> success_run c (pHeap h as n) (pHeap h as n') r" by auto2
-
-lemma hoare_tripleE''_preserve:
-  "heap_preserving c \<Longrightarrow>
-   \<exists>r' h' as'. run (g r') (Some h') \<sigma> r t1 \<and> pHeap h' as' n \<Turnstile> Q r' * Ru \<and> success_run c (pHeap h as n) (pHeap h' as' n') r' \<Longrightarrow>
-   \<exists>r'. run (g r') (Some h) \<sigma> r t1 \<and> pHeap h as n \<Turnstile> Q r' * Ru \<and> success_run c (pHeap h as n) (pHeap h as n') r'" by auto2
-
 setup {* del_prfstep_thm @{thm success_run.simps} *}
 setup {* del_prfstep_thm @{thm hoare_triple_def} *}
 setup {* del_prfstep_thm @{thm hoare_triple_def'} *}
@@ -592,7 +566,6 @@ ML_file "sep_time_steps.ML"
 ML_file "sep_time_test.ML"
 
 attribute_setup sep_proc = {* setup_attrib add_proc_def *}
-attribute_setup heap_presv = {* setup_attrib add_heap_preserving_thm *}
 attribute_setup forward_ent = {* setup_attrib add_forward_ent_prfstep *}
 attribute_setup forward_ent_shadow = {* setup_attrib add_forward_ent_shadowing_prfstep *}
 attribute_setup rewrite_ent = {* setup_attrib add_rewrite_ent_rule *}
