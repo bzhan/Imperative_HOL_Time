@@ -10,7 +10,7 @@ setup {* fold add_rewrite_rule @{thms dynamic_array.sel} *}
 section {* Raw assertion and basic operations *}
 
 fun dyn_array_raw :: "'a::heap list \<times> nat \<Rightarrow> 'a dynamic_array \<Rightarrow> assn" where
-  "dyn_array_raw (xs, n) (Dyn_Array m a) = (a \<mapsto>\<^sub>a xs * \<up>(n \<le> length xs) * \<up>(m = n))"
+  "dyn_array_raw (xs, n) (Dyn_Array m a) = (a \<mapsto>\<^sub>a xs * \<up>(m = n))"
 setup {* add_rewrite_ent_rule @{thm dyn_array_raw.simps} *}
 
 definition dyn_array_new :: "'a::heap dynamic_array Heap" where [sep_proc]:
@@ -87,7 +87,7 @@ lemma double_length_fun_P [resolve]:
    dyn_array_P (xs, n) + 4 \<ge> dyn_array_P (double_length_fun (xs, n)) + (5*n+4)" by auto2
 
 lemma push_array_fun_P [resolve]:
-  "n < length xs \<Longrightarrow>
+  "n \<le> length xs \<Longrightarrow>
    dyn_array_P (xs, n) + 12 \<ge> dyn_array_P (push_array_basic_fun x (xs, n)) + 2" by auto2
 
 lemma update_P [rewrite]:
@@ -146,7 +146,7 @@ definition array_nth :: "'a::heap dynamic_array \<Rightarrow> nat \<Rightarrow> 
   "array_nth d i = Array.nth (aref d) i"
 
 lemma array_nth_rule' [hoare_triple]:
-  "i < n \<Longrightarrow>
+  "i < n \<Longrightarrow> n \<le> length xs \<Longrightarrow>
    <dyn_array' (xs, n) p * $1>
    array_nth p i
    <\<lambda>r. dyn_array' (xs, n) p * \<up>(r = xs ! i)>" by auto2
@@ -155,7 +155,7 @@ definition array_upd :: "nat \<Rightarrow> 'a \<Rightarrow> 'a::heap dynamic_arr
   "array_upd i x d = do { Array.upd i x (aref d); return () }"
 
 lemma array_upd_rule' [hoare_triple]:
-  "i < n \<Longrightarrow>
+  "i < n \<Longrightarrow> n \<le> length xs \<Longrightarrow>
    <dyn_array' (xs, n) p * $2>
    array_upd i x p
    <\<lambda>_. dyn_array' (list_update xs i x, n) p>" by auto2

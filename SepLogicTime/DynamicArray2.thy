@@ -13,7 +13,7 @@ lemma dyn_array_double_length_P' [rewrite]:
   "dyn_array_P' (double_length_fun (xs, n)) = dyn_array_P' (xs, n)" by auto2
 
 lemma dyn_array_push_array_basic_P' [resolve]:
-  "n < length xs \<Longrightarrow>
+  "n \<le> length xs \<Longrightarrow>
    dyn_array_P' (xs, n) + 16 \<ge>\<^sub>t dyn_array_P' (push_array_basic_fun x (xs, n)) + 12" by auto2
 
 lemma update_P' [rewrite]:
@@ -65,13 +65,13 @@ lemma array_max_rule'' [hoare_triple]:
    <\<lambda>r. dyn_array'' (xs, n) p * \<up>(r = length xs)>" by auto2
 
 lemma array_nth_rule'' [hoare_triple]:
-  "i < n \<Longrightarrow>
+  "i < n \<Longrightarrow> n \<le> length xs \<Longrightarrow>
    <dyn_array'' (xs, n) p * $1>
    array_nth p i
    <\<lambda>r. dyn_array'' (xs, n) p * \<up>(r = xs ! i)>" by auto2
 
 lemma array_upd_rule'' [hoare_triple]:
-  "i < n \<Longrightarrow>
+  "i < n \<Longrightarrow> n \<le> length xs \<Longrightarrow>
    <dyn_array'' (xs, n) p * $2>
    array_upd i x p
    <\<lambda>_. dyn_array'' (list_update xs i x, n) p>" by auto2
@@ -79,7 +79,8 @@ lemma array_upd_rule'' [hoare_triple]:
 section {* Derived operations *}
 
 lemma push_array_rule'' [hoare_triple]:
-  "<dyn_array'' (xs, n) p * $23>
+  "n \<le> length xs \<Longrightarrow>
+   <dyn_array'' (xs, n) p * $23>
    push_array x p
    <dyn_array'' (push_array_fun x (xs, n))>\<^sub>t" by auto2
 
@@ -104,12 +105,14 @@ proof -
 qed
 
 lemma destroy_rule' [hoare_triple]:
-  "<dyn_array' (xs, n) d * $(4 * n + 3)>
+  "n \<le> length xs \<Longrightarrow>
+   <dyn_array' (xs, n) d * $(4 * n + 3)>
    destroy d
    <\<lambda>r. r \<mapsto>\<^sub>a take n xs>\<^sub>t" by auto2
 
 lemma destroy_rule'' [hoare_triple]:
-  "<dyn_array'' (xs, n) d * $3>
+  "n \<le> length xs \<Longrightarrow>
+   <dyn_array'' (xs, n) d * $3>
    destroy d
    <\<lambda>r. r \<mapsto>\<^sub>a take n xs>\<^sub>t"
 @proof 
@@ -117,7 +120,7 @@ lemma destroy_rule'' [hoare_triple]:
 @qed
 
 definition dyn_array :: "'a::heap list \<Rightarrow> 'a dynamic_array \<Rightarrow> assn" where [rewrite_ent]:
-  "dyn_array xs a = (\<exists>\<^sub>Ap. dyn_array'' p a * \<up>(xs = abs_array p))"
+  "dyn_array xs a = (\<exists>\<^sub>Ap. dyn_array'' p a * \<up>(snd p \<le> length (fst p)) * \<up>(xs = abs_array p))"
 
 lemma dyn_array_new_rule [hoare_triple]:
   "<$7>
