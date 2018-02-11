@@ -3,6 +3,9 @@ Verifying asymptotic time complexity of imperative programs in Isabelle.
 
 Paper at: https://arxiv.org/abs/1802.01336
 
+The paper corresponds to the initial commit 8d336cd, which uses the version
+of auto2 (https://github.com/bzhan/auto2) at commit 167808b.
+
 ### Abstract:
 
 We present a framework in Isabelle for verifying asymptotic time
