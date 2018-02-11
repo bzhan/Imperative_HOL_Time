@@ -29,23 +29,15 @@ instance node :: (heap) heap
 
 fun btree :: "'a::heap tree \<Rightarrow> 'a node ref option \<Rightarrow> assn" where
   "btree Leaf p = \<up>(p = None)"
-| "btree (tree.Node lt v rt) (Some p) = (\<exists>\<^sub>Alp rp. p \<mapsto>\<^sub>r Node lp v rp * btree lt lp * btree rt rp)"
-| "btree (tree.Node lt v rt) None = false"
+| "btree \<langle>lt, v, rt\<rangle> (Some p) = (\<exists>\<^sub>Alp rp. p \<mapsto>\<^sub>r Node lp v rp * btree lt lp * btree rt rp)"
+| "btree \<langle>lt, v, rt\<rangle> None = false"
 setup {* fold add_rewrite_ent_rule @{thms btree.simps} *}
 
 lemma btree_Leaf [forward_ent_shadow]: "btree Leaf p \<Longrightarrow>\<^sub>A \<up>(p = None)" by auto2
 
 lemma btree_not_Leaf [forward_ent_shadow]:
-  "btree (tree.Node lt v rt) (Some p) \<Longrightarrow>\<^sub>A (\<exists>\<^sub>Alp rp. p \<mapsto>\<^sub>r Node lp v rp * btree lt lp * btree rt rp)"
-  by auto2
-
-lemma btree_Node_none [forward_ent]: "btree (tree.Node lt v rt) None \<Longrightarrow>\<^sub>A false" by auto2
-
-lemma btree_Leaf_some [forward_ent]: "btree Leaf (Some p) \<Longrightarrow>\<^sub>A false" by auto2
-
-lemma btree_is_some [forward_ent]: "btree (tree.Node lt v rt) p \<Longrightarrow>\<^sub>A true * \<up>(p \<noteq> None)" by auto2
-
-lemma btree_is_not_Leaf [forward_ent]: "btree t (Some p) \<Longrightarrow>\<^sub>A true * \<up>(t \<noteq> Leaf)" by auto2
+  "btree \<langle>lt, v, rt\<rangle> p \<Longrightarrow>\<^sub>A (\<exists>\<^sub>Alp rp. the p \<mapsto>\<^sub>r Node lp v rp * btree lt lp * btree rt rp * \<up>(p \<noteq> None))"
+@proof @case "p = None" @qed
 
 lemma btree_none: "emp \<Longrightarrow>\<^sub>A btree tree.Leaf None" by auto2
 
