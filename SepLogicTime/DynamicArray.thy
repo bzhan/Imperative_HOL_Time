@@ -3,9 +3,7 @@ theory DynamicArray
 begin
 
 datatype 'a dynamic_array = Dyn_Array (alen: nat) (aref: "'a array")
-setup {* add_rewrite_rule_back @{thm dynamic_array.collapse} *}
-setup {* add_rewrite_rule @{thm dynamic_array.case} *}
-setup {* fold add_rewrite_rule @{thms dynamic_array.sel} *}
+setup {* add_simple_datatype "dynamic_array" *}
 
 section {* Raw assertion and basic operations *}
 

@@ -154,7 +154,7 @@ lemma destroy_rule [hoare_triple]:
     destroy p
    <\<lambda>r. r \<mapsto>\<^sub>a xs>\<^sub>t" by auto2
 
-setup {* del_prfstep_thm @{thm dynamic_array.collapse} *}
+setup {* del_simple_datatype "dynamic_array" *}
 
 definition array_swap :: "'a::heap dynamic_array \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> unit Heap" where [sep_proc]:
   "array_swap d i j = do {

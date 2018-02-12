@@ -26,9 +26,7 @@ definition mat_update :: "'a list list \<Rightarrow> nat \<Rightarrow> nat \<Rig
 section {* Implementation of a matrix *}
 
 datatype 'a matrix = Matrix (nrow: nat) (ncol: nat) (aref: "'a array")
-setup {* add_rewrite_rule_back @{thm matrix.collapse} *}
-setup {* add_rewrite_rule @{thm matrix.case} *}
-setup {* fold add_rewrite_rule @{thms matrix.sel} *}
+setup {* add_simple_datatype "matrix" *}
 
 (* m is number of rows, n is number of columns *)
 definition init_matrix :: "nat \<Rightarrow> nat \<Rightarrow> 'a \<Rightarrow> 'a::heap matrix Heap" where [sep_proc]:
