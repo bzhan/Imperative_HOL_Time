@@ -8,8 +8,7 @@ begin
 section {* Partial Heaps *}
 
 datatype pheap = pHeap (heapOf: heap) (addrOf: "addr set") (timeOf: nat)
-setup {* add_rewrite_rule_back @{thm pheap.collapse} *}
-setup {* add_forward_prfstep (equiv_forward_th @{thm pheap.simps(1)}) *}
+setup {* add_rewrite_rule_back_cond @{thm pheap.collapse} [with_cond "?pheap \<noteq> pHeap ?a ?b ?c"] *}
 setup {* fold add_rewrite_rule @{thms pheap.sel} *}
 
 fun in_range :: "(heap \<times> addr set) \<Rightarrow> bool" where
@@ -508,7 +507,8 @@ lemma hoare_triple_def' [rewrite]:
   "<P> c <Q> \<longleftrightarrow> (\<forall>h \<sigma> r t. h \<Turnstile> P \<longrightarrow> run c (Some (heapOf h)) \<sigma> r t \<longrightarrow>
     (\<sigma> \<noteq> None \<and> pHeap (the \<sigma>) (new_addrs (heapOf h) (addrOf h) (the \<sigma>)) (timeOf h-t) \<Turnstile> Q r \<and> timeOf h\<ge>t \<and>
      relH {a . a < lim (heapOf h) \<and> a \<notin> (addrOf h)} (heapOf h) (the \<sigma>) \<and>
-     lim (heapOf h) \<le> lim (the \<sigma>)))" by auto2
+     lim (heapOf h) \<le> lim (the \<sigma>)))" using hoare_triple_def
+  by (smt Collect_cong pheap.collapse pheap.sel)
 
 definition run_gen :: "'a Heap \<Rightarrow> heap option \<Rightarrow> heap option \<Rightarrow> 'a \<Rightarrow> bool" where [rewrite]:
   "run_gen c h h' r \<longleftrightarrow> (\<exists>t. run c h h' r t)"
@@ -539,7 +539,7 @@ lemma hoare_tripleE'':
 setup {* del_prfstep_thm @{thm success_run.simps} *}
 setup {* del_prfstep_thm @{thm hoare_triple_def} *}
 setup {* del_prfstep_thm @{thm hoare_triple_def'} *}
-setup {* fold del_prfstep_thm [@{thm pheap.collapse}, @{thm pheap.simps(1)}] *}
+setup {* del_prfstep_thm @{thm pheap.collapse} *}
 setup {* fold del_prfstep_thm @{thms pheap.sel} *}
 
 subsection {* Definition of procedures *}
