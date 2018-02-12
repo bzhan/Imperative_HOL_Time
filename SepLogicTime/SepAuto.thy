@@ -289,12 +289,13 @@ lemma entails_triv: "A \<Longrightarrow>\<^sub>A A" by auto2
 lemma entails_true: "A \<Longrightarrow>\<^sub>A true" by auto2
 lemma entail_equiv_forward: "P = Q \<Longrightarrow> P \<Longrightarrow>\<^sub>A Q" by auto2
 lemma entail_equiv_backward: "P = Q \<Longrightarrow> Q \<Longrightarrow>\<^sub>A P" by auto2
-lemma entailsD [forward]: "P \<Longrightarrow>\<^sub>A Q \<Longrightarrow> h \<Turnstile> P \<Longrightarrow> h \<Turnstile> Q" by auto2
+lemma entailsD: "P \<Longrightarrow>\<^sub>A Q \<Longrightarrow> h \<Turnstile> P \<Longrightarrow> h \<Turnstile> Q" by auto2
 lemma entailsD': "P \<Longrightarrow>\<^sub>A Q \<Longrightarrow> h \<Turnstile> P * R \<Longrightarrow> h \<Turnstile> Q * R" by auto2
 lemma entailsD_back: "P \<Longrightarrow>\<^sub>A Q \<Longrightarrow> \<not>h \<Turnstile> Q * R \<Longrightarrow> \<not>h \<Turnstile> P * R" by auto2
 lemma entail_trans2: "A \<Longrightarrow>\<^sub>A D * B \<Longrightarrow> B \<Longrightarrow>\<^sub>A C \<Longrightarrow> A \<Longrightarrow>\<^sub>A D * C" by auto2
 lemma entail_trans2': "D * B \<Longrightarrow>\<^sub>A A \<Longrightarrow> C \<Longrightarrow>\<^sub>A B \<Longrightarrow> D * C \<Longrightarrow>\<^sub>A A" by auto2
 lemma entails_invD: "A \<Longrightarrow>\<^sub>A B \<Longrightarrow> \<not>(h \<Turnstile> B) \<Longrightarrow> \<not>(h \<Turnstile> A)" by auto2
+lemma entailsE: "\<not>(P \<Longrightarrow>\<^sub>A Q) \<Longrightarrow> \<exists>h. h \<Turnstile> P \<and> \<not>(h \<Turnstile> Q)" by auto2
 
 lemma gc_time: "a\<ge>b \<Longrightarrow> $a \<Longrightarrow>\<^sub>A $b * true"
 @proof @have "$a = $b * $(a-b)" @qed
@@ -506,8 +507,8 @@ lemma hoare_triple_def' [rewrite]:
   "<P> c <Q> \<longleftrightarrow> (\<forall>h \<sigma> r t. h \<Turnstile> P \<longrightarrow> run c (Some (heapOf h)) \<sigma> r t \<longrightarrow>
     (\<sigma> \<noteq> None \<and> pHeap (the \<sigma>) (new_addrs (heapOf h) (addrOf h) (the \<sigma>)) (timeOf h-t) \<Turnstile> Q r \<and> timeOf h\<ge>t \<and>
      relH {a . a < lim (heapOf h) \<and> a \<notin> (addrOf h)} (heapOf h) (the \<sigma>) \<and>
-     lim (heapOf h) \<le> lim (the \<sigma>)))" using hoare_triple_def
-  by (smt Collect_cong pheap.collapse pheap.sel)
+     lim (heapOf h) \<le> lim (the \<sigma>)))"
+  using hoare_triple_def[of P c Q] by (smt Collect_cong pheap.collapse pheap.sel)
 
 definition run_gen :: "'a Heap \<Rightarrow> heap option \<Rightarrow> heap option \<Rightarrow> 'a \<Rightarrow> bool" where [rewrite]:
   "run_gen c h h' r \<longleftrightarrow> (\<exists>t. run c h h' r t)"
