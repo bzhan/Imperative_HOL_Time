@@ -50,8 +50,8 @@ declare upd_matrix.simps [sep_proc]
 definition matrix_rel :: "'a list list \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> 'a list \<Rightarrow> bool" where [rewrite]:
   "matrix_rel xs m n as \<longleftrightarrow> (length as = m * n \<and> length xs = m \<and> (\<forall>i<m. length (xs ! i) = n) \<and> (\<forall>i<m. \<forall>j<n. (xs ! i) ! j = as ! (i * n + j)))"
 
-fun matrix_assn :: "'a::heap list list \<Rightarrow> 'a matrix \<Rightarrow> assn" where
-  "matrix_assn xs (Matrix m n a) = (\<exists>\<^sub>Aas. a \<mapsto>\<^sub>a as * \<up>(matrix_rel xs m n as))"
+fun matrix_assn :: "nat \<Rightarrow> 'a::heap list list \<Rightarrow> 'a matrix \<Rightarrow> assn" where
+  "matrix_assn nc xs (Matrix m n a) = (\<exists>\<^sub>Aas. a \<mapsto>\<^sub>a as * \<up>(matrix_rel xs m n as) * \<up>(n = nc))"
 setup {* add_rewrite_ent_rule @{thm matrix_assn.simps} *}
 
 lemma matrix_rel_empty [resolve]:
@@ -72,21 +72,23 @@ declare init_matrix_time.simps [rewrite]
 lemma init_matrix_correct [hoare_triple]:
   "<$(init_matrix_time (m, n))>
    init_matrix m n x
-   <matrix_assn (empty_matrix m n x)>" by auto2
+   <matrix_assn n (empty_matrix m n x)>" by auto2
 
 lemma init_matrix_time_bound [asym_bound]: "init_matrix_time \<in> \<Theta>\<^sub>2(\<lambda>x. real (fst x * snd x))"
   apply (subst surjective_pairing) unfolding init_matrix_time.simps by auto2
 
 lemma nth_matrix_correct [hoare_triple]:
-  "i < nrow p \<Longrightarrow> j < ncol p \<Longrightarrow>
-   <matrix_assn xs p * $1>
+  "i < length xs \<Longrightarrow> j < n \<Longrightarrow>
+   <matrix_assn n xs p * $1>
     nth_matrix i j p
-   <\<lambda>r. matrix_assn xs p * \<up>(r = xs ! i ! j)>" by auto2
+   <\<lambda>r. matrix_assn n xs p * \<up>(r = xs ! i ! j)>" by auto2
 
 lemma upd_matrix_correct [hoare_triple]:
-  "i < nrow p \<Longrightarrow> j < ncol p \<Longrightarrow>
-   <matrix_assn xs p * $2>
+  "i < length xs \<Longrightarrow> j < n \<Longrightarrow>
+   <matrix_assn n xs p * $2>
     upd_matrix i j x p
-   <\<lambda>_. matrix_assn (mat_update xs i j x) p>" by auto2
+   <\<lambda>_. matrix_assn n (mat_update xs i j x) p>" by auto2
+
+setup {* del_prfstep_thm @{thm matrix_assn.simps} *}
 
 end

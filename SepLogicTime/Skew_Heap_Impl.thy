@@ -135,28 +135,6 @@ lemma skew_heap_constr_to_fun' [hoare_triple]:
   "<$2> tree_constr v <skew_heap \<langle>Leaf, v, Leaf\<rangle>>\<^sub>t"
 @proof @have "2 \<ge>\<^sub>t 2 + skew_heap_P (tree.Node Leaf v Leaf)" @qed
 
-definition insert_atime :: "nat \<Rightarrow> nat" where [rewrite]:
-  "insert_atime n = merge_atime 2 n + 2"
-
-lemma skew_heap_constr_size [rewrite]: "size1 \<langle>Leaf, x, Leaf\<rangle> = 2" by simp
-
-lemma skew_heap_insert_to_fun' [hoare_triple]:
-  "<skew_heap t a * $(insert_atime (size1 t))>
-   insert_impl x a
-   <skew_heap (Skew_Heap.insert x t)>\<^sub>t"
-@proof
-  @have "insert_atime (size1 t) \<ge>\<^sub>t merge_atime (size1 \<langle>Leaf, x, Leaf\<rangle>) (size1 t) + 2"
-@qed
-
-lemma insert_atime_alt: "insert_atime n = 6 + 4 * real (nat (\<lceil>3 * log 2 (real (2 + n))\<rceil>))"
-  apply (auto simp: insert_atime_def merge_atime_def) apply(subst nat_add_distrib)
-  apply auto apply(rule less_le_trans[of _ 0] ) using log2_gt_zero by auto
-
-lemma insert_atime_asym [asym_bound]:
-  "(\<lambda>n. insert_atime n) \<in> \<Theta>(\<lambda>x. ln (real x))"  (is "?f \<in> \<Theta>(?g)")
-  unfolding insert_atime_alt 
-  apply (rule abcd_lnx) by auto   
-
 definition del_min_atime :: "nat \<Rightarrow> nat" where
   "del_min_atime n = 4 * nat (\<lceil>3 * log 2 (n + 2)\<rceil> + 2)"
 
@@ -208,6 +186,29 @@ lemma del_min_atime_asym [asym_bound]:
   "(\<lambda>n. del_min_atime n) \<in> \<Theta>(\<lambda>n. ln (real n))"
   unfolding del_min_atime_alt 
   using abcd_lnx[of 8 4 3 2] by auto
+
+setup {* del_prfstep_thm @{thm skew_heap_def} *}
+
+definition insert_atime :: "nat \<Rightarrow> nat" where [rewrite]:
+  "insert_atime n = merge_atime 2 n + 2"
+
+lemma skew_heap_constr_size [rewrite]: "size1 \<langle>Leaf, x, Leaf\<rangle> = 2" by simp
+
+lemma skew_heap_insert_to_fun' [hoare_triple]:
+  "<skew_heap t a * $(insert_atime (size1 t))>
+   insert_impl x a
+   <skew_heap (Skew_Heap.insert x t)>\<^sub>t"
+@proof
+  @have "insert_atime (size1 t) \<ge>\<^sub>t merge_atime (size1 \<langle>Leaf, x, Leaf\<rangle>) (size1 t) + 2"
+@qed
+
+lemma insert_atime_alt: "insert_atime n = 6 + 4 * real (nat (\<lceil>3 * log 2 (real (2 + n))\<rceil>))"
+  apply (auto simp: insert_atime_def merge_atime_def) apply(subst nat_add_distrib)
+  apply auto apply(rule less_le_trans[of _ 0] ) using log2_gt_zero by auto
+
+lemma insert_atime_asym [asym_bound]:
+  "(\<lambda>n. insert_atime n) \<in> \<Theta>(\<lambda>x. ln (real x))"  (is "?f \<in> \<Theta>(?g)")
+  unfolding insert_atime_alt by (rule abcd_lnx) auto
 
 section {* Abstract assertion *}
 

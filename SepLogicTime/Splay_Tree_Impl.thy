@@ -397,6 +397,8 @@ lemma splay_tree_delete_amor [hoare_triple]:
   @have "splay_tree_P t + delete_atime (size1 t) \<ge>\<^sub>t delete_time x t + splay_tree_P (delete x t)"
 @qed
 
+setup {* del_prfstep_thm @{thm splay_tree_def} *}
+
 section {* Abstract assertion *}
 
 definition splay_tree_set :: "'a::{heap,linorder} set \<Rightarrow> 'a ptree \<Rightarrow> assn" where [rewrite_ent]:

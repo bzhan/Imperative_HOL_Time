@@ -33,9 +33,9 @@ fun btree :: "'a::heap tree \<Rightarrow> 'a node ref option \<Rightarrow> assn"
 | "btree \<langle>lt, v, rt\<rangle> None = false"
 setup {* fold add_rewrite_ent_rule @{thms btree.simps} *}
 
-lemma btree_Leaf [forward_ent_shadow]: "btree Leaf p \<Longrightarrow>\<^sub>A \<up>(p = None)" by auto2
+lemma btree_Leaf [forward_ent]: "btree Leaf p \<Longrightarrow>\<^sub>A \<up>(p = None)" by auto2
 
-lemma btree_not_Leaf [forward_ent_shadow]:
+lemma btree_not_Leaf [forward_ent]:
   "btree \<langle>lt, v, rt\<rangle> p \<Longrightarrow>\<^sub>A (\<exists>\<^sub>Alp rp. the p \<mapsto>\<^sub>r Node lp v rp * btree lt lp * btree rt rp * \<up>(p \<noteq> None))"
 @proof @case "p = None" @qed
 

@@ -31,7 +31,7 @@ fun fillrow_fun :: "nat \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> nat li
       in xs'[i:=((xs'!i)[j:=V])])"
 declare fillrow_fun.simps [rewrite]
 
-lemma fillrow_fun_length_o:
+lemma fillrow_fun_length_o [rewrite]:
   "i < length xs \<Longrightarrow> length (fillrow_fun i j W xs) = length xs"
   apply (induct j arbitrary: xs i) apply auto
   by (metis length_list_update) 
@@ -91,8 +91,8 @@ fun knapsack''_fun :: "nat \<Rightarrow> nat \<Rightarrow> nat list list \<Right
       fillrow_fun i W W xs')"
 declare knapsack''_fun.simps [rewrite]
 
-lemma knapsack''_fun_length_o:
-  "i < length xs \<Longrightarrow> length (knapsack''_fun i W xs) = length xs"
+lemma knapsack''_fun_length_o [rewrite]:
+  "i \<le> length xs \<Longrightarrow> length (knapsack''_fun i W xs) = length xs"
   apply (induct i arbitrary: xs) by (auto simp: fillrow_fun_length_o)
 
 lemma knapsack''_fun_length_i:
@@ -149,10 +149,10 @@ definition kna'_impl :: "nat \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> n
       }))"
 
 lemma kna'_impl_rule [hoare_triple]:
-  "i < nrow p \<Longrightarrow> j < ncol p\<Longrightarrow> 
-   <matrix_assn xs p * $3>
+  "i < length xs \<Longrightarrow> j < n \<Longrightarrow>
+   <matrix_assn n xs p * $3>
     kna'_impl i j W p
-   <\<lambda>r. matrix_assn xs p * \<up>(r = kna' i j W xs)>\<^sub>t"
+   <\<lambda>r. matrix_assn n xs p * \<up>(r = kna' i j W xs)>\<^sub>t"
 @proof @cases i @qed
 
 setup {* del_prfstep_thm @{thm kna'_def} *}  
@@ -178,10 +178,10 @@ lemma fill_impl_time_bound [asym_bound]:  "(\<lambda>n. fill_impl_time n) \<in> 
   by (simp only: fill_impl_time_closedform) auto2
 
 lemma fill_impl_rule [hoare_triple]:
-  "i < nrow p \<Longrightarrow> j \<le> ncol p \<Longrightarrow>
-   <matrix_assn xs p * $(fill_impl_time j)>
+  "i < length xs \<Longrightarrow> j \<le> n \<Longrightarrow>
+   <matrix_assn n xs p * $(fill_impl_time j)>
     fillrow_impl i j W p 
-   <\<lambda>_. matrix_assn (fillrow_fun i j W xs) p>\<^sub>t"
+   <\<lambda>_. matrix_assn n (fillrow_fun i j W xs) p>\<^sub>t"
 @proof @induct j @qed
 
 setup {* fold del_prfstep_thm @{thms fill_impl_time.simps} *}
@@ -204,10 +204,10 @@ lemma knapsack''_impl_time_bound [asym_bound]: "knapsack''_impl_time \<in> \<The
   using fill_impl_time_bound by (auto simp: eventually_nonneg_def eventually_prod_sequentially) 
 
 lemma knapsack''_impl_rule [hoare_triple]:
-  "i \<le> nrow p \<Longrightarrow> ncol p = W \<Longrightarrow>
-   <matrix_assn xs p * $(knapsack''_impl_time (i,W))>
+  "i \<le> length xs \<Longrightarrow>
+   <matrix_assn W xs p * $(knapsack''_impl_time (i,W))>
     knapsack''_impl i W p
-   <\<lambda>_. matrix_assn (knapsack''_fun i W xs) p >\<^sub>t"
+   <\<lambda>_. matrix_assn W (knapsack''_fun i W xs) p >\<^sub>t"
 @proof @induct i @qed
 
 setup {* fold del_prfstep_thm @{thms knapsack''_impl_time.simps} *}

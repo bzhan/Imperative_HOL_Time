@@ -106,24 +106,6 @@ lemma dyn_array_new_rule' [hoare_triple]:
   @have "7 \<ge>\<^sub>t 7 + dyn_array_P (replicate 5 undefined, 0)"
 @qed
 
-lemma double_length_rule' [hoare_triple]:
-  "length xs = n \<Longrightarrow>
-   <dyn_array' (xs, n) p * $5>
-   double_length p
-   <dyn_array' (double_length_fun (xs, n))>\<^sub>t"
-@proof
-  @have "dyn_array_P (xs, n) + 4 \<ge>\<^sub>t dyn_array_P (double_length_fun (xs, n)) + (5*n+4)"
-@qed
-
-lemma push_array_basic_rule' [hoare_triple]:
-  "n < length xs \<Longrightarrow>
-   <dyn_array' (xs, n) p * $12>
-    push_array_basic x p 
-   <dyn_array' (list_update xs n x, n + 1)>\<^sub>t"
-@proof
-  @have "dyn_array_P (xs, n) + 12 \<ge>\<^sub>t dyn_array_P (push_array_basic_fun x (xs, n)) + 2"
-@qed
-
 definition array_length :: "'a::heap dynamic_array \<Rightarrow> nat Heap" where [sep_proc]:
   "array_length d = return (alen d)"
 
@@ -158,6 +140,26 @@ lemma array_upd_rule' [hoare_triple]:
    array_upd i x p
    <\<lambda>_. dyn_array' (list_update xs i x, n) p>" by auto2
 
+setup {* del_prfstep_thm @{thm dyn_array_raw.simps} *}
+
+lemma double_length_rule' [hoare_triple]:
+  "length xs = n \<Longrightarrow>
+   <dyn_array' (xs, n) p * $5>
+   double_length p
+   <dyn_array' (double_length_fun (xs, n))>\<^sub>t"
+@proof
+  @have "dyn_array_P (xs, n) + 4 \<ge>\<^sub>t dyn_array_P (double_length_fun (xs, n)) + (5*n+4)"
+@qed
+
+lemma push_array_basic_rule' [hoare_triple]:
+  "n < length xs \<Longrightarrow>
+   <dyn_array' (xs, n) p * $12>
+    push_array_basic x p 
+   <dyn_array' (list_update xs n x, n + 1)>\<^sub>t"
+@proof
+  @have "dyn_array_P (xs, n) + 12 \<ge>\<^sub>t dyn_array_P (push_array_basic_fun x (xs, n)) + 2"
+@qed
+
 section {* Derived operations *}
 
 definition push_array :: "'a \<Rightarrow> 'a::heap dynamic_array \<Rightarrow> 'a dynamic_array Heap" where [sep_proc]:
@@ -176,6 +178,8 @@ fun push_array_fun :: "'a \<Rightarrow> 'a::heap list \<times> nat \<Rightarrow>
      if n < length xs then push_array_basic_fun x (xs, n)
      else push_array_basic_fun x (double_length_fun (xs, n)))"
 setup {* add_rewrite_rule @{thm push_array_fun.simps} *}
+
+setup {* del_prfstep_thm @{thm dyn_array'_def} *}
 
 section {* Abstract assertion *}
 

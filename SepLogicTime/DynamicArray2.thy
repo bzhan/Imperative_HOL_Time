@@ -76,6 +76,8 @@ lemma array_upd_rule'' [hoare_triple]:
    array_upd i x p
    <\<lambda>_. dyn_array'' (list_update xs i x, n) p>" by auto2
 
+setup {* del_prfstep_thm @{thm dyn_array''.simps} *}
+
 section {* Derived operations *}
 
 lemma push_array_rule'' [hoare_triple]:
@@ -104,11 +106,18 @@ proof -
   finally show ?thesis by simp
 qed
 
+setup {* add_rewrite_ent_rule @{thm dyn_array'_def} *}
+setup {* add_rewrite_ent_rule @{thm dyn_array_raw.simps} *}
+
 lemma destroy_rule' [hoare_triple]:
   "n \<le> length xs \<Longrightarrow>
    <dyn_array' (xs, n) d * $(4 * n + 3)>
    destroy d
    <\<lambda>r. r \<mapsto>\<^sub>a take n xs>\<^sub>t" by auto2
+
+setup {* del_prfstep_thm @{thm dyn_array'_def} *}
+setup {* del_prfstep_thm @{thm dyn_array_raw.simps} *}
+setup {* add_rewrite_ent_rule @{thm dyn_array''.simps} *}
 
 lemma destroy_rule'' [hoare_triple]:
   "n \<le> length xs \<Longrightarrow>
@@ -118,6 +127,8 @@ lemma destroy_rule'' [hoare_triple]:
 @proof 
   @have "dyn_array_P' (xs, n) + 3 \<ge>\<^sub>t 4 * n + 3"
 @qed
+
+setup {* del_prfstep_thm @{thm dyn_array''.simps} *}
 
 definition dyn_array :: "'a::heap list \<Rightarrow> 'a dynamic_array \<Rightarrow> assn" where [rewrite_ent]:
   "dyn_array xs a = (\<exists>\<^sub>Ap. dyn_array'' p a * \<up>(snd p \<le> length (fst p)) * \<up>(xs = abs_array p))"
@@ -155,6 +166,7 @@ lemma destroy_rule [hoare_triple]:
    <\<lambda>r. r \<mapsto>\<^sub>a xs>\<^sub>t" by auto2
 
 setup {* del_simple_datatype "dynamic_array" *}
+setup {* del_prfstep_thm @{thm dyn_array_def} *}
 
 definition array_swap :: "'a::heap dynamic_array \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> unit Heap" where [sep_proc]:
   "array_swap d i j = do {
