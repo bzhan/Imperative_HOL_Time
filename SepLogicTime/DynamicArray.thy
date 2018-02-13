@@ -98,14 +98,6 @@ section {* Refined assertion *}
 definition dyn_array' :: "'a::heap list \<times> nat \<Rightarrow> 'a dynamic_array \<Rightarrow> assn" where [rewrite_ent]:
   "dyn_array' p r = dyn_array_raw p r * $(dyn_array_P p)"
 
-lemma dyn_array_new_rule' [hoare_triple]:
-  "<$7>
-   dyn_array_new
-   <dyn_array' (replicate 5 undefined, 0)>\<^sub>t"
-@proof
-  @have "7 \<ge>\<^sub>t 7 + dyn_array_P (replicate 5 undefined, 0)"
-@qed
-
 definition array_length :: "'a::heap dynamic_array \<Rightarrow> nat Heap" where [sep_proc]:
   "array_length d = return (alen d)"
 
@@ -140,7 +132,40 @@ lemma array_upd_rule' [hoare_triple]:
    array_upd i x p
    <\<lambda>_. dyn_array' (list_update xs i x, n) p>" by auto2
 
+definition destroy :: "'a::heap dynamic_array \<Rightarrow> 'a array Heap" where [sep_proc]:
+  "destroy d = (case d of Dyn_Array al ar \<Rightarrow> do {
+      p \<leftarrow> Array.new al undefined;
+      array_copy ar p al;
+      return p
+   })"
+
+lemma destroy_fun_correct [rewrite]:
+  "n \<le> length xs \<Longrightarrow> Arrays_Ex.array_copy xs (replicate n undefined) n = take n xs"
+proof -
+  assume inbound: "n \<le> length xs"
+  have "Arrays_Ex.array_copy xs (replicate n undefined) n
+      = take n (Arrays_Ex.array_copy xs (replicate n undefined) n)"
+    by (simp add: array_copy_length inbound)     
+  also have "\<dots> = take n xs" 
+    apply(rule array_copy_correct) apply auto by fact
+  finally show ?thesis by simp
+qed
+
+lemma destroy_rule' [hoare_triple]:
+  "n \<le> length xs \<Longrightarrow>
+   <dyn_array' (xs, n) d * $(4 * n + 3)>
+   destroy d
+   <\<lambda>r. r \<mapsto>\<^sub>a take n xs>\<^sub>t" by auto2
+
 setup {* del_prfstep_thm @{thm dyn_array_raw.simps} *}
+
+lemma dyn_array_new_rule' [hoare_triple]:
+  "<$7>
+   dyn_array_new
+   <dyn_array' (replicate 5 undefined, 0)>\<^sub>t"
+@proof
+  @have "7 \<ge>\<^sub>t 7 + dyn_array_P (replicate 5 undefined, 0)"
+@qed
 
 lemma double_length_rule' [hoare_triple]:
   "length xs = n \<Longrightarrow>
@@ -160,8 +185,6 @@ lemma push_array_basic_rule' [hoare_triple]:
   @have "dyn_array_P (xs, n) + 12 \<ge>\<^sub>t dyn_array_P (push_array_basic_fun x (xs, n)) + 2"
 @qed
 
-section {* Derived operations *}
-
 definition push_array :: "'a \<Rightarrow> 'a::heap dynamic_array \<Rightarrow> 'a dynamic_array Heap" where [sep_proc]:
   "push_array x p = do {
     m \<leftarrow> array_max p;
@@ -180,21 +203,5 @@ fun push_array_fun :: "'a \<Rightarrow> 'a::heap list \<times> nat \<Rightarrow>
 setup {* add_rewrite_rule @{thm push_array_fun.simps} *}
 
 setup {* del_prfstep_thm @{thm dyn_array'_def} *}
-
-section {* Abstract assertion *}
-
-fun abs_array :: "'a::heap list \<times> nat \<Rightarrow> 'a list" where
-  "abs_array (xs, n) = take n xs"
-setup {* add_rewrite_rule @{thm abs_array.simps} *}
-
-lemma double_length_abs [rewrite]:
-  "length xs = n \<Longrightarrow> abs_array (double_length_fun (xs, n)) = abs_array (xs, n)" by auto2
-
-lemma push_array_basic_abs [rewrite]:
-  "n < length xs \<Longrightarrow> abs_array (push_array_basic_fun x (xs, n)) = abs_array (xs, n) @ [x]"
-@proof @have "length (take n xs @ [x]) = n + 1" @qed
-
-lemma push_array_fun_abs [rewrite]:
-  "n \<le> length xs \<Longrightarrow> abs_array (push_array_fun x (xs, n)) = abs_array (xs, n) @ [x]" by auto2
 
 end

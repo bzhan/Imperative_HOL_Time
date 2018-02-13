@@ -76,49 +76,6 @@ lemma array_upd_rule'' [hoare_triple]:
    array_upd i x p
    <\<lambda>_. dyn_array'' (list_update xs i x, n) p>" by auto2
 
-setup {* del_prfstep_thm @{thm dyn_array''.simps} *}
-
-section {* Derived operations *}
-
-lemma push_array_rule'' [hoare_triple]:
-  "n \<le> length xs \<Longrightarrow>
-   <dyn_array'' (xs, n) p * $23>
-   push_array x p
-   <dyn_array'' (push_array_fun x (xs, n))>\<^sub>t" by auto2
-
-text {* new function: destroy *}
-
-definition destroy :: "'a::heap dynamic_array \<Rightarrow> 'a array Heap" where [sep_proc]:
-  "destroy d = (case d of Dyn_Array al ar \<Rightarrow> do {
-      p \<leftarrow> Array.new al undefined;
-      array_copy ar p al;
-      return p
-   })"
-
-lemma z[rewrite]: "n \<le> length xs \<Longrightarrow> take n xs = Arrays_Ex.array_copy xs (replicate n undefined) n"
-proof -
-  assume inbound: "n \<le> length xs"
-  have "Arrays_Ex.array_copy xs (replicate n undefined) n
-      = take n (Arrays_Ex.array_copy xs (replicate n undefined) n)"
-    by (simp add: array_copy_length inbound)     
-  also have "\<dots> = take n xs" 
-    apply(rule array_copy_correct) apply auto by fact
-  finally show ?thesis by simp
-qed
-
-setup {* add_rewrite_ent_rule @{thm dyn_array'_def} *}
-setup {* add_rewrite_ent_rule @{thm dyn_array_raw.simps} *}
-
-lemma destroy_rule' [hoare_triple]:
-  "n \<le> length xs \<Longrightarrow>
-   <dyn_array' (xs, n) d * $(4 * n + 3)>
-   destroy d
-   <\<lambda>r. r \<mapsto>\<^sub>a take n xs>\<^sub>t" by auto2
-
-setup {* del_prfstep_thm @{thm dyn_array'_def} *}
-setup {* del_prfstep_thm @{thm dyn_array_raw.simps} *}
-setup {* add_rewrite_ent_rule @{thm dyn_array''.simps} *}
-
 lemma destroy_rule'' [hoare_triple]:
   "n \<le> length xs \<Longrightarrow>
    <dyn_array'' (xs, n) d * $3>
@@ -129,6 +86,30 @@ lemma destroy_rule'' [hoare_triple]:
 @qed
 
 setup {* del_prfstep_thm @{thm dyn_array''.simps} *}
+
+section {* Derived operations *}
+
+lemma push_array_rule'' [hoare_triple]:
+  "n \<le> length xs \<Longrightarrow>
+   <dyn_array'' (xs, n) p * $23>
+   push_array x p
+   <dyn_array'' (push_array_fun x (xs, n))>\<^sub>t" by auto2
+
+section {* Abstract assertion *}
+
+fun abs_array :: "'a::heap list \<times> nat \<Rightarrow> 'a list" where
+  "abs_array (xs, n) = take n xs"
+setup {* add_rewrite_rule @{thm abs_array.simps} *}
+
+lemma double_length_abs [rewrite]:
+  "length xs = n \<Longrightarrow> abs_array (double_length_fun (xs, n)) = abs_array (xs, n)" by auto2
+
+lemma push_array_basic_abs [rewrite]:
+  "n < length xs \<Longrightarrow> abs_array (push_array_basic_fun x (xs, n)) = abs_array (xs, n) @ [x]"
+@proof @have "length (take n xs @ [x]) = n + 1" @qed
+
+lemma push_array_fun_abs [rewrite]:
+  "n \<le> length xs \<Longrightarrow> abs_array (push_array_fun x (xs, n)) = abs_array (xs, n) @ [x]" by auto2
 
 definition dyn_array :: "'a::heap list \<Rightarrow> 'a dynamic_array \<Rightarrow> assn" where [rewrite_ent]:
   "dyn_array xs a = (\<exists>\<^sub>Ap. dyn_array'' p a * \<up>(snd p \<le> length (fst p)) * \<up>(xs = abs_array p))"
@@ -168,6 +149,8 @@ lemma destroy_rule [hoare_triple]:
 setup {* del_simple_datatype "dynamic_array" *}
 setup {* del_prfstep_thm @{thm dyn_array_def} *}
 
+section {* More operations *}
+
 definition array_swap :: "'a::heap dynamic_array \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> unit Heap" where [sep_proc]:
   "array_swap d i j = do {
     x \<leftarrow> array_nth d i;
@@ -193,11 +176,12 @@ fun dfilter_aux_fun :: "'a list \<Rightarrow> nat \<Rightarrow> ('a \<Rightarrow
      else dfilter_aux_fun xs n P)"
 setup {* fold add_rewrite_rule @{thms dfilter_aux_fun.simps} *}
 
-lemma chopmed5_aux_fun_ind [rewrite]:
+lemma dfilter_aux_fun_ind [rewrite]:
   "i \<le> length xs \<Longrightarrow> dfilter_aux_fun xs i P = filter P (take i xs)"        
-by (induct i) (auto simp add: take_Suc_conv_app_nth) 
+  by (induct i) (auto simp add: take_Suc_conv_app_nth)
  
-lemma filtertakeSuc[rewrite]: "i < length xs \<Longrightarrow> P (xs !i) \<Longrightarrow> filter P (take (Suc i) xs) = filter P (take i xs) @ [xs ! i]"
+lemma filtertake_Suc [rewrite]:
+  "i < length xs \<Longrightarrow> P (xs !i) \<Longrightarrow> filter P (take (Suc i) xs) = filter P (take i xs) @ [xs ! i]"
   "i < length xs \<Longrightarrow> ~ P (xs !i) \<Longrightarrow> filter P (take (Suc i) xs) = filter P (take i xs)"
   by (auto simp add: take_Suc_conv_app_nth) 
 
@@ -219,12 +203,13 @@ lemma dfilter_aux_rule [hoare_triple]:
 
 definition dfilter_impl :: "'a::heap array \<Rightarrow> ('a \<Rightarrow> bool) \<Rightarrow> 'a dynamic_array Heap" where [sep_proc]:
   "dfilter_impl a P = do {
-     d <- dyn_array_new;
-     alen <- Array.len a;
+     d \<leftarrow> dyn_array_new;
+     alen \<leftarrow> Array.len a;
      dfilter_aux a d alen P
    }" 
 
-definition [rewrite]: "dfilter_impl_time (l::nat) = 8 + 1 + (24 * l + 1)"
+definition dfilter_impl_time :: "nat \<Rightarrow> nat" where [rewrite]:
+  "dfilter_impl_time l = 8 + 1 + (24 * l + 1)"
 
 lemma dfilter_impl_rule[hoare_triple]:
   "<a \<mapsto>\<^sub>a xs * $(dfilter_impl_time (length xs))>
