@@ -96,31 +96,32 @@ partial_function (heap) splay_impl :: "'a::{heap,linorder} \<Rightarrow> 'a ptre
                rotate_ll p })}) })"
 declare splay_impl.simps [sep_proc]
 
-setup {* fold add_rewrite_rule @{thms splay.simps} *}
+setup {* add_unfolding_rule @{thm splay_code} *}
+setup {* add_rewrite_rule @{thm splay.simps(1)} *}
 
 definition splay_time :: "'a::linorder \<Rightarrow> 'a tree \<Rightarrow> nat" where [rewrite]:
   "splay_time a t = 15 * t_splay a t"
 
 lemma splay_time_simp:
   "splay_time a Leaf = 15"
-  "splay_time a (tree.Node l b r) =
+  "splay_time a \<langle>l, b, r\<rangle> =
     (if a = b then 15
-     else if a < b
-          then case l of
-            Leaf \<Rightarrow> 15 |
-            tree.Node ll c lr \<Rightarrow>
-              (if a=c then 15
-               else if a < c then if ll = Leaf then 15 else splay_time a ll + 15
-                    else if lr = Leaf then 15 else splay_time a lr + 15)
-          else case r of
-            Leaf \<Rightarrow> 15 |
-            tree.Node rl c rr \<Rightarrow>
-              (if a=c then 15
-               else if a < c then if rl = Leaf then 15 else splay_time a rl + 15
-                    else if rr = Leaf then 15 else splay_time a rr + 15))"
+     else if a < b then case l of
+        Leaf \<Rightarrow> 15
+      | \<langle>ll, c, lr\<rangle> \<Rightarrow>
+        (if a = c then 15
+         else if a < c then if ll = Leaf then 15 else splay_time a ll + 15
+              else if lr = Leaf then 15 else splay_time a lr + 15)
+     else case r of
+        Leaf \<Rightarrow> 15
+      | \<langle>rl, c, rr\<rangle> \<Rightarrow>
+         (if a = c then 15
+          else if a < c then if rl = Leaf then 15 else splay_time a rl + 15
+               else if rr = Leaf then 15 else splay_time a rr + 15))"
   by (auto split!: tree.split simp: splay_time_def)
-setup {* fold add_unfolding_rule @{thms splay_time_simp} *}
-setup {* add_fun_induct_rule (@{term t_splay}, @{thm t_splay.induct}) *}
+setup {* add_unfolding_rule @{thm splay_time_simp(2)} *}
+setup {* add_rewrite_rule @{thm splay_time_simp(1)} *}
+setup {* add_fun_induct_rule (@{term splay}, @{thm t_splay.induct}) *}
 
 lemma splay_not_Leaf: "splay x \<langle>l, a, r\<rangle> \<noteq> Leaf" by auto
 setup {* add_forward_prfstep_cond @{thm splay_not_Leaf} [with_term "splay ?x \<langle>?l, ?a, ?r\<rangle>"] *}
@@ -129,22 +130,16 @@ lemma splay_correct [hoare_triple]:
   "<btree t a * $(splay_time x t)>
     splay_impl x a
    <btree (splay x t)>\<^sub>t"
-@proof @fun_induct "t_splay x t" arbitrary a @with
-  @subgoal "(x = x, t = Leaf)" @unfold "splay_time x Leaf" @endgoal
+@proof @fun_induct "splay x t" arbitrary a @with
   @subgoal "(x = x, t = \<langle>lt, b, rt\<rangle>)"
-  @unfold "splay_time x \<langle>lt, b, rt\<rangle>"
+    @unfold "splay_time x \<langle>lt, b, rt\<rangle>"
+    @unfold "splay x \<langle>lt, b, rt\<rangle>"
     @case "x = b"
     @case "x < b" @with
       @case "lt = Leaf"
-      @case "x = root_val lt"
-      @case "x < root_val lt"
-      @case "x > root_val lt"
     @end
     @case "x > b" @with
       @case "rt = Leaf"
-      @case "x = root_val rt"
-      @case "x < root_val rt"
-      @case "x > root_val rt"
     @end
   @endgoal @end
 @qed
@@ -225,7 +220,7 @@ lemma splay_max_time_simps [rewrite]:
   "splay_max_time \<langle>l, b, \<langle>rl, c, rr\<rangle>\<rangle> = (if rr=Leaf then 15 else splay_max_time rr + 15)"
   by (simp add: splay_max_time_def)+
 
-setup {* add_fun_induct_rule (@{term t_splay_max}, @{thm t_splay_max.induct}) *}
+setup {* add_fun_induct_rule (@{term splay_max}, @{thm t_splay_max.induct}) *}
 setup {* fold add_rewrite_rule @{thms splay_max.simps} *}
 
 lemma splay_max_not_Leaf: "splay_max \<langle>l, a, r\<rangle> \<noteq> Leaf" by auto
@@ -235,7 +230,7 @@ lemma splay_max_correct [hoare_triple]:
   "<btree t a * $(splay_max_time t)>
     splay_max_impl a
    <btree (splay_max t)>\<^sub>t"
-@proof @fun_induct "t_splay_max t" arbitrary a @qed
+@proof @fun_induct "splay_max t" arbitrary a @qed
 
 definition delete_impl :: "'a::{heap,linorder} \<Rightarrow> 'a ptree \<Rightarrow> 'a ptree Heap" where [sep_proc]:
   "delete_impl x p = (case p of
