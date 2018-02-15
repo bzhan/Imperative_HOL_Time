@@ -255,7 +255,7 @@ fun time_credit_ge_prfstep_fn ictxt item1 item2 =
 
 val time_credit_ge_prfstep =
     {name = "sep_time.time_credit_ge",
-     args = [TypedMatch (SepLogic.TY_CODE_POS, Term.dummy),
+     args = [TypedUniv SepLogic.TY_CODE_POS,
              TypedMatch (TY_PROP, @{term_pat "time_credit_ge ?b ?a"})],
      priority = PRIORITY_URGENT,
      func = TwoStep time_credit_ge_prfstep_fn}
@@ -331,7 +331,7 @@ fun disj_use_vardef_pair ictxt item =
 
 val disj_use_vardef_pair_prfstep =
     {name = "disj_use_vardef_pair",
-     args = [TypedMatch (TY_DISJ, @{term_pat "?A::bool"})],
+     args = [TypedUniv TY_DISJ],
      priority = PRIORITY_NORM,
      func = OneStep disj_use_vardef_pair}
 
