@@ -403,7 +403,6 @@ setup {* fold add_rewrite_rule @{thms select_time.simps} *}
   
 lemma n_div_5_pos [backward]: "(n::nat) > 0 \<Longrightarrow> (n + 4) div 5 > 0" by linarith
 
-declare [[hoare_shadowing]]
 lemma select_rule_aux [hoare_triple]:
   "k < length as \<Longrightarrow>
    <a \<mapsto>\<^sub>a as * $(select_time (length as))>
@@ -429,7 +428,6 @@ lemma select_rule_aux [hoare_triple]:
     @have "k - length ls - length es < length gs"
   @end @end
 @qed
-declare [[hoare_shadowing = false]]
 
 setup {* add_rewrite_rule @{thm fast_select_correct} *}
 lemma select_rule [hoare_triple]:

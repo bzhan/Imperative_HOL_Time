@@ -6,7 +6,7 @@ Paper at: https://arxiv.org/abs/1802.01336
 The paper corresponds to the initial commit 8d336cd, which uses the version
 of auto2 (https://github.com/bzhan/auto2) at commit 167808b.
 
-The current commit corresponds to commit 5e333c4 in auto2.
+The current commit corresponds to commit b216eba in auto2.
 
 ### Abstract:
 

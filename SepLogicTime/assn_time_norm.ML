@@ -42,7 +42,7 @@ fun normalize_times_cv ctxt ct =
         Conv.every_conv [rewr_obj_eq (obj_sym @{thm ex_distrib_star}),
                          Conv.binder_conv (normalize_times_cv o snd) ctxt] ct
       else if is_ex_assn B then
-        Conv.every_conv [assn_comm_cv,
+        Conv.every_conv [ACUtil.comm_cv assn_ac_info,
                          normalize_times_cv ctxt] ct
       else
         Conv.every_conv [
@@ -64,6 +64,8 @@ fun normalize_assn_cv ctxt ct =
     in
       if is_ex_assn t then
         Conv.binder_conv (normalize_assn_cv o snd) ctxt ct
+      else if t aconv @{term "$0"} then
+        rewr_obj_eq @{thm zero_time} ct
       else if UtilArith.is_times t then
         Conv.every_conv [Conv.binop_conv (normalize_assn_cv ctxt),
                          normalize_times_cv ctxt] ct

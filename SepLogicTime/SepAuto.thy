@@ -244,16 +244,13 @@ setup {* add_forward_prfstep @{thm mod_star_convE} *}
 
 lemma mod_false' [resolve]: "\<not>(h \<Turnstile> false * R)" by auto2
 
-lemma mod_star_trueI [backward]: "h \<Turnstile> P \<Longrightarrow> h \<Turnstile> P * true"
+lemma top_assn_reduce: "true * true = true"
 @proof
-  @have "addrOf h = addrOf h \<union> {}"
-  @have "timeOf h = timeOf h + 0"
+  @have "\<forall>h. h \<Turnstile> true * true \<longleftrightarrow> h \<Turnstile> true" @with
+    @have "addrOf h = addrOf h \<union> {}"
+    @have "timeOf h = timeOf h + 0"
+  @end
 @qed
-
-lemma top_assn_reduce: "true * true = true" by auto2
-setup {* del_prfstep_thm @{thm mod_star_trueI} *}
-
-lemma sngr_same_false [resolve]: "\<not> h \<Turnstile> p \<mapsto>\<^sub>r x * p \<mapsto>\<^sub>r y * Qu" by auto2
 
 lemma mod_pure_star_dist [rewrite]:
   "h \<Turnstile> P * \<up>b \<longleftrightarrow> h \<Turnstile> P \<and> b"
@@ -273,7 +270,6 @@ lemma mod_timeCredit_dest [rewrite]:
   @end  
 @qed
 
-lemma mod_pure': "h \<Turnstile> \<up>b \<longleftrightarrow> (h \<Turnstile> emp \<and> b)" by auto2
 lemma pure_conj:  "\<up>(P \<and> Q) = \<up>P * \<up>Q" by auto2
 
 subsection {* Theorems for time credits *}
@@ -287,27 +283,34 @@ definition entails :: "assn \<Rightarrow> assn \<Rightarrow> bool" (infix "\<Lon
 
 lemma entails_triv: "A \<Longrightarrow>\<^sub>A A" by auto2
 lemma entails_true: "A \<Longrightarrow>\<^sub>A true" by auto2
+lemma entails_frame [backward]: "P \<Longrightarrow>\<^sub>A Q \<Longrightarrow> P * R \<Longrightarrow>\<^sub>A Q * R" by auto2
+lemma entails_frame': "\<not> (A * F \<Longrightarrow>\<^sub>A Q) \<Longrightarrow> A \<Longrightarrow>\<^sub>A B \<Longrightarrow> \<not> (B * F \<Longrightarrow>\<^sub>A Q)" by auto2
+lemma entails_frame'': "\<not> (P \<Longrightarrow>\<^sub>A B * F) \<Longrightarrow> A \<Longrightarrow>\<^sub>A B \<Longrightarrow> \<not> (P \<Longrightarrow>\<^sub>A A * F)" by auto2
 lemma entail_equiv_forward: "P = Q \<Longrightarrow> P \<Longrightarrow>\<^sub>A Q" by auto2
 lemma entail_equiv_backward: "P = Q \<Longrightarrow> Q \<Longrightarrow>\<^sub>A P" by auto2
-lemma entailsD: "P \<Longrightarrow>\<^sub>A Q \<Longrightarrow> h \<Turnstile> P \<Longrightarrow> h \<Turnstile> Q" by auto2
+lemma entailsD [forward]: "P \<Longrightarrow>\<^sub>A Q \<Longrightarrow> h \<Turnstile> P \<Longrightarrow> h \<Turnstile> Q" by auto2
 lemma entailsD': "P \<Longrightarrow>\<^sub>A Q \<Longrightarrow> h \<Turnstile> P * R \<Longrightarrow> h \<Turnstile> Q * R" by auto2
-lemma entailsD_back: "P \<Longrightarrow>\<^sub>A Q \<Longrightarrow> \<not>h \<Turnstile> Q * R \<Longrightarrow> \<not>h \<Turnstile> P * R" by auto2
 lemma entail_trans2: "A \<Longrightarrow>\<^sub>A D * B \<Longrightarrow> B \<Longrightarrow>\<^sub>A C \<Longrightarrow> A \<Longrightarrow>\<^sub>A D * C" by auto2
-lemma entail_trans2': "D * B \<Longrightarrow>\<^sub>A A \<Longrightarrow> C \<Longrightarrow>\<^sub>A B \<Longrightarrow> D * C \<Longrightarrow>\<^sub>A A" by auto2
-lemma entails_invD: "A \<Longrightarrow>\<^sub>A B \<Longrightarrow> \<not>(h \<Turnstile> B) \<Longrightarrow> \<not>(h \<Turnstile> A)" by auto2
-lemma entailsE: "\<not>(P \<Longrightarrow>\<^sub>A Q) \<Longrightarrow> \<exists>h. h \<Turnstile> P \<and> \<not>(h \<Turnstile> Q)" by auto2
 
 lemma gc_time: "a\<ge>b \<Longrightarrow> $a \<Longrightarrow>\<^sub>A $b * true"
 @proof @have "$a = $b * $(a-b)" @qed
+
+lemma entails_pure': "\<not>(\<up>b \<Longrightarrow>\<^sub>A Q) \<longleftrightarrow> (\<not>(emp \<Longrightarrow>\<^sub>A Q) \<and> b)" by auto2
+lemma entails_pure: "\<not>(P * \<up>b \<Longrightarrow>\<^sub>A Q) \<longleftrightarrow> (\<not>(P \<Longrightarrow>\<^sub>A Q) \<and> b)" by auto2
+lemma entails_ex: "\<not>((\<exists>\<^sub>Ax. P x) \<Longrightarrow>\<^sub>A Q) \<longleftrightarrow> (\<exists>x. \<not>(P x \<Longrightarrow>\<^sub>A Q))" by auto2
+lemma entails_ex_post: "\<not>(P \<Longrightarrow>\<^sub>A (\<exists>\<^sub>Ax. Q x)) \<Longrightarrow> \<forall>x. \<not>(P \<Longrightarrow>\<^sub>A Q x)" by auto2
+lemma entails_pure_post: "\<not>(P \<Longrightarrow>\<^sub>A Q * \<up>b) \<Longrightarrow> P \<Longrightarrow>\<^sub>A Q \<Longrightarrow> \<not>b" by auto2
+
+setup {* del_prfstep_thm @{thm entails_def} *}
 
 definition time_credit_ge :: "nat \<Rightarrow> nat \<Rightarrow> bool" (infix "\<ge>\<^sub>t" 60) where
   "a \<ge>\<^sub>t b \<longleftrightarrow> a \<ge> b"
 setup {* add_backward_prfstep (equiv_backward_th @{thm time_credit_ge_def}) *}
 
-lemma gc_time': "a \<ge>\<^sub>t b \<Longrightarrow> h \<Turnstile> R * $(a + p) \<Longrightarrow> h \<Turnstile> R * $(b + p) * true"
-  by (smt ab_semigroup_mult_class.mult_ac(1) entailsD' gc_time mult.commute time_credit_add time_credit_ge_def)
+lemma gc_time': "a \<ge>\<^sub>t b \<Longrightarrow> R * $(a + p) \<Longrightarrow>\<^sub>A R * $(b + p) * true"
+  by (smt assn_times_assoc assn_times_comm entails_frame gc_time time_credit_add time_credit_ge_def)
 
-lemma gc_time'': "a \<ge>\<^sub>t b \<Longrightarrow> h \<Turnstile> $(a + p) \<Longrightarrow> h \<Turnstile> $(b + p) * true"
+lemma gc_time'': "a \<ge>\<^sub>t b \<Longrightarrow> $(a + p) \<Longrightarrow>\<^sub>A $(b + p) * true"
   by (smt add.commute add.right_neutral gc_time' time_credit_add)
 
 section \<open>Setup for timeFrame\<close>
@@ -319,6 +322,8 @@ lemma timeFrame_reduceNone [forward]: "timeFrame n f = None \<Longrightarrow> f 
 lemma timeFrame_reduceSome [forward]: "timeFrame n f = (Some (r,h,t)) \<Longrightarrow> f = Some (r,h,t-n) \<and> t\<ge>n"
 @proof @case "f = None" @qed
 
+lemma zero_time: "$0 = emp" by auto2
+
 section {* Definition of the run predicate *}
 
 inductive run :: "'a Heap \<Rightarrow> heap option \<Rightarrow> heap option \<Rightarrow> 'a \<Rightarrow> nat \<Rightarrow> bool" where
@@ -328,19 +333,6 @@ inductive run :: "'a Heap \<Rightarrow> heap option \<Rightarrow> heap option \<
 setup {* add_case_induct_rule @{thm run.cases} *}
 setup {* fold add_resolve_prfstep @{thms run.intros(1,2)} *}
 setup {* add_forward_prfstep @{thm run.intros(3)} *}
-setup {* add_backward_prfstep @{thm run.intros(3)} *}
-
-lemma run_preserve_None [forward]:
-  "run c None \<sigma>' r n \<Longrightarrow> \<sigma>' = None"
-@proof @case_induct "run c None \<sigma>' r n" @qed
-
-lemma run_execute_fail [forward]:
-  "execute c h = None \<Longrightarrow> run c (Some h) \<sigma>' r n \<Longrightarrow> \<sigma>' = None"
-@proof @case_induct "run c (Some h) \<sigma>' r n" @qed
-
-lemma run_execute_succeed [forward]:
-  "execute c h = Some (r', h', n) \<Longrightarrow> run c (Some h) \<sigma>' r n' \<Longrightarrow> \<sigma>' = Some h' \<and> r = r' \<and> n=n'"
-@proof @case_induct "run c (Some h) \<sigma>' r n'" @qed
 
 lemma run_complete [resolve]:
   "\<exists>\<sigma>' r n. run c \<sigma> \<sigma>' (r::'a) n"
@@ -356,8 +348,7 @@ lemma run_to_execute [forward]:
 
 setup {* add_rewrite_rule @{thm execute_bind(1)} *}
 lemma runE [forward]:
-  "run f (Some h) (Some h') r' t1 \<Longrightarrow> run (f \<bind> g) (Some h) \<sigma> r t \<Longrightarrow> run (g r') (Some h') \<sigma> r (t-t1)"
-  by auto2
+  "run f (Some h) (Some h') r' t1 \<Longrightarrow> run (f \<bind> g) (Some h) \<sigma> r t \<Longrightarrow> run (g r') (Some h') \<sigma> r (t-t1)" by auto2
 
 setup {* add_rewrite_rule @{thm Array.get_alloc} *}
 setup {* add_rewrite_rule @{thm Ref.get_alloc} *}
@@ -367,8 +358,6 @@ section {* Definition of hoare triple, and the frame rule. *}
 
 definition new_addrs :: "heap \<Rightarrow> addr set \<Rightarrow> heap \<Rightarrow> addr set" where [rewrite]:
   "new_addrs h as h' = as \<union> {a. lim h \<le> a \<and> a < lim h'}"
-
-lemma new_addr_refl [rewrite]: "new_addrs h as h = as" by auto2
 
 definition hoare_triple :: "assn \<Rightarrow> 'a Heap \<Rightarrow> ('a \<Rightarrow> assn) \<Rightarrow> bool" ("<_>/ _/ <_>") where [rewrite]:
   "<P> c <Q> \<longleftrightarrow> (\<forall>h as \<sigma> r n t. pHeap h as n \<Turnstile> P \<longrightarrow> run c (Some h) \<sigma> r t \<longrightarrow> 
@@ -394,6 +383,73 @@ lemma frame_rule [backward]:
 
 (* This is the last use of the definition of separating conjunction. *)
 setup {* fold del_prfstep_thm [@{thm mod_star_convI}, @{thm mod_star_convE}] *}
+
+lemma bind_rule:
+  "<P> f <Q> \<Longrightarrow> \<forall>x. <Q x> g x <R> \<Longrightarrow> <P> f \<bind> g <R>"
+@proof
+  @have "\<forall>h as \<sigma> r n t. pHeap h as n \<Turnstile> P \<longrightarrow> run (f \<bind> g) (Some h) \<sigma> r t \<longrightarrow>
+                    (\<sigma> \<noteq> None \<and> pHeap (the \<sigma>) (new_addrs h as (the \<sigma>)) (n-t) \<Turnstile> R r \<and> n\<ge>t \<and>
+                     relH {a . a < lim h \<and> a \<notin> as} h (the \<sigma>) \<and> lim h \<le> lim (the \<sigma>))" @with
+    (* First step from h to h' *)
+    @obtain \<sigma>' r' t' where "run f (Some h) \<sigma>' r' t'"
+    @obtain h' where "\<sigma>' = Some h'"
+    @let "as' = new_addrs h as h'"
+    @have "pHeap h' as' (n-t') \<Turnstile> Q r'"
+
+    (* Second step from h' to h'' *)
+    @have "run (g r') (Some h') \<sigma> r (t-t')"
+    @obtain h'' where "\<sigma> = Some h''"
+    @let "as'' = new_addrs h' as' h''"
+    @have "pHeap h'' as'' (n-t) \<Turnstile> R r \<and> n\<ge>t" @with
+      @have "(n-t')-(t-t') = n-t"
+    @end
+    @have "as'' = new_addrs h as h''"
+    @have "relH {a . a < lim h \<and> a \<notin> as} h h''" @with
+      @have "relH {a . a < lim h \<and> a \<notin> as} h h'"
+      @have "relH {a . a < lim h' \<and> a \<notin> as'} h' h''"
+    @end
+  @end
+@qed
+
+(* Actual statement used: *)
+lemma bind_rule':
+  "<P> f <Q> \<Longrightarrow> \<not> <P> f \<bind> g <R> \<Longrightarrow> \<exists>x. \<not> <Q x> g x <R>" using bind_rule by blast
+
+lemma pre_rule':
+  "\<not> <P * R> f <Q> \<Longrightarrow> P \<Longrightarrow>\<^sub>A P' \<Longrightarrow> \<not> <P' * R> f <Q>"
+@proof @have "P * R \<Longrightarrow>\<^sub>A P' * R" @qed
+
+lemma pre_rule'':
+  "<P> f <Q> \<Longrightarrow> P' \<Longrightarrow>\<^sub>A P * R \<Longrightarrow> <P'> f <\<lambda>x. Q x * R>"
+@proof @have "<P * R> f <\<lambda>x. Q x * R>" @qed
+
+lemma pre_ex_rule:
+  "\<not> <\<exists>\<^sub>Ax. P x> f <Q> \<longleftrightarrow> (\<exists>x. \<not> <P x> f <Q>)" by auto2
+
+lemma pre_pure_rule:
+  "\<not> <P * \<up>b> f <Q> \<longleftrightarrow> \<not> <P> f <Q> \<and> b" by auto2
+
+lemma pre_pure_rule':
+  "\<not> <\<up>b> f <Q> \<longleftrightarrow> \<not> <emp> f <Q> \<and> b" by auto2
+
+lemma post_rule:
+  "<P> f <Q> \<Longrightarrow> \<forall>x. Q x \<Longrightarrow>\<^sub>A R x \<Longrightarrow> <P> f <R>" by auto2
+
+declare gc_time' [backward]
+declare gc_time'' [backward]
+lemma gc_time_hoare': "a \<ge>\<^sub>t b \<Longrightarrow> \<not><R * $(a + p)> c <Q> \<Longrightarrow> \<not><R * $(b + p) * true> c <Q>"
+@proof @have "R * $(a+p) \<Longrightarrow>\<^sub>A R * $(b+p) * true" @qed
+
+lemma gc_time_hoare'': "a \<ge>\<^sub>t b \<Longrightarrow> \<not><$(a + p)> c <Q> \<Longrightarrow> \<not><$(b + p) * true> c <Q>"
+@proof @have "$(a+p) \<Longrightarrow>\<^sub>A $(b+p) * true" @qed
+setup {* del_prfstep_thm @{thm gc_time'} *}
+setup {* del_prfstep_thm @{thm gc_time''} *}
+
+setup {* fold del_prfstep_thm [@{thm entailsD}, @{thm entails_frame}, @{thm frame_rule}] *}
+
+(* Actual statement used: *)
+lemma post_rule':
+  "<P> f <Q> \<Longrightarrow> \<not> <P> f <R> \<Longrightarrow> \<exists>x. \<not> (Q x \<Longrightarrow>\<^sub>A R x)" using post_rule by blast
 
 lemma norm_pre_pure_iff: "<P * \<up>b> c <Q> \<longleftrightarrow> (b \<longrightarrow> <P> c <Q>)" by auto2
 lemma norm_pre_pure_iff2: "<\<up>b> c <Q> \<longleftrightarrow> (b \<longrightarrow> <emp> c <Q>)" by auto2
@@ -482,63 +538,10 @@ setup {* add_rewrite_rule @{thm execute_ref} *}
 lemma ref_rule:
   "<$1> ref x <\<lambda>r. r \<mapsto>\<^sub>r x>" by auto2
 
-setup {* fold del_prfstep_thm [@{thm sngr_assn_rule}, @{thm snga_assn_rule}] *}
-setup {* fold del_prfstep_thm [@{thm pure_assn_rule}, @{thm top_assn_rule},
-  @{thm mod_pure_star_dist} , @{thm mod_timeCredit_dest}, @{thm timeCredit_assn_rule}] *}
-
-section {* success_run and its properties. *}
-
-lemma new_addrs_bind [rewrite]:
-  "lim h \<le> lim h' \<Longrightarrow> lim h' \<le> lim h'' \<Longrightarrow> new_addrs h' (new_addrs h as h') h'' = new_addrs h as h''" by auto2
-
-fun success_run :: "'a Heap \<Rightarrow> pheap \<Rightarrow> pheap \<Rightarrow> 'a \<Rightarrow> bool" where
-  "success_run f (pHeap h as n1) (pHeap h' as' n2) r \<longleftrightarrow>
-    as' = new_addrs h as h' \<and> run f (Some h) (Some h') r (n1-n2) \<and> n1\<ge>n2 \<and> relH {a. a < lim h \<and> a \<notin> as} h h' \<and> lim h \<le> lim h'"
-setup {* add_rewrite_rule @{thm success_run.simps} *}
-
-lemma success_run_bind:
-  "success_run f h h' r \<Longrightarrow> success_run (g r) h' h'' r' \<Longrightarrow> success_run (f \<bind> g) h h'' r'" by auto2
-
-lemma success_run_next: "success_run f h h'' r' \<Longrightarrow>
-  \<forall>h'. \<sigma> = Some (heapOf h') \<and> success_run (f \<bind> g) h h' r \<longrightarrow> \<not> h' \<Turnstile> Q \<Longrightarrow>
-  \<forall>h'. \<sigma> = Some (heapOf h') \<and> success_run (g r') h'' h' r \<longrightarrow> \<not> h' \<Turnstile> Q" by auto2
-
-lemma hoare_triple_def' [rewrite]:
-  "<P> c <Q> \<longleftrightarrow> (\<forall>h \<sigma> r t. h \<Turnstile> P \<longrightarrow> run c (Some (heapOf h)) \<sigma> r t \<longrightarrow>
-    (\<sigma> \<noteq> None \<and> pHeap (the \<sigma>) (new_addrs (heapOf h) (addrOf h) (the \<sigma>)) (timeOf h-t) \<Turnstile> Q r \<and> timeOf h\<ge>t \<and>
-     relH {a . a < lim (heapOf h) \<and> a \<notin> (addrOf h)} (heapOf h) (the \<sigma>) \<and>
-     lim (heapOf h) \<le> lim (the \<sigma>)))"
-  using hoare_triple_def[of P c Q] by (smt Collect_cong pheap.collapse pheap.sel)
-
-definition run_gen :: "'a Heap \<Rightarrow> heap option \<Rightarrow> heap option \<Rightarrow> 'a \<Rightarrow> bool" where [rewrite]:
-  "run_gen c h h' r \<longleftrightarrow> (\<exists>t. run c h h' r t)"
-
-lemma run_genI [forward]: "run c h h' r t \<Longrightarrow> run_gen c h h' r" by auto2
-
-lemma hoare_tripleE':
-  "<P> c <Q> \<Longrightarrow> h \<Turnstile> P * Ru \<Longrightarrow> run_gen c (Some (heapOf h)) \<sigma> r \<Longrightarrow>
-   \<exists>h'. h' \<Turnstile> Q r * Ru \<and> \<sigma> = Some (heapOf h') \<and> success_run c h h' r "
-@proof @have "<P * Ru> c <\<lambda>r. Q r * Ru>" @qed
-
-lemma hoare_tripleI:
-  "\<not><P> c <Q> \<Longrightarrow> \<exists>h \<sigma> r. h \<Turnstile> P \<and> run_gen c (Some (heapOf h)) \<sigma> r \<and>
-   (\<forall>h'. \<sigma> = Some (heapOf h') \<and> success_run c h h' r \<longrightarrow> \<not> h' \<Turnstile> Q r)" by auto2
-
-lemma hoare_triple_mp:
-  "<P> c <Q> \<Longrightarrow> h \<Turnstile> P * Ru \<Longrightarrow> success_run c h h' r \<Longrightarrow> h' \<Turnstile> (Q r) * Ru"
-@proof @have "<P * Ru> c <\<lambda>r. Q r * Ru>" @qed
-
-lemma hoare_tripleE'':
-  "<P> c <Q> \<Longrightarrow> h \<Turnstile> P * Ru \<Longrightarrow> run_gen (c \<bind> g) (Some (heapOf h)) \<sigma> r \<Longrightarrow>
-   \<exists>r' h'. run_gen (g r') (Some (heapOf h')) \<sigma> r \<and> h' \<Turnstile> Q r' * Ru \<and> success_run c h h' r'"
-@proof
-  @have "<P * Ru> c <\<lambda>r. Q r * Ru>" @then
-  @obtain \<sigma>' r' t' where "run c (Some (heapOf h)) \<sigma>' r' t'"
-@qed
-
-setup {* del_prfstep_thm @{thm success_run.simps} *}
-setup {* del_prfstep_thm @{thm hoare_triple_def} *}
-setup {* del_prfstep_thm @{thm hoare_triple_def'} *}
+setup {* fold del_prfstep_thm [
+  @{thm sngr_assn_rule}, @{thm snga_assn_rule}, @{thm pure_assn_rule}, @{thm top_assn_rule},
+  @{thm mod_pure_star_dist}, @{thm one_assn_rule}, @{thm hoare_triple_def}, @{thm mod_ex_dist},
+  @{thm mod_timeCredit_dest}, @{thm timeCredit_assn_rule}] *}
 setup {* del_simple_datatype "pheap" *}
 
 subsection {* Definition of procedures *}
