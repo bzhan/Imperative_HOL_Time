@@ -40,24 +40,28 @@ termination apply (relation "Wellfounded.measure (\<lambda>(a, l, r). (r - l))")
 declare extract_sublist.simps [sep_proc]
 setup {* add_fun_induct_rule (@{term extract_sublist}, @{thm extract_sublist.induct}) *}
 
-definition extract_sublist_time :: "nat \<Rightarrow> nat" where [rewrite]:
+definition extract_sublist_time :: "nat \<Rightarrow> nat" where [unfold]:
   "extract_sublist_time n = 2 * n + 1"
 
 lemma extract_sublist_time_monotonic [backward]:
-  "n \<le> m \<Longrightarrow> extract_sublist_time n \<le> extract_sublist_time m" by auto2
+  "n \<le> m \<Longrightarrow> extract_sublist_time n \<le> extract_sublist_time m"
+  unfolding extract_sublist_time_def by auto
+
+lemma extract_sublist_time_rec [backward]:
+  "r > l \<Longrightarrow> extract_sublist_time (r - l) \<ge> extract_sublist_time (r - (l + 1)) + 2"
+  unfolding extract_sublist_time_def by auto  
 
 lemma extract_sublist_correct [hoare_triple]:
-  "r \<le> length xs \<Longrightarrow> <a \<mapsto>\<^sub>a xs * $(extract_sublist_time (r - l))> 
+  "r \<le> length xs \<Longrightarrow>
+   <a \<mapsto>\<^sub>a xs * $(extract_sublist_time (r - l))> 
    extract_sublist a l r
    <\<lambda>rs. a \<mapsto>\<^sub>a xs * \<up>(rs = sublist l r xs)>\<^sub>t"
 @proof @fun_induct "extract_sublist a l r" @with
   @subgoal "(a = a, l = l, r = r)"
-    @case "r \<le> l"
-    @have "2 * (r - l) \<ge>\<^sub>t 2 * (r - (l + 1)) + 2"
+    @case "r \<le> l" @with @unfold "extract_sublist_time (r - l)" @end
+    @have "extract_sublist_time (r - l) \<ge>\<^sub>t extract_sublist_time (r - (l + 1)) + 2"
   @end
 @qed
-
-setup {* del_prfstep_thm @{thm extract_sublist_time_def} *}
 
 subsection {* nth term of chop *}
 

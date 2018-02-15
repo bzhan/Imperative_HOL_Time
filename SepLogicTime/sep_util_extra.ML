@@ -1,11 +1,6 @@
-(* Normalization for assertions, timed version. *)
+(* Instantiation-dependent functions . *)
 
-signature ASSN_NORM =
-sig
-  val normalize_assn_cv: Proof.context -> conv
-end;
-
-structure AssnNorm : ASSN_NORM =
+structure SepUtilExtra : SEP_UTIL_EXTRA =
 struct
 
 open SepUtil
@@ -80,5 +75,28 @@ fun normalize_assn_cv ctxt ct =
       else
         Conv.all_conv ct
     end
+
+val times_ac_info = Nat_Util.times_ac_on_typ @{theory} natT
+val plus_ac_info = Nat_Util.plus_ac_on_typ @{theory} natT
+
+(* Rewrite terms for P in the form $(n). *)
+fun time_credit_rewr_terms P =
+    P |> dest_arg
+      |> ACUtil.dest_ac plus_ac_info
+      |> maps (ACUtil.dest_ac times_ac_info)
+      |> filter_out UtilArith.is_numc
+
+fun atomic_rewr_terms P =
+    if is_time_credit P then
+      time_credit_rewr_terms P
+    else
+      P |> Term.strip_comb |> snd
+
+(* Rewrite terms for an assertion *)
+fun assn_rewr_terms P =
+    P |> ACUtil.dest_ac assn_ac_info
+      |> filter_out is_pure_assn
+      |> maps atomic_rewr_terms
+      |> distinct (op aconv)
 
 end  (* structure AssnNorm. *)

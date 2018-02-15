@@ -397,7 +397,6 @@ lemma bind_rule:
     @have "pHeap h' as' (n-t') \<Turnstile> Q r'"
 
     (* Second step from h' to h'' *)
-    @have "run (g r') (Some h') \<sigma> r (t-t')"
     @obtain h'' where "\<sigma> = Some h''"
     @let "as'' = new_addrs h' as' h''"
     @have "pHeap h'' as'' (n-t) \<Turnstile> R r \<and> n\<ge>t" @with
@@ -560,7 +559,7 @@ ML_file "../../auto2/HOL/SepLogic/sep_util.ML"
 ML_file "rings.ML"
 ML_file "rings_test.ML"
 ML_file "sep_time_util.ML"
-ML_file "assn_time_norm.ML"
+ML_file "sep_util_extra.ML"
 ML_file "../../auto2/HOL/SepLogic/assn_matcher.ML"
 ML_file "../../auto2/HOL/SepLogic/sep_steps.ML"
 ML_file "../../auto2/HOL/SepLogic/sep_steps_test.ML"
