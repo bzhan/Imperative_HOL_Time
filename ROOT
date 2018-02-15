@@ -27,13 +27,4 @@ session SepLogicTime_Impl = SepLogicTime_Fun +
     Separation logic with time.
   *}
   theories
-    "SepLogicTime/Asymptotics_Test"
-    "SepLogicTime/LinkedList"
-    "SepLogicTime/BinarySearch_Impl"
-    "SepLogicTime/MergeSort_Impl"
-    "SepLogicTime/Select_Impl"
-    "SepLogicTime/Karatsuba_Impl"
-    "SepLogicTime/SimpleExample"
-    "SepLogicTime/Knapsack_Impl"
-    "SepLogicTime/Skew_Heap_Impl"
-    "SepLogicTime/Splay_Tree_Impl"
+    "SepLogicTime/Sep_Time_Examples"

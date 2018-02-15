@@ -43,9 +43,14 @@ lemma skew_heap_merge_correct [hoare_triple]:
   @subgoal "(t1 = t1, t2 = Leaf)" @case "t1 = Leaf" @endgoal @end
 @qed
 
+definition [sep_proc]: "skew_heap_constr v = tree_constr v"
+
+lemma skew_heap_constr_to_fun [hoare_triple]:
+  "<$2> skew_heap_constr v <btree \<langle>Leaf, v, Leaf\<rangle>>\<^sub>t" by auto2
+
 definition insert_impl :: "'a::{heap,linorder} \<Rightarrow> 'a ptree \<Rightarrow> 'a ptree Heap" where [sep_proc]:
   "insert_impl x t = do {
-     s \<leftarrow> tree_constr x;
+     s \<leftarrow> skew_heap_constr x;
      merge_impl s t
    }"
 
@@ -127,12 +132,14 @@ lemma skew_heap_empty_P [rewrite]: "skew_heap_P Leaf = 0"
 lemma skew_heap_constr_P [rewrite]: "skew_heap_P \<langle>Leaf, x, Leaf\<rangle> = 0"
   by (simp add: skew_heap_P_def rh_def)
 
+definition [sep_proc]: "skew_heap_empty = tree_empty"
+
 lemma skew_heap_empty_to_fun' [hoare_triple]:
-  "<$1> tree_empty <skew_heap Leaf>\<^sub>t"
+  "<$1> skew_heap_empty <skew_heap Leaf>\<^sub>t"
 @proof @have "1 \<ge>\<^sub>t 1 + skew_heap_P Leaf" @qed
 
 lemma skew_heap_constr_to_fun' [hoare_triple]:
-  "<$2> tree_constr v <skew_heap \<langle>Leaf, v, Leaf\<rangle>>\<^sub>t"
+  "<$2> skew_heap_constr v <skew_heap \<langle>Leaf, v, Leaf\<rangle>>\<^sub>t"
 @proof @have "2 \<ge>\<^sub>t 2 + skew_heap_P (tree.Node Leaf v Leaf)" @qed
 
 definition del_min_atime :: "nat \<Rightarrow> nat" where
@@ -222,7 +229,7 @@ lemma size1_mset_tree [rewrite]:
   "size (mset_tree t) + 1 = size1 t" by (simp add: size1_def)
 
 lemma skew_heap_empty_rule'' [hoare_triple]:
-  "<$1> tree_empty <skew_heap_mset {#}>\<^sub>t" by auto2
+  "<$1> skew_heap_empty <skew_heap_mset {#}>\<^sub>t" by auto2
 
 setup {* add_property_const @{term heap} *}
 
