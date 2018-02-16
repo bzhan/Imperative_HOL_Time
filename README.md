@@ -1,5 +1,5 @@
 # Imperative_HOL_Time
-Verifying asymptotic time complexity of imperative programs in Isabelle.
+Verifying asymptotic time complexity of imperative programs in Isabelle/HOL.
 
 Paper at: https://arxiv.org/abs/1802.01336
 
