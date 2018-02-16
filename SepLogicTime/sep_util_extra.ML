@@ -19,8 +19,8 @@ fun combine_time_credit1 ct =
 fun sort_by t =
     case t of
         Const (@{const_name pure_assn}, _) $ _ => 3
-      | Const (@{const_name timeCredit_assn}, _) $ _ => 2
-      | Const (@{const_name top_assn}, _) => 1
+      | Const (@{const_name top_assn}, _) => 2
+      | Const (@{const_name timeCredit_assn}, _) $ _ => 1
       | _ => 0
 
 fun pure_ord (t, s) =

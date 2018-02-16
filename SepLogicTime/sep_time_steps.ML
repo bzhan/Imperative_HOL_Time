@@ -210,44 +210,53 @@ fun time_assn_matcher_gen ctxt (pat, ct) (id, inst) =
         maps match_i (0 upto (length cts - 1))
     end
 
+val apply_to_precond = apply_to_thm' o Conv.arg_conv o Util.argn_conv 0
+
 fun time_credit_ge_prfstep_fn ictxt item1 item2 =
     if SepLogic.is_implies_item item1 then [] else
     let
       val {id = id1, prop, ...} = item1
       val (P, _, _) = prop |> prop_of' |> dest_not |> dest_hoare_triple
       val Ps = ACUtil.dest_ac assn_ac_info P
-      val P' = List.last Ps
-      val ctxt = IncrContext.context_of ictxt
-
-      val {id = id2, prop = prop2, ...} = item2
-      val (a, _) = prop2 |> prop_of' |> Util.dest_binop_args
-      val id = BoxID.merge_boxes ctxt (id1, id2)
+      val opt_P' = find_first is_time_credit Ps
     in
-      if not (is_time_credit P') then []
+      if is_none opt_P' then []
       else let
+        val P' = the opt_P'
+        val ctxt = IncrContext.context_of ictxt
+
+        val {id = id2, prop = prop2, ...} = item2
+        val (a, _) = prop2 |> prop_of' |> Util.dest_binop_args
+        val id = BoxID.merge_boxes ctxt (id1, id2)
+
         val b = dest_time_credit P'
         val split_res = (split_nat_gen ctxt (id, (b, a)))
                             |> IncrContext.replace_id_for_type' ictxt
 
         fun process_split_nat (id', eq_th) =
             (* eq_th is b == a + p. P is $b or R * $b. prop2 is a >=_t a'. *)
-            let
-              val P_cv = if length Ps = 1 then
-                           Conv.arg_conv (Conv.rewr_conv eq_th)
-                         else
-                           Conv.arg_conv (Conv.arg_conv (Conv.rewr_conv eq_th))
-
-              val prop' = prop |> apply_to_thm' (
-                    Conv.arg_conv (Util.argn_conv 0 P_cv))
-              val th' = if length Ps = 1 then
-                          [prop2, prop'] MRS @{thm gc_time_hoare''}
-                        else
-                          [prop2, prop'] MRS @{thm gc_time_hoare'}
-            in
-              [SepLogic.hoare_goal_update ctxt (id', th'),
-               ShadowItem {id = id', item = item1},
-               ShadowItem {id = id', item = item2}]
-            end
+            if length Ps = 1 then
+              let
+                val prop' = prop |> apply_to_precond (
+                      Conv.arg_conv (Conv.rewr_conv eq_th))
+                val th' = [prop2, prop'] MRS @{thm gc_time_hoare''}
+              in
+                [SepLogic.hoare_goal_update ctxt (id', th'),
+                 ShadowItem {id = id', item = item1},
+                 ShadowItem {id = id', item = item2}]
+              end
+            else
+              let
+                val prop' = prop |> apply_to_precond (
+                      Conv.every_conv [
+                        ACUtil.move_outmost assn_ac_info P',
+                        Conv.arg_conv (Conv.arg_conv (Conv.rewr_conv eq_th))])
+                val th' = [prop2, prop'] MRS @{thm gc_time_hoare'}
+              in
+                [SepLogic.hoare_goal_update ctxt (id', th'),
+                 ShadowItem {id = id', item = item1},
+                 ShadowItem {id = id', item = item2}]
+              end
       in
         maps process_split_nat split_res
       end

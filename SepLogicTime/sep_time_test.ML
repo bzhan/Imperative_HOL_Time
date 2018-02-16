@@ -18,7 +18,7 @@ val test_normalize_time =
         ("$1 * $2", "$3"),
         ("$n * $1", "$(n + 1)"),
         ("$1 * $2 * $3", "$6"),
-        ("$1 * true * $2 * true * \<up>b", "true * $3 * \<up>b")
+        ("$1 * true * $2 * true * \<up>b", "$3 * true * \<up>b")
       ]
     in
       map test test_data
