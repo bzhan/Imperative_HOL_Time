@@ -23,7 +23,7 @@ lemma coeffs_smult_nth [rewrite]:
 lemma coeffs_smult_one [rewrite]:
   "coeffs_smult 1 xs = xs" by auto2
 
-definition coeffs_plus :: "'a::comm_ring_1 list \<Rightarrow> 'a list \<Rightarrow> 'a list" (infixl "+\<^sub>l" 65) where [unfold]:
+definition coeffs_plus :: "'a::comm_ring_1 list \<Rightarrow> 'a list \<Rightarrow> 'a list" (infixl "+\<^sub>l" 65) where
   "xs +\<^sub>l ys = list (\<lambda>i. nth_default 0 xs i + nth_default 0 ys i) (max (length xs) (length ys))"
 
 lemma coeffs_plus_length [rewrite_arg]:
@@ -42,7 +42,7 @@ proof (rule poly_eqI, unfold poly_of_list_def coeff_add coeff_Poly)
     by (simp add: list_length list_nth max_def nth_default_def)
 qed
 
-definition coeffs_minus :: "'a::comm_ring_1 list \<Rightarrow> 'a list \<Rightarrow> 'a list" (infixl "-\<^sub>l" 65) where [unfold]:
+definition coeffs_minus :: "'a::comm_ring_1 list \<Rightarrow> 'a list \<Rightarrow> 'a list" (infixl "-\<^sub>l" 65) where
   "xs -\<^sub>l ys = list (\<lambda>i. nth_default 0 xs i - nth_default 0 ys i) (max (length xs) (length ys))"
 
 lemma coeffs_minus_length [rewrite_arg]:
@@ -75,7 +75,7 @@ lemma coeffs_plus_neg_is_minus [rewrite_back]:
   @end
 @qed
 
-definition coeffs_monom_mult :: "nat \<Rightarrow> 'a::comm_ring_1 list \<Rightarrow> 'a list" where [unfold]:
+definition coeffs_monom_mult :: "nat \<Rightarrow> 'a::comm_ring_1 list \<Rightarrow> 'a list" where
   "coeffs_monom_mult n xs = replicate n 0 @ xs"
 
 lemma coeffs_mono_mult [rewrite]:
@@ -224,7 +224,6 @@ fun karatsuba_main_list :: "'a::comm_ring_1 list \<Rightarrow> 'a list \<Rightar
    in
      coeffs_monom_mult (n2 + n2) p1 +\<^sub>l coeffs_monom_mult n2 (p1 -\<^sub>l p2 +\<^sub>l p3) +\<^sub>l p3)"
 declare karatsuba_main_list.simps [simp del]
-setup {* add_unfolding_rule @{thm karatsuba_main_list.simps} *}
 
 lemma Poly_split_at [rewrite]:
   "monom_mult n (Poly (drop n f)) + Poly (take n f) = Poly f"

@@ -14,7 +14,6 @@ partial_function (heap) binarysearch :: "nat \<Rightarrow> nat \<Rightarrow> 'a:
        else if v < x then binarysearch (m + 1) r x a
        else binarysearch l m x a)
     })"
-declare binarysearch.simps [sep_proc]
 
 function binarysearch_time :: "nat \<Rightarrow> nat" where
   "n < 2 \<Longrightarrow> binarysearch_time n = 2"

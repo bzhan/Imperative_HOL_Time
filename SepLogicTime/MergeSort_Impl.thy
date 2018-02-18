@@ -35,8 +35,6 @@ function mergeinto :: "nat \<Rightarrow> nat \<Rightarrow> 'a::{heap,linorder} a
 by pat_completeness auto
 termination by (relation "Wellfounded.measure (\<lambda>(la, lb, a, b, c). la + lb)") auto
 
-declare mergeinto.simps [sep_proc]
-
 lemma mergeinto_to_fun [hoare_triple]:
   "la \<le> length as \<Longrightarrow> lb \<le> length bs \<Longrightarrow> length cs = length as + length bs \<Longrightarrow>
     <a \<mapsto>\<^sub>a as * b \<mapsto>\<^sub>a bs * c \<mapsto>\<^sub>a cs * $(4 * (la + lb) + 2)>
@@ -75,7 +73,6 @@ partial_function (heap) merge_sort_impl :: "'a::{heap,linorder} array \<Rightarr
       mergeinto (n div 2) (n - n div 2) A B X
     }
   }"
-declare merge_sort_impl.simps [sep_proc]
 
 function merge_sort_time :: "nat \<Rightarrow> nat" where
   "n < 2 \<Longrightarrow> merge_sort_time n = 2"

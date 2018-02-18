@@ -4,7 +4,7 @@ begin
 
 section \<open>f1 doubles\<close>
 
-definition f1_impl :: "nat \<Rightarrow> nat Heap" where [sep_proc]:
+definition f1_impl :: "nat \<Rightarrow> nat Heap" where
   "f1_impl n = do { return (2*n) }"
 
 definition f1_time :: nat where [rewrite]:
@@ -20,7 +20,7 @@ setup {* del_prfstep_thm @{thm f1_time_def} *}
 
 section \<open>f2 builds two new Arrays\<close>
 
-definition f2_impl :: "nat \<Rightarrow> ('a::heap array \<times> 'a array) Heap" where [sep_proc]:
+definition f2_impl :: "nat \<Rightarrow> ('a::heap array \<times> 'a array) Heap" where
   "f2_impl (n::nat) = do {
      r1 \<leftarrow> Array.new n undefined;
      r2 \<leftarrow> Array.new n undefined;
@@ -42,7 +42,7 @@ setup {* del_prfstep_thm @{thm f2_time_def} *}
 
 section \<open>f squares the length of a list and generates two arrays of that size\<close>
 
-definition f_impl :: "'a::heap list \<Rightarrow> ('a array \<times> 'a array) Heap" where [sep_proc]:
+definition f_impl :: "'a::heap list \<Rightarrow> ('a array \<times> 'a array) Heap" where
   "f_impl xs = do {
      n \<leftarrow> f1_impl (length xs);
      f2_impl n

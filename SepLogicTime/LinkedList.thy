@@ -44,26 +44,26 @@ type_synonym 'a os_list = "'a node ref option"
 
 section {* Basic operations *}
 
-definition os_empty :: "'a::heap os_list Heap" where [sep_proc]:
+definition os_empty :: "'a::heap os_list Heap" where
   "os_empty = return None"
 
 lemma os_empty_rule [hoare_triple]:
   "<$1> os_empty <os_list []>" by auto2
 
-definition os_is_empty :: "'a::heap os_list \<Rightarrow> bool Heap" where [sep_proc]:
+definition os_is_empty :: "'a::heap os_list \<Rightarrow> bool Heap" where
   "os_is_empty b = return (b = None)"
 
 lemma os_is_empty_rule [hoare_triple]:
   "<os_list xs b * $1> os_is_empty b <\<lambda>r. os_list xs b * \<up>(r \<longleftrightarrow> xs = [])>"
 @proof @case "xs = []" @have "xs = hd xs # tl xs" @qed
 
-definition os_prepend :: "'a \<Rightarrow> 'a::heap os_list \<Rightarrow> 'a os_list Heap" where [sep_proc]:
+definition os_prepend :: "'a \<Rightarrow> 'a::heap os_list \<Rightarrow> 'a os_list Heap" where
   "os_prepend a n = do { p \<leftarrow> ref (Node a n); return (Some p) }"
 
 lemma os_prepend_rule [hoare_triple]:
   "<os_list xs n * $2> os_prepend x n <os_list (x # xs)>" by auto2
 
-definition os_pop :: "'a::heap os_list \<Rightarrow> ('a \<times> 'a os_list) Heap" where [sep_proc]:
+definition os_pop :: "'a::heap os_list \<Rightarrow> ('a \<times> 'a os_list) Heap" where
   "os_pop r = (case r of
     None \<Rightarrow> raise ''Empty Os_list'' |
     Some p \<Rightarrow> do {m \<leftarrow> !p; return (val m, nxt m)})"
@@ -83,7 +83,6 @@ partial_function (heap) os_reverse_aux :: "'a::heap os_list \<Rightarrow> 'a os_
       v \<leftarrow> !r;
       r := Node (val v) q;
       os_reverse_aux p (nxt v) })"
-declare os_reverse_aux.simps [sep_proc]
 
 lemma os_reverse_aux_rule [hoare_triple]:
   "<os_list xs p * os_list ys q * $(2 * length xs + 1)>
@@ -91,7 +90,7 @@ lemma os_reverse_aux_rule [hoare_triple]:
    <os_list ((rev xs) @ ys)>"
 @proof @induct xs arbitrary p q ys @qed
 
-definition os_reverse :: "'a::heap os_list \<Rightarrow> 'a os_list Heap" where [sep_proc]:
+definition os_reverse :: "'a::heap os_list \<Rightarrow> 'a os_list Heap" where
   "os_reverse p = os_reverse_aux None p"
 
 lemma os_reverse_rule:
@@ -114,7 +113,6 @@ partial_function (heap) os_rem :: "'a::heap \<Rightarrow> 'a node ref option \<R
         else do {
           p := Node (val n) q; 
           return (Some p) }) })"
-declare os_rem.simps [sep_proc]
 
 lemma os_rem_rule [hoare_triple]:
   "<os_list xs b * $(4 * length xs + 1)>
@@ -132,7 +130,6 @@ partial_function (heap) extract_list :: "'a::heap os_list \<Rightarrow> 'a list 
       ls \<leftarrow> extract_list (nxt v);
       return (val v # ls)
     })"
-declare extract_list.simps [sep_proc]
 
 lemma extract_list_rule [hoare_triple]:
   "<os_list l p * $(2 * length l + 1)>
@@ -174,7 +171,6 @@ partial_function (heap) os_insert :: "'a::{ord,heap} \<Rightarrow> 'a os_list \<
            q \<leftarrow> os_insert x (nxt v);
            p := Node (val v) q;
            return (Some p) }) })"
-declare os_insert.simps [sep_proc]
 
 lemma os_insert_to_fun [hoare_triple]:
   "<os_list xs b * $(3 * length xs + 2)>
@@ -211,7 +207,6 @@ fun os_insert_sort_aux :: "'a::{heap,ord} list \<Rightarrow> 'a os_list Heap" wh
      b' \<leftarrow> os_insert x b;
      return b'
    }"
-declare os_insert_sort_aux.simps [sep_proc]
 
 lemma os_insert_sort_aux_correct [hoare_triple]:
   "<$(2 * length xs * length xs + length xs + 1)>
@@ -219,7 +214,7 @@ lemma os_insert_sort_aux_correct [hoare_triple]:
    <os_list (insert_sort xs)>\<^sub>t"
 @proof @induct xs @qed
 
-definition os_insert_sort :: "'a::{ord,heap} list \<Rightarrow> 'a list Heap" where [sep_proc]:
+definition os_insert_sort :: "'a::{ord,heap} list \<Rightarrow> 'a list Heap" where
   "os_insert_sort xs = do {
     p \<leftarrow> os_insert_sort_aux xs;
     l \<leftarrow> extract_list p;
@@ -249,7 +244,6 @@ fun os_insert_sort_aux' :: "'a::{heap,ord} list \<Rightarrow> 'a os_list Heap" w
      b' \<leftarrow> os_insert x b;
      return b'
    }"
-declare os_insert_sort_aux'.simps [sep_proc]
 
 fun os_insert_sort_aux_time :: "nat \<Rightarrow> nat" where 
   "os_insert_sort_aux_time 0 = 1"

@@ -13,7 +13,6 @@ fun coeffs_shift_plus_ind_impl :: "nat \<Rightarrow> 'a::{heap,comm_ring_1} \<Ri
      Array.upd (s + n) (m * va + vb) b;
      return ()
    }"
-declare coeffs_shift_plus_ind_impl.simps [sep_proc]
 
 lemma coeffs_shift_plus_ind_impl_correct [hoare_triple]:
   "n \<le> length as \<Longrightarrow> s + length as \<le> length bs \<Longrightarrow>
@@ -27,7 +26,7 @@ lemma coeffs_shift_plus_ind_impl_correct [hoare_triple]:
   @endgoal @end
 @qed
 
-definition coeffs_shift_plus_impl :: "nat \<Rightarrow> 'a::{heap,comm_ring_1} \<Rightarrow> 'a array \<Rightarrow> 'a array \<Rightarrow> unit Heap" where [sep_proc]:
+definition coeffs_shift_plus_impl :: "nat \<Rightarrow> 'a::{heap,comm_ring_1} \<Rightarrow> 'a array \<Rightarrow> 'a array \<Rightarrow> unit Heap" where
   "coeffs_shift_plus_impl s m a b = do {
      la \<leftarrow> Array.len a;
      coeffs_shift_plus_ind_impl s m a b la
@@ -49,7 +48,7 @@ lemma coeffs_shift_plus_time_bound [asym_bound]:
   "(\<lambda>n. coeffs_shift_plus_time n) \<in> \<Theta>(\<lambda>n. n)"
   by (simp only: coeffs_shift_plus_time_def) auto2
 
-definition coeffs_plus_impl :: "'a::{heap,comm_ring_1} array \<Rightarrow> 'a array \<Rightarrow> unit Heap" where [sep_proc]:
+definition coeffs_plus_impl :: "'a::{heap,comm_ring_1} array \<Rightarrow> 'a array \<Rightarrow> unit Heap" where
   "coeffs_plus_impl a b = coeffs_shift_plus_impl 0 1 a b"
 
 lemma coeffs_plus_impl_correct [hoare_triple]:
@@ -59,7 +58,7 @@ lemma coeffs_plus_impl_correct [hoare_triple]:
    <\<lambda>_. a \<mapsto>\<^sub>a as * b \<mapsto>\<^sub>a (bs +\<^sub>l as)>\<^sub>t" by auto2
 setup {* del_prfstep_thm @{thm coeffs_shift_plus_time_def} *}
 
-definition coeffs_splus_impl :: "nat \<Rightarrow> 'a::{heap,comm_ring_1} array \<Rightarrow> 'a array \<Rightarrow> unit Heap" where [sep_proc]:
+definition coeffs_splus_impl :: "nat \<Rightarrow> 'a::{heap,comm_ring_1} array \<Rightarrow> 'a array \<Rightarrow> unit Heap" where
   "coeffs_splus_impl s a b = coeffs_shift_plus_impl s 1 a b"
 
 lemma coeffs_splus_impl_correct [hoare_triple]:
@@ -71,7 +70,7 @@ lemma coeffs_splus_impl_correct [hoare_triple]:
 section {* Subtraction creating a new array *}
 
 (* Subtracting a from b. Assuming b is at least as big as a. *)
-definition coeffs_minus_impl :: "'a::{heap,comm_ring_1} array \<Rightarrow> 'a array \<Rightarrow> 'a array Heap" where [sep_proc]:
+definition coeffs_minus_impl :: "'a::{heap,comm_ring_1} array \<Rightarrow> 'a array \<Rightarrow> 'a array Heap" where
   "coeffs_minus_impl a b = do {
      c \<leftarrow> acopy a;
      coeffs_shift_plus_impl 0 (-1) b c;
@@ -110,7 +109,6 @@ fun coeffs_prod_ind_impl :: "'a::{heap,comm_ring_1} array \<Rightarrow> 'a array
      coeffs_shift_plus_impl n y b c;
      return c
    }"
-declare coeffs_prod_ind_impl.simps [sep_proc]
 
 fun coeffs_prod_ind_impl_time :: "nat \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> nat" where
   "coeffs_prod_ind_impl_time la lb 0 = 4 + (la + lb - 1)"
@@ -128,7 +126,7 @@ lemma coeffs_prod_ind_impl_correct [hoare_triple]:
   @endgoal @end
 @qed
 
-definition coeffs_prod_impl :: "'a::{heap,comm_ring_1} array \<Rightarrow> 'a array \<Rightarrow> 'a array Heap" where [sep_proc]:
+definition coeffs_prod_impl :: "'a::{heap,comm_ring_1} array \<Rightarrow> 'a array \<Rightarrow> 'a array Heap" where
   "coeffs_prod_impl a b = do {
      la \<leftarrow> Array.len a;
      coeffs_prod_ind_impl a b la
@@ -146,7 +144,7 @@ setup {* del_prfstep_thm @{thm coeffs_prod_impl_time_def} *}
 
 section {* Implementation of shifting *}
 
-definition coeffs_monom_mult_impl :: "nat \<Rightarrow> 'a::{heap,comm_ring_1} array \<Rightarrow> 'a array Heap" where [sep_proc]:
+definition coeffs_monom_mult_impl :: "nat \<Rightarrow> 'a::{heap,comm_ring_1} array \<Rightarrow> 'a array Heap" where
   "coeffs_monom_mult_impl n a = do {
      xs \<leftarrow> Array.freeze a;
      Array.of_list (replicate n 0 @ xs)
@@ -191,7 +189,6 @@ partial_function (heap) karatsuba_main_impl :: "'a::{heap,comm_ring_1} array \<R
       coeffs_plus_impl p3 r;
       return r
     })"
-declare karatsuba_main_impl.simps [sep_proc]
 
 function karatsuba_main_impl_time :: "nat \<Rightarrow> nat" where
   "n \<le> karatsuba_lower_bound \<Longrightarrow> karatsuba_main_impl_time n = coeffs_prod_impl_time n n"
@@ -228,7 +225,6 @@ lemma "karatsuba_main_impl_time' \<in> \<Theta>(\<lambda>n. real n powr log 2 3)
         karatsuba_lower_bound_def)
 
 setup {* fold add_rewrite_rule @{thms karatsuba_main_impl_time.simps} *}
-setup {* add_fun_induct_rule (@{term karatsuba_main_list}, @{thm karatsuba_main_list.induct}) *}
 
 lemma karatsuba_main_impl_correct [hoare_triple]:
   "length as = n \<Longrightarrow> length bs = n \<Longrightarrow>

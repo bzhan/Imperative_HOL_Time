@@ -11,7 +11,7 @@ fun dyn_array_raw :: "'a::heap list \<times> nat \<Rightarrow> 'a dynamic_array 
   "dyn_array_raw (xs, n) (Dyn_Array m a) = (a \<mapsto>\<^sub>a xs * \<up>(m = n))"
 setup {* add_rewrite_ent_rule @{thm dyn_array_raw.simps} *}
 
-definition dyn_array_new :: "'a::heap dynamic_array Heap" where [sep_proc]:
+definition dyn_array_new :: "'a::heap dynamic_array Heap" where
   "dyn_array_new = do {
      p \<leftarrow> Array.new 5 undefined;
      return (Dyn_Array 0 p)
@@ -22,7 +22,7 @@ lemma dyn_array_new_raw_rule [hoare_triple]:
    dyn_array_new
    <dyn_array_raw (replicate 5 undefined, 0)>" by auto2
 
-definition double_length :: "'a::heap dynamic_array \<Rightarrow> 'a dynamic_array Heap" where [sep_proc]:
+definition double_length :: "'a::heap dynamic_array \<Rightarrow> 'a dynamic_array Heap" where
   "double_length d = (case d of Dyn_Array al ar \<Rightarrow> do {
       am \<leftarrow> Array.len ar;
       p \<leftarrow> Array.new (2 * am + 1) undefined;
@@ -41,7 +41,7 @@ lemma double_length_raw_rule [hoare_triple]:
    double_length p
    <dyn_array_raw (double_length_fun (xs, n))>\<^sub>t" by auto2
 
-definition push_array_basic :: "'a \<Rightarrow> 'a::heap dynamic_array \<Rightarrow> 'a dynamic_array Heap" where [sep_proc]:
+definition push_array_basic :: "'a \<Rightarrow> 'a::heap dynamic_array \<Rightarrow> 'a dynamic_array Heap" where
   "push_array_basic x p = do {
     Array.upd (alen p) x (aref p);
     return (Dyn_Array (alen p + 1) (aref p))
@@ -98,7 +98,7 @@ section {* Refined assertion *}
 definition dyn_array' :: "'a::heap list \<times> nat \<Rightarrow> 'a dynamic_array \<Rightarrow> assn" where [rewrite_ent]:
   "dyn_array' p r = dyn_array_raw p r * $(dyn_array_P p)"
 
-definition array_length :: "'a::heap dynamic_array \<Rightarrow> nat Heap" where [sep_proc]:
+definition array_length :: "'a::heap dynamic_array \<Rightarrow> nat Heap" where
   "array_length d = return (alen d)"
 
 lemma array_length_rule' [hoare_triple]:
@@ -106,7 +106,7 @@ lemma array_length_rule' [hoare_triple]:
    array_length p
    <\<lambda>r. dyn_array' (xs, n) p * \<up>(r = n)>" by auto2
 
-definition array_max :: "'a::heap dynamic_array \<Rightarrow> nat Heap" where [sep_proc]:
+definition array_max :: "'a::heap dynamic_array \<Rightarrow> nat Heap" where
   "array_max d = Array.len (aref d)"
 
 lemma array_max_rule' [hoare_triple]:
@@ -114,7 +114,7 @@ lemma array_max_rule' [hoare_triple]:
    array_max p
    <\<lambda>r. dyn_array' (xs, n) p * \<up>(r = length xs)>" by auto2
 
-definition array_nth :: "'a::heap dynamic_array \<Rightarrow> nat \<Rightarrow> 'a Heap" where [sep_proc]:
+definition array_nth :: "'a::heap dynamic_array \<Rightarrow> nat \<Rightarrow> 'a Heap" where
   "array_nth d i = Array.nth (aref d) i"
 
 lemma array_nth_rule' [hoare_triple]:
@@ -123,7 +123,7 @@ lemma array_nth_rule' [hoare_triple]:
    array_nth p i
    <\<lambda>r. dyn_array' (xs, n) p * \<up>(r = xs ! i)>" by auto2
 
-definition array_upd :: "nat \<Rightarrow> 'a \<Rightarrow> 'a::heap dynamic_array \<Rightarrow> unit Heap" where [sep_proc]:
+definition array_upd :: "nat \<Rightarrow> 'a \<Rightarrow> 'a::heap dynamic_array \<Rightarrow> unit Heap" where
   "array_upd i x d = do { Array.upd i x (aref d); return () }"
 
 lemma array_upd_rule' [hoare_triple]:
@@ -132,7 +132,7 @@ lemma array_upd_rule' [hoare_triple]:
    array_upd i x p
    <\<lambda>_. dyn_array' (list_update xs i x, n) p>" by auto2
 
-definition destroy :: "'a::heap dynamic_array \<Rightarrow> 'a array Heap" where [sep_proc]:
+definition destroy :: "'a::heap dynamic_array \<Rightarrow> 'a array Heap" where
   "destroy d = (case d of Dyn_Array al ar \<Rightarrow> do {
       p \<leftarrow> Array.new al undefined;
       array_copy ar p al;
@@ -185,7 +185,7 @@ lemma push_array_basic_rule' [hoare_triple]:
   @have "dyn_array_P (xs, n) + 12 \<ge>\<^sub>t dyn_array_P (push_array_basic_fun x (xs, n)) + 2"
 @qed
 
-definition push_array :: "'a \<Rightarrow> 'a::heap dynamic_array \<Rightarrow> 'a dynamic_array Heap" where [sep_proc]:
+definition push_array :: "'a \<Rightarrow> 'a::heap dynamic_array \<Rightarrow> 'a dynamic_array Heap" where
   "push_array x p = do {
     m \<leftarrow> array_max p;
     l \<leftarrow> array_length p;

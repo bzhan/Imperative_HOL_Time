@@ -135,7 +135,7 @@ lemma knapsack_full_fun_correct:
 
 section \<open>functional hybrid version using list of lists\<close>
 
-definition kna'_impl :: "nat \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> nat matrix \<Rightarrow> nat Heap" where [sep_proc]:
+definition kna'_impl :: "nat \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> nat matrix \<Rightarrow> nat Heap" where
   "kna'_impl i j W a = (case i of
      0 \<Rightarrow> return 0
    | Suc i' \<Rightarrow> 
@@ -164,7 +164,6 @@ fun fillrow_impl :: "nat \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> nat m
      V \<leftarrow> kna'_impl i j W p;
      upd_matrix  i j V p
    }"
-declare fillrow_impl.simps [sep_proc]
 
 fun fill_impl_time :: "nat \<Rightarrow> nat" where
   "fill_impl_time 0 = 1"
@@ -192,7 +191,6 @@ fun knapsack''_impl :: "nat \<Rightarrow> nat \<Rightarrow> nat matrix \<Rightar
      knapsack''_impl i W p;
      fillrow_impl i W W p
    }"
-declare knapsack''_impl.simps [sep_proc]
 
 fun knapsack''_impl_time :: "nat \<times> nat \<Rightarrow> nat" where
   "knapsack''_impl_time (0, W) = 1"
@@ -212,7 +210,7 @@ lemma knapsack''_impl_rule [hoare_triple]:
 
 setup {* fold del_prfstep_thm @{thms knapsack''_impl_time.simps} *}
 
-definition knapsack_full_impl :: "nat \<Rightarrow> nat \<Rightarrow> nat Heap" where [sep_proc]:
+definition knapsack_full_impl :: "nat \<Rightarrow> nat \<Rightarrow> nat Heap" where
   "knapsack_full_impl i W = do {
      p \<leftarrow> init_matrix (Suc i) (Suc W) undefined;
      knapsack''_impl (Suc i) (Suc W) p;

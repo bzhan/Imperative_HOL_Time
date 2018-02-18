@@ -20,10 +20,8 @@ partial_function (heap) merge_impl :: "'a::{heap,linorder} ptree \<Rightarrow> '
            p' \<leftarrow> merge_impl (Some p) (rsub tb);
            q := Node p' (val tb) (lsub tb);
            return (Some q) })}))"
-declare merge_impl.simps [sep_proc]
 
 setup {* fold add_rewrite_rule @{thms Skew_Heap.merge.simps} *}
-setup {* add_fun_induct_rule (@{term Skew_Heap.merge}, @{thm Skew_Heap.merge.induct}) *}
 
 definition merge_time :: "'a::linorder tree \<Rightarrow> 'a tree \<Rightarrow> nat" where
   "merge_time t1 t2 = 4 * t_merge t1 t2"
@@ -43,12 +41,12 @@ lemma skew_heap_merge_correct [hoare_triple]:
   @subgoal "(t1 = t1, t2 = Leaf)" @case "t1 = Leaf" @endgoal @end
 @qed
 
-definition [sep_proc]: "skew_heap_constr v = tree_constr v"
+definition "skew_heap_constr v = tree_constr v"
 
 lemma skew_heap_constr_to_fun [hoare_triple]:
   "<$2> skew_heap_constr v <btree \<langle>Leaf, v, Leaf\<rangle>>\<^sub>t" by auto2
 
-definition insert_impl :: "'a::{heap,linorder} \<Rightarrow> 'a ptree \<Rightarrow> 'a ptree Heap" where [sep_proc]:
+definition insert_impl :: "'a::{heap,linorder} \<Rightarrow> 'a ptree \<Rightarrow> 'a ptree Heap" where
   "insert_impl x t = do {
      s \<leftarrow> skew_heap_constr x;
      merge_impl s t
@@ -63,7 +61,6 @@ partial_function (heap) del_min_impl :: "'a::{heap,linorder} ptree \<Rightarrow>
       t \<leftarrow> !a;
       merge_impl (lsub t) (rsub t)
     })"
-declare del_min_impl.simps [sep_proc]
 
 setup {* fold add_rewrite_rule @{thms Skew_Heap.del_min.simps} *}
 
@@ -132,7 +129,7 @@ lemma skew_heap_empty_P [rewrite]: "skew_heap_P Leaf = 0"
 lemma skew_heap_constr_P [rewrite]: "skew_heap_P \<langle>Leaf, x, Leaf\<rangle> = 0"
   by (simp add: skew_heap_P_def rh_def)
 
-definition [sep_proc]: "skew_heap_empty = tree_empty"
+definition "skew_heap_empty = tree_empty"
 
 lemma skew_heap_empty_to_fun' [hoare_triple]:
   "<$1> skew_heap_empty <skew_heap Leaf>\<^sub>t"

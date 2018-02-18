@@ -151,7 +151,7 @@ setup {* del_prfstep_thm @{thm dyn_array_def} *}
 
 section {* More operations *}
 
-definition array_swap :: "'a::heap dynamic_array \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> unit Heap" where [sep_proc]:
+definition array_swap :: "'a::heap dynamic_array \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> unit Heap" where
   "array_swap d i j = do {
     x \<leftarrow> array_nth d i;
     y \<leftarrow> array_nth d j;
@@ -192,7 +192,6 @@ fun dfilter_aux :: "('a::heap) array \<Rightarrow> 'a dynamic_array \<Rightarrow
      x \<leftarrow> Array.nth a i;
      if P x then push_array x d' else return d'
    }"
-declare dfilter_aux.simps [sep_proc]
 
 lemma dfilter_aux_rule [hoare_triple]:
   "i \<le> length xs \<Longrightarrow>
@@ -201,7 +200,7 @@ lemma dfilter_aux_rule [hoare_triple]:
    <\<lambda>r. a \<mapsto>\<^sub>a xs * dyn_array (filter P (take i xs)) r>\<^sub>t"
 @proof @induct i @qed
 
-definition dfilter_impl :: "'a::heap array \<Rightarrow> ('a \<Rightarrow> bool) \<Rightarrow> 'a dynamic_array Heap" where [sep_proc]:
+definition dfilter_impl :: "'a::heap array \<Rightarrow> ('a \<Rightarrow> bool) \<Rightarrow> 'a dynamic_array Heap" where
   "dfilter_impl a P = do {
      d \<leftarrow> dyn_array_new;
      alen \<leftarrow> Array.len a;

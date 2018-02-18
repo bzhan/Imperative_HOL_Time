@@ -2,7 +2,7 @@ theory Arrays_Impl
   imports SepAuto Asymptotics_1D "../../auto2/HOL/DataStrs/Arrays_Ex"
 begin
 
-definition acopy :: "'a::heap array \<Rightarrow> 'a array Heap" where [sep_proc]:
+definition acopy :: "'a::heap array \<Rightarrow> 'a array Heap" where
   "acopy a = do {
      as \<leftarrow> Array.freeze a;
      Array.of_list as
@@ -29,7 +29,6 @@ fun array_copy :: "'a::heap array \<Rightarrow> 'a array \<Rightarrow> nat \<Rig
       x \<leftarrow> Array.nth a n;
       Array.upd n x b;
       return () }"
-declare array_copy.simps [sep_proc]
 
 lemma array_copy_rule [hoare_triple]:
   "n \<le> length as \<Longrightarrow> n \<le> length bs \<Longrightarrow>
@@ -38,7 +37,7 @@ lemma array_copy_rule [hoare_triple]:
    <\<lambda>_. a \<mapsto>\<^sub>a as * b \<mapsto>\<^sub>a Arrays_Ex.array_copy as bs n>"
 @proof @induct n @qed
 
-definition atake :: "nat \<Rightarrow> 'a::heap array \<Rightarrow> 'a array Heap" where [sep_proc]:
+definition atake :: "nat \<Rightarrow> 'a::heap array \<Rightarrow> 'a array Heap" where
   "atake n xs = do {
      XS \<leftarrow> Array.freeze xs;
      Array.of_list (take n XS)
@@ -63,7 +62,7 @@ lemma atake_time_bound [asym_bound]:
 setup {* del_prfstep_thm @{thm atake_time_def} *}
 
 
-definition adrop :: "nat \<Rightarrow> 'a::heap array \<Rightarrow> 'a array Heap" where [sep_proc]:
+definition adrop :: "nat \<Rightarrow> 'a::heap array \<Rightarrow> 'a array Heap" where
   "adrop n xs = do {
      XS \<leftarrow> Array.freeze xs;
      Array.of_list (drop n XS)
@@ -87,7 +86,7 @@ lemma adrop_time_bound [asym_bound]:
 
 setup {* del_prfstep_thm @{thm adrop_time_def} *}
 
-definition asplit :: "'a::heap array \<Rightarrow> nat \<Rightarrow> ('a array \<times> 'a array) Heap" where [sep_proc]:
+definition asplit :: "'a::heap array \<Rightarrow> nat \<Rightarrow> ('a array \<times> 'a array) Heap" where
   "asplit a n = do {
      b \<leftarrow> atake n a;
      c \<leftarrow> adrop n a;

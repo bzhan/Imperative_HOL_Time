@@ -2,7 +2,7 @@ theory Splay_Tree_Impl
   imports Tree_Impl Amortized_Complexity.Splay_Tree_Analysis Asymptotics_1D
 begin
 
-definition rotate_rr :: "'a::heap ptree \<Rightarrow> 'a ptree Heap" where [sep_proc]:
+definition rotate_rr :: "'a::heap ptree \<Rightarrow> 'a ptree Heap" where
   "rotate_rr p = do {
     p' \<leftarrow> rotate_r p;
     rotate_r p'
@@ -13,7 +13,7 @@ lemma rotate_rr_rule [hoare_triple]:
     rotate_rr p
    <btree \<langle>A1, a', \<langle>A2, a, \<langle>B, b, CD\<rangle>\<rangle>\<rangle>>" by auto2
 
-definition rotate_lr :: "'a::heap ptree \<Rightarrow> 'a ptree Heap" where [sep_proc]:
+definition rotate_lr :: "'a::heap ptree \<Rightarrow> 'a ptree Heap" where
   "rotate_lr p = (case p of
      None \<Rightarrow> raise ''Empty ptree''
    | Some pp \<Rightarrow> do {
@@ -28,7 +28,7 @@ lemma rotate_lr_rule [hoare_triple]:
     rotate_lr p
    <btree \<langle>\<langle>A, a, B1\<rangle>, b', \<langle>B2, b, CD\<rangle>\<rangle>>" by auto2
 
-definition rotate_rl :: "'a::heap ptree \<Rightarrow> 'a ptree Heap" where [sep_proc]:
+definition rotate_rl :: "'a::heap ptree \<Rightarrow> 'a ptree Heap" where
   "rotate_rl p = (case p of
      None \<Rightarrow> raise ''Empty ptree''
    | Some pp \<Rightarrow> do {
@@ -43,7 +43,7 @@ lemma rotate_rl_rule [hoare_triple]:
     rotate_rl p
    <btree \<langle>\<langle>AB, b, C1\<rangle>, c', \<langle>C2, c, D\<rangle>\<rangle>>" by auto2
 
-definition rotate_ll :: "'a::heap ptree \<Rightarrow> 'a ptree Heap" where [sep_proc]:
+definition rotate_ll :: "'a::heap ptree \<Rightarrow> 'a ptree Heap" where
   "rotate_ll p = do {
     p' \<leftarrow> rotate_l p;
     rotate_l p'
@@ -94,12 +94,11 @@ partial_function (heap) splay_impl :: "'a::{heap,linorder} \<Rightarrow> 'a ptre
                rrp' \<leftarrow> splay_impl x (rsub rt);
                rp := Node (lsub rt) (val rt) rrp';
                rotate_ll p })}) })"
-declare splay_impl.simps [sep_proc]
 
-setup {* add_unfolding_rule @{thm splay_code} *}
-setup {* add_rewrite_rule @{thm splay.simps(1)} *}
+declare splay.simps(1) [rewrite]
+declare splay_code [rewrite]
 
-definition splay_time :: "'a::linorder \<Rightarrow> 'a tree \<Rightarrow> nat" where [rewrite]:
+definition splay_time :: "'a::linorder \<Rightarrow> 'a tree \<Rightarrow> nat" where
   "splay_time a t = 15 * t_splay a t"
 
 lemma splay_time_simp:
@@ -119,8 +118,7 @@ lemma splay_time_simp:
           else if a < c then if rl = Leaf then 15 else splay_time a rl + 15
                else if rr = Leaf then 15 else splay_time a rr + 15))"
   by (auto split!: tree.split simp: splay_time_def)
-setup {* add_unfolding_rule @{thm splay_time_simp(2)} *}
-setup {* add_rewrite_rule @{thm splay_time_simp(1)} *}
+declare splay_time_simp [rewrite]
 setup {* add_fun_induct_rule (@{term splay}, @{thm t_splay.induct}) *}
 
 lemma splay_not_Leaf: "splay x \<langle>l, a, r\<rangle> \<noteq> Leaf" by auto
@@ -132,8 +130,6 @@ lemma splay_correct [hoare_triple]:
    <btree (splay x t)>\<^sub>t"
 @proof @fun_induct "splay x t" arbitrary a @with
   @subgoal "(x = x, t = \<langle>lt, b, rt\<rangle>)"
-    @unfold "splay_time x \<langle>lt, b, rt\<rangle>"
-    @unfold "splay x \<langle>lt, b, rt\<rangle>"
     @case "x = b"
     @case "x < b" @with
       @case "lt = Leaf"
@@ -144,7 +140,7 @@ lemma splay_correct [hoare_triple]:
   @endgoal @end
 @qed
 
-definition tree_constr_gen :: "'a::heap ptree \<Rightarrow> 'a \<Rightarrow> 'a ptree \<Rightarrow> 'a ptree Heap" where [sep_proc]:
+definition tree_constr_gen :: "'a::heap ptree \<Rightarrow> 'a \<Rightarrow> 'a ptree \<Rightarrow> 'a ptree Heap" where
   "tree_constr_gen lp v rp = do {
      p \<leftarrow> ref (Node lp v rp);
      return (Some p)
@@ -155,7 +151,7 @@ lemma tree_constr_gen_rule [hoare_triple]:
     tree_constr_gen lp v rp
    <btree \<langle>lt, v, rt\<rangle>>" by auto2
 
-definition insert_impl :: "'a::{heap,linorder} \<Rightarrow> 'a ptree \<Rightarrow> 'a ptree Heap" where [sep_proc]:
+definition insert_impl :: "'a::{heap,linorder} \<Rightarrow> 'a ptree \<Rightarrow> 'a ptree Heap" where
   "insert_impl x p = (case p of
      None \<Rightarrow> tree_constr x
    | _ \<Rightarrow> do {
@@ -209,7 +205,6 @@ partial_function (heap) splay_max_impl :: "'a::{heap,linorder} ptree \<Rightarro
             | Some rrt \<Rightarrow> do {
                 rp := Node (lsub rt) (val rt) rrp';
                 rotate_ll p }}}})"
-declare splay_max_impl.simps [sep_proc]
 
 definition splay_max_time :: "'a::linorder tree \<Rightarrow> nat" where
   "splay_max_time t = 15 * t_splay_max t"
@@ -232,7 +227,7 @@ lemma splay_max_correct [hoare_triple]:
    <btree (splay_max t)>\<^sub>t"
 @proof @fun_induct "splay_max t" arbitrary a @qed
 
-definition delete_impl :: "'a::{heap,linorder} \<Rightarrow> 'a ptree \<Rightarrow> 'a ptree Heap" where [sep_proc]:
+definition delete_impl :: "'a::{heap,linorder} \<Rightarrow> 'a ptree \<Rightarrow> 'a ptree Heap" where
   "delete_impl x p = (case p of
      None \<Rightarrow> return None
    | Some _ \<Rightarrow> do {

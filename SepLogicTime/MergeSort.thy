@@ -13,7 +13,6 @@ fun merge_list :: "('a::linorder) list \<Rightarrow> 'a list \<Rightarrow> 'a li
      else if last xs \<ge> last ys then merge_list (butlast xs) ys @ [last xs]
      else merge_list xs (butlast ys) @ [last ys])"
 setup {* add_rewrite_rule @{thm merge_list.simps} *}
-setup {* add_fun_induct_rule (@{term merge_list}, @{thm merge_list.induct}) *}
 
 lemma merge_list_simps' [rewrite]:
   "merge_list [] ys = ys"
@@ -70,9 +69,6 @@ fun merge_sort_fun :: "'a::linorder list \<Rightarrow> 'a list" where
             bs' = merge_sort_fun bs;
             r = merge_list as' bs'
         in r))"
-setup {* add_unfolding_rule @{thm merge_sort_fun.simps} *}
-setup {* add_fun_induct_rule (@{term merge_sort_fun}, @{thm merge_sort_fun.induct}) *}
- 
 
 lemma sort_length_le1 [rewrite]: "length xs \<le> 1 \<Longrightarrow> sort xs = xs"
 @proof
@@ -110,7 +106,6 @@ by pat_completeness auto
 termination by (relation "Wellfounded.measure (\<lambda>(la, lb, a, b, c). la + lb)") auto
 
 setup {* fold add_rewrite_rule @{thms mergeinto_fun.simps} *}
-setup {* add_fun_induct_rule (@{term mergeinto_fun}, @{thm mergeinto_fun.induct}) *}
 
 lemma mergeinto_fun_length [rewrite]:
   "length (mergeinto_fun la lb a b c) = length c"

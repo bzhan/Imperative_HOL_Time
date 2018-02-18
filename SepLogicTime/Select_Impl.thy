@@ -7,7 +7,7 @@ begin
 
 subsection {* Choose the nth element by insertion sort *}
 
-definition select_small :: "'a::{ord,heap} list \<Rightarrow> nat \<Rightarrow> 'a Heap" where [sep_proc]:
+definition select_small :: "'a::{ord,heap} list \<Rightarrow> nat \<Rightarrow> 'a Heap" where
   "select_small xs n = do {
      p \<leftarrow> os_insert_sort xs;
      return (p ! n)
@@ -37,10 +37,7 @@ function extract_sublist :: "'a::heap array \<Rightarrow> nat \<Rightarrow> nat 
 by auto
 termination apply (relation "Wellfounded.measure (\<lambda>(a, l, r). (r - l))")  by auto
 
-declare extract_sublist.simps [sep_proc]
-setup {* add_fun_induct_rule (@{term extract_sublist}, @{thm extract_sublist.induct}) *}
-
-definition extract_sublist_time :: "nat \<Rightarrow> nat" where [unfold]:
+definition extract_sublist_time :: "nat \<Rightarrow> nat" where
   "extract_sublist_time n = 2 * n + 1"
 
 lemma extract_sublist_time_monotonic [backward]:
@@ -117,7 +114,7 @@ lemma chopmed5_aux_fun_correct [rewrite]:
 
 subsection {* Imperative version of chopmed5 *}
 
-definition medchop :: "'a::{linorder,heap} array \<Rightarrow> nat \<Rightarrow> 'a Heap" where [sep_proc]:
+definition medchop :: "'a::{linorder,heap} array \<Rightarrow> nat \<Rightarrow> 'a Heap" where
   "medchop a n = do {
      l \<leftarrow> Array.len a;
      ls \<leftarrow> extract_sublist a (5*n) (5*n+(min 5 (l-5*n)));
@@ -160,7 +157,6 @@ fun chopmed5_aux :: "'a::{linorder,heap} array \<Rightarrow> 'a array \<Rightarr
      b' \<leftarrow> chopmed5_aux a b n;
      Array.upd n x b'
    }"
-declare chopmed5_aux.simps [sep_proc]
 
 lemma chopmed5_aux_ind [hoare_triple]:
   "length ys = length (chop 5 xs) \<Longrightarrow> i \<le> length ys \<Longrightarrow>
@@ -200,14 +196,14 @@ lemma chopmed5_aux_time_bound [asym_bound]: "(\<lambda>n. chopmed5_aux_time n) \
 
 setup {* del_prfstep_thm @{thm chopmed5_aux_time_def} *}
  
-definition chopmed5 :: "'a::{linorder,heap} array \<Rightarrow> 'a array Heap" where [sep_proc]:
+definition chopmed5 :: "'a::{linorder,heap} array \<Rightarrow> 'a array Heap" where
   "chopmed5 a = do {
      len \<leftarrow> Array.len a;
      b \<leftarrow> Array.new ((len + 4) div 5) undefined;
      chopmed5_aux a b ((len + 4) div 5)
    }"
 
-definition chopmed5_time :: "nat \<Rightarrow> nat" where [unfold]:
+definition chopmed5_time :: "nat \<Rightarrow> nat" where
   "chopmed5_time l = 2 + ((l + 4) div 5) + chopmed5_aux_time l"
 
 lemma chopmed5_runtime_mono: "n \<le> m \<Longrightarrow> chopmed5_time n \<le> chopmed5_time m"
@@ -224,7 +220,7 @@ lemma chopmed5_rule [hoare_triple]:
 lemma chopmed5_time_bound [asym_bound]: "(\<lambda>n. chopmed5_time n) \<in> \<Theta>(\<lambda>n. n)"
   unfolding chopmed5_time_def by auto2
 
-definition filter_impl :: "'a::heap array \<Rightarrow> ('a \<Rightarrow> bool) \<Rightarrow> 'a array Heap" where [sep_proc]:
+definition filter_impl :: "'a::heap array \<Rightarrow> ('a \<Rightarrow> bool) \<Rightarrow> 'a array Heap" where
   "filter_impl a P = do {
      d <- dfilter_impl a P;
      destroy d
@@ -243,7 +239,7 @@ lemma filter_impl_time_bound [asym_bound]: "(\<lambda>n. filter_impl_time n) \<i
 
 setup {* del_prfstep_thm @{thm filter_impl_time_def} *}
 
-definition threeway_partition_impl :: "'a \<Rightarrow> ('a::{heap,linorder}) array \<Rightarrow> ('a array * 'a array * 'a array) Heap" where [sep_proc]:
+definition threeway_partition_impl :: "'a \<Rightarrow> ('a::{heap,linorder}) array \<Rightarrow> ('a array * 'a array * 'a array) Heap" where
  "threeway_partition_impl med a = do {
       ls \<leftarrow> filter_impl a (\<lambda>x. x < med);
       es \<leftarrow> filter_impl a (\<lambda>x. x = med);
@@ -330,7 +326,7 @@ proof(induct m arbitrary: n rule: less_induct)
   qed
 qed
 
-partial_function (heap) select :: "nat \<Rightarrow> ('a::{heap,linorder}) array \<Rightarrow> 'a Heap" where [sep_proc]:
+partial_function (heap) select :: "nat \<Rightarrow> ('a::{heap,linorder}) array \<Rightarrow> 'a Heap" where
   "select k a = do {
      len \<leftarrow> Array.len a;
      if len \<le> 23 then do {
@@ -352,8 +348,6 @@ partial_function (heap) select :: "nat \<Rightarrow> ('a::{heap,linorder}) array
          select (k - ls_len - es_len) gs
      }
    }"
-
-setup {* add_fun_induct_rule (@{term fast_select}, @{thm fast_select.induct}) *}
 
 lemma estim' [backward]:
   "xs \<noteq> [] \<Longrightarrow>
@@ -402,7 +396,6 @@ lemma k_inbounds [backward2]:
          k - length (filter (\<lambda>y. y < x) xs) - length (filter (\<lambda>y. y = x) xs) < length (filter (\<lambda>y. y > x) xs)"
   by (simp add: length_filter_split[of xs x])
 
-setup {* add_unfolding_rule @{thm fast_select.simps} *}
 setup {* fold add_rewrite_rule @{thms select_time.simps} *}
   
 lemma n_div_5_pos [backward]: "(n::nat) > 0 \<Longrightarrow> (n + 4) div 5 > 0" by linarith

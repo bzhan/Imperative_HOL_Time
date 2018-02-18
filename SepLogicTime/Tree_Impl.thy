@@ -51,13 +51,13 @@ type_synonym 'a ptree = "'a node ref option"
 
 section {* Basic operations *}
 
-definition tree_empty :: "'a ptree Heap" where [sep_proc]:
+definition tree_empty :: "'a ptree Heap" where
   "tree_empty = return None"
 
 lemma tree_empty_rule [hoare_triple]:
   "<$1> tree_empty <btree Leaf>" by auto2
 
-definition tree_is_empty :: "'a ptree \<Rightarrow> bool Heap" where [sep_proc]:
+definition tree_is_empty :: "'a ptree \<Rightarrow> bool Heap" where
   "tree_is_empty b = return (b = None)"
 
 lemma tree_is_empty_rule [hoare_triple]:
@@ -65,13 +65,13 @@ lemma tree_is_empty_rule [hoare_triple]:
    tree_is_empty b
    <\<lambda>r. btree t b * \<up>(r \<longleftrightarrow> t = Leaf)>" by auto2
 
-definition tree_constr :: "'a::heap \<Rightarrow> 'a ptree Heap" where [sep_proc]:
+definition tree_constr :: "'a::heap \<Rightarrow> 'a ptree Heap" where
   "tree_constr v = do { p \<leftarrow> ref (Node None v None); return (Some p) }"
 
 lemma tree_constr_rule [hoare_triple]:
   "<$2> tree_constr v <btree \<langle>Leaf, v, Leaf\<rangle>>" by auto2
 
-definition rotate_l :: "'a::heap ptree \<Rightarrow> 'a ptree Heap" where [sep_proc]:
+definition rotate_l :: "'a::heap ptree \<Rightarrow> 'a ptree Heap" where
   "rotate_l p = (case p of
     None \<Rightarrow> raise ''Empty ptree''
   | Some pp \<Rightarrow> do {
@@ -89,7 +89,7 @@ lemma rotate_l_rule [hoare_triple]:
    rotate_l p
    <btree \<langle>\<langle>a, v, b\<rangle>, w, c\<rangle>>" by auto2
 
-definition rotate_r :: "'a::heap ptree \<Rightarrow> 'a ptree Heap" where [sep_proc]:
+definition rotate_r :: "'a::heap ptree \<Rightarrow> 'a ptree Heap" where
   "rotate_r p = (case p of
     None \<Rightarrow> raise ''Empty ptree''
   | Some pp \<Rightarrow> do {

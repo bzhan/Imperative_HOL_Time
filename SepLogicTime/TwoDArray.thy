@@ -29,7 +29,7 @@ datatype 'a matrix = Matrix (nrow: nat) (ncol: nat) (aref: "'a array")
 setup {* add_simple_datatype "matrix" *}
 
 (* m is number of rows, n is number of columns *)
-definition init_matrix :: "nat \<Rightarrow> nat \<Rightarrow> 'a \<Rightarrow> 'a::heap matrix Heap" where [sep_proc]:
+definition init_matrix :: "nat \<Rightarrow> nat \<Rightarrow> 'a \<Rightarrow> 'a::heap matrix Heap" where
   "init_matrix m n x = do {
      a \<leftarrow> Array.new (m * n) x;
      return (Matrix m n a)
@@ -39,13 +39,11 @@ definition init_matrix :: "nat \<Rightarrow> nat \<Rightarrow> 'a \<Rightarrow> 
 fun nth_matrix :: "nat \<Rightarrow> nat \<Rightarrow> 'a::heap matrix \<Rightarrow> 'a Heap" where
   "nth_matrix i j p = (case p of (Matrix m n a) \<Rightarrow>
      Array.nth a (i * n + j))"
-declare nth_matrix.simps [sep_proc]
 
 (* i is row index, j is column index, x is new value *)
 fun upd_matrix :: "nat \<Rightarrow> nat \<Rightarrow> 'a \<Rightarrow> 'a::heap matrix \<Rightarrow> unit Heap" where
   "upd_matrix i j x p = (case p of (Matrix m n a) \<Rightarrow>
      do {Array.upd (i * n + j) x a; return ()})"
-declare upd_matrix.simps [sep_proc]
 
 definition matrix_rel :: "'a list list \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> 'a list \<Rightarrow> bool" where [rewrite]:
   "matrix_rel xs m n as \<longleftrightarrow> (length as = m * n \<and> length xs = m \<and> (\<forall>i<m. length (xs ! i) = n) \<and> (\<forall>i<m. \<forall>j<n. (xs ! i) ! j = as ! (i * n + j)))"
