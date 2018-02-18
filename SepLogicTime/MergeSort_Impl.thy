@@ -103,10 +103,9 @@ lemma mergeSort_to_fun [hoare_triple]:
   "<p \<mapsto>\<^sub>a xs * $(merge_sort_time (length xs))>
    merge_sort_impl p
    <\<lambda>_. p \<mapsto>\<^sub>a merge_sort_fun xs>\<^sub>t"
-@proof @fun_induct "merge_sort_fun xs" arbitrary p @with
-  @subgoal "xs = xs"
-    @unfold "merge_sort_fun xs"
-  @end
+@proof
+  @fun_induct "merge_sort_fun xs" arbitrary p
+  @unfold "merge_sort_fun xs"
 @qed
 
 lemma mergeSort_correct [hoare_triple]:

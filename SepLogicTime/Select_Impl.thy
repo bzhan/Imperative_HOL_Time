@@ -53,11 +53,9 @@ lemma extract_sublist_correct [hoare_triple]:
    <a \<mapsto>\<^sub>a xs * $(extract_sublist_time (r - l))> 
    extract_sublist a l r
    <\<lambda>rs. a \<mapsto>\<^sub>a xs * \<up>(rs = sublist l r xs)>\<^sub>t"
-@proof @fun_induct "extract_sublist a l r" @with
-  @subgoal "(a = a, l = l, r = r)"
-    @case "r \<le> l" @with @unfold "extract_sublist_time (r - l)" @end
-    @have "extract_sublist_time (r - l) \<ge>\<^sub>t extract_sublist_time (r - (l + 1)) + 2"
-  @end
+@proof @fun_induct "extract_sublist a l r"
+  @case "r \<le> l" @with @unfold "extract_sublist_time (r - l)" @end
+  @have "extract_sublist_time (r - l) \<ge>\<^sub>t extract_sublist_time (r - (l + 1)) + 2"
 @qed
 
 subsection {* nth term of chop *}
@@ -405,8 +403,7 @@ lemma select_rule_aux [hoare_triple]:
    <a \<mapsto>\<^sub>a as * $(select_time (length as))>
     select k a
    <\<lambda>r. a \<mapsto>\<^sub>a as * \<up>(r = fast_select k as)>\<^sub>t"
-@proof @fun_induct "fast_select k as" arbitrary a @with
-  @subgoal "(k = k, as = as)"
+@proof @fun_induct "fast_select k as" arbitrary a
   @unfold "fast_select k as"
   @let "n = length as"
   @case "n \<le> 23"
@@ -423,7 +420,7 @@ lemma select_rule_aux [hoare_triple]:
   @case "k \<ge> length ls + length es" @with  (* Recursive call on gs *)
     @have "select_time ((7 * n + 9) div 10 + 6) \<ge>\<^sub>t select_time (length gs)"
     @have "k - length ls - length es < length gs"
-  @end @end
+  @end
 @qed
 
 setup {* add_rewrite_rule @{thm fast_select_correct} *}

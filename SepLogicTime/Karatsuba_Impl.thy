@@ -231,10 +231,9 @@ lemma karatsuba_main_impl_correct [hoare_triple]:
    <a \<mapsto>\<^sub>a as * b \<mapsto>\<^sub>a bs * $(karatsuba_main_impl_time n)>
     karatsuba_main_impl a b n
    <\<lambda>r. a \<mapsto>\<^sub>a as * b \<mapsto>\<^sub>a bs * r \<mapsto>\<^sub>a karatsuba_main_list as bs n>\<^sub>t"
-@proof @fun_induct "karatsuba_main_list as bs n" arbitrary a b @with
-  @subgoal "(as = as, bs = bs, n = n)"
-    @unfold "karatsuba_main_list as bs n"
-  @end
+@proof
+  @fun_induct "karatsuba_main_list as bs n" arbitrary a b
+  @unfold "karatsuba_main_list as bs n"
 @qed
 
 end

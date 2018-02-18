@@ -53,20 +53,18 @@ lemma binarysearch_correct [hoare_triple]:
    <a \<mapsto>\<^sub>a xs * $(binarysearch_time (r - l))>
    binarysearch l r x a
    <\<lambda>res. a \<mapsto>\<^sub>a xs * \<up>(res \<longleftrightarrow> binarysearch_fun l r x xs)>\<^sub>t"
-@proof @fun_induct "binarysearch_fun l r x xs" @with
-  @subgoal "(l = l, r = r, x = x, xs = xs)"
-    @unfold "binarysearch_fun l r x xs"
-    @case "l \<ge> r" @case "l + 1 \<ge> r"
-    @let "m = avg l r"
-    @have "r - l \<ge> 2" @with
-      @have "l + 2 = 2 + l" @have "r \<ge> 2 + l"  (* TODO: simplify *)
-    @end
-    @case "xs ! m < x" @with
-      @have "binarysearch_time ((r - l) div 2) \<ge>\<^sub>t binarysearch_time (r - (m + 1))"
-    @end
-    @case "xs ! m > x" @with
-      @have "binarysearch_time ((r - l) div 2) \<ge>\<^sub>t binarysearch_time (m - l)"
-    @end
+@proof @fun_induct "binarysearch_fun l r x xs"
+  @unfold "binarysearch_fun l r x xs"
+  @case "l \<ge> r" @case "l + 1 \<ge> r"
+  @let "m = avg l r"
+  @have "r - l \<ge> 2" @with
+    @have "l + 2 = 2 + l" @have "r \<ge> 2 + l"  (* TODO: simplify *)
+  @end
+  @case "xs ! m < x" @with
+    @have "binarysearch_time ((r - l) div 2) \<ge>\<^sub>t binarysearch_time (r - (m + 1))"
+  @end
+  @case "xs ! m > x" @with
+    @have "binarysearch_time ((r - l) div 2) \<ge>\<^sub>t binarysearch_time (m - l)"
   @end
 @qed
 

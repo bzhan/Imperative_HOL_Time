@@ -24,22 +24,18 @@ setup {* del_prfstep_thm @{thm merge_list.simps} *}
 
 lemma merge_list_length [rewrite]:
   "length (merge_list xs ys) = length xs + length ys"
-@proof @fun_induct "merge_list xs ys" @with
-  @subgoal "(xs = xs, ys = ys)"
-    @case "xs = []" @case "ys = []"
-    @have "xs = butlast xs @ [last xs]"
-    @have "ys = butlast ys @ [last ys]"
-  @end
+@proof @fun_induct "merge_list xs ys"
+  @case "xs = []" @case "ys = []"
+  @have "xs = butlast xs @ [last xs]"
+  @have "ys = butlast ys @ [last ys]"
 @qed
 
 lemma merge_list_correct_mset [rewrite]:
   "mset (merge_list xs ys) = mset xs + mset ys"
-@proof @fun_induct "merge_list xs ys" @with
-  @subgoal "(xs = xs, ys = ys)"
-    @case "xs = []" @case "ys = []"
-    @have "xs = butlast xs @ [last xs]"
-    @have "ys = butlast ys @ [last ys]"
-  @end
+@proof @fun_induct "merge_list xs ys"
+  @case "xs = []" @case "ys = []"
+  @have "xs = butlast xs @ [last xs]"
+  @have "ys = butlast ys @ [last ys]"
 @qed
 
 lemma merge_list_correct_set [rewrite]:
@@ -50,12 +46,10 @@ lemma merge_list_correct_set [rewrite]:
 
 lemma merge_list_sorted [forward]:
   "sorted xs \<Longrightarrow> sorted ys \<Longrightarrow> sorted (merge_list xs ys)"
-@proof @fun_induct "merge_list xs ys" @with
-  @subgoal "(xs = xs, ys = ys)"
-    @case "xs = []" @case "ys = []"
-    @have "xs = butlast xs @ [last xs]"
-    @have "ys = butlast ys @ [last ys]"
-  @end
+@proof @fun_induct "merge_list xs ys"
+  @case "xs = []" @case "ys = []"
+  @have "xs = butlast xs @ [last xs]"
+  @have "ys = butlast ys @ [last ys]"
 @qed
 
 fun merge_sort_fun :: "'a::linorder list \<Rightarrow> 'a list" where
@@ -77,14 +71,12 @@ lemma sort_length_le1 [rewrite]: "length xs \<le> 1 \<Longrightarrow> sort xs = 
 
 lemma mergesort_fun_correct [rewrite]:
   "merge_sort_fun xs = sort xs"
-@proof @fun_induct "merge_sort_fun xs" @with
-  @subgoal "xs = xs"
-    @unfold "merge_sort_fun xs"
-    @case "length xs \<le> 1"
-    @let "l1 = length xs div 2"
-    @have "mset (take l1 xs) + mset (drop l1 xs) = mset xs" @with
-      @have "take l1 xs @ drop l1 xs = xs"
-    @end
+@proof @fun_induct "merge_sort_fun xs"
+  @unfold "merge_sort_fun xs"
+  @case "length xs \<le> 1"
+  @let "l1 = length xs div 2"
+  @have "mset (take l1 xs) + mset (drop l1 xs) = mset xs" @with
+    @have "take l1 xs @ drop l1 xs = xs"
   @end
 @qed
 
@@ -129,8 +121,7 @@ lemma mergeinto_fun_to_merge_list [rewrite]:
    mergeinto_fun (length a) (length b) a b c = merge_list a b"
 @proof
   @let "res = mergeinto_fun (length a) (length b) a b c"
-  @have "take (length c) res = res"
-  @have "take (length a) a = a" @have "take (length b) b = b"
+  @have "take (length a + length b) res = merge_list (take (length a) a) (take (length b) b)"
 @qed
 
 end

@@ -119,7 +119,7 @@ lemma splay_time_simp:
                else if rr = Leaf then 15 else splay_time a rr + 15))"
   by (auto split!: tree.split simp: splay_time_def)
 declare splay_time_simp [rewrite]
-setup {* add_fun_induct_rule (@{term splay}, @{thm t_splay.induct}) *}
+setup {* add_fun_induct_rule (@{term_pat splay}, @{thm t_splay.induct}) *}
 
 lemma splay_not_Leaf: "splay x \<langle>l, a, r\<rangle> \<noteq> Leaf" by auto
 setup {* add_forward_prfstep_cond @{thm splay_not_Leaf} [with_term "splay ?x \<langle>?l, ?a, ?r\<rangle>"] *}
@@ -215,7 +215,6 @@ lemma splay_max_time_simps [rewrite]:
   "splay_max_time \<langle>l, b, \<langle>rl, c, rr\<rangle>\<rangle> = (if rr=Leaf then 15 else splay_max_time rr + 15)"
   by (simp add: splay_max_time_def)+
 
-setup {* add_fun_induct_rule (@{term splay_max}, @{thm t_splay_max.induct}) *}
 setup {* fold add_rewrite_rule @{thms splay_max.simps} *}
 
 lemma splay_max_not_Leaf: "splay_max \<langle>l, a, r\<rangle> \<noteq> Leaf" by auto

@@ -29,8 +29,7 @@ lemma avg_diff2 [resolve]: "(l::nat) \<le> r \<Longrightarrow> avg l r - l \<le>
 lemma binarysearch_fun_correct [rewrite]:
   "sorted xs \<Longrightarrow> l \<le> r \<Longrightarrow> r \<le> length xs \<Longrightarrow>
    binarysearch_fun l r x xs \<longleftrightarrow> (\<exists>i. l \<le> i \<and> i < r \<and> xs ! i = x)"
-@proof @fun_induct "binarysearch_fun l r x xs" @with
-  @subgoal "(l = l, r = r, x = x, xs = xs)"
+@proof @fun_induct "binarysearch_fun l r x xs"
   @unfold "binarysearch_fun l r x xs"
   @case "l \<ge> r" @case "l + 1 \<ge> r"
   @let "m = avg l r"
@@ -40,7 +39,7 @@ lemma binarysearch_fun_correct [rewrite]:
       @obtain i where "l \<le> i \<and> i < r \<and> xs ! i = x"
       @have "m < length xs"
     @end
-  @end @end
+  @end
 @qed
 
 end
