@@ -228,22 +228,17 @@ lemma "karatsuba_main_impl_time' \<in> \<Theta>(\<lambda>n. real n powr log 2 3)
         karatsuba_lower_bound_def)
 
 setup {* fold add_rewrite_rule @{thms karatsuba_main_impl_time.simps} *}
+setup {* add_fun_induct_rule (@{term karatsuba_main_list}, @{thm karatsuba_main_list.induct}) *}
 
 lemma karatsuba_main_impl_correct [hoare_triple]:
   "length as = n \<Longrightarrow> length bs = n \<Longrightarrow>
    <a \<mapsto>\<^sub>a as * b \<mapsto>\<^sub>a bs * $(karatsuba_main_impl_time n)>
     karatsuba_main_impl a b n
    <\<lambda>r. a \<mapsto>\<^sub>a as * b \<mapsto>\<^sub>a bs * r \<mapsto>\<^sub>a karatsuba_main_list as bs n>\<^sub>t"
-@proof @strong_induct n arbitrary as bs a b
-  @case "n \<le> karatsuba_lower_bound" @with
+@proof @fun_induct "karatsuba_main_list as bs n" arbitrary a b @with
+  @subgoal "(as = as, bs = bs, n = n)"
     @unfold "karatsuba_main_list as bs n"
   @end
-  @have "n - n div 2 \<ge> n div 2"
-  @apply_induct_hyp "n - (n div 2)" "drop (n div 2) as" "drop (n div 2) bs"
-  @apply_induct_hyp "n - (n div 2)" "drop (n div 2) as -\<^sub>l take (n div 2) as"
-                                    "drop (n div 2) bs -\<^sub>l take (n div 2) bs"
-  @apply_induct_hyp "n div 2" "take (n div 2) as" "take (n div 2) bs"
-  @unfold "karatsuba_main_list as bs n"
 @qed
 
 end

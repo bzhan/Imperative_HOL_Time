@@ -9,7 +9,6 @@ sig
       Proof.context -> box_id * (term * term) -> (box_id * thm) list
 
   val time_assn_matcher: assn_matcher
-  val disj_use_vardef_pair_prfstep: proofstep
   val add_time_proofsteps: theory -> theory
 end;
 
@@ -269,87 +268,12 @@ val time_credit_ge_prfstep =
      priority = PRIORITY_URGENT,
      func = TwoStep time_credit_ge_prfstep_fn}
 
-fun swap_disj ct =
-    Conv.every_conv [rewr_obj_eq (obj_sym UtilBase.disj_assoc_th),
-                     Conv.arg1_conv (rewr_obj_eq UtilBase.disj_commute_th),
-                     rewr_obj_eq UtilBase.disj_assoc_th] ct
-
-fun move_outmost u ct =
-    let
-      val t = Thm.term_of ct
-    in
-      if u aconv t then Conv.all_conv ct
-      else if not (is_disj t) then
-        raise Fail "move_outmost: u not found in ct."
-      else let
-        val (a, b) = Util.dest_binop_args t
-      in
-        if u aconv a then Conv.all_conv ct
-        else if is_disj b then
-          Conv.every_conv [Conv.arg_conv (move_outmost u),
-                           swap_disj] ct
-        else if u aconv b then
-          rewr_obj_eq UtilBase.disj_commute_th ct
-        else
-          raise Fail "move_outmost: u not found in ct."
-      end
-    end
-
-fun is_prod t =
-    case t of
-        Const (@{const_name Pair}, _) $ _ $ _ => true
-      | _ => false
-
-fun disj_use_vardef_pair ictxt item =
-    if not (IncrContext.is_single_ictxt ictxt) then []
-    else if Logic_ProofSteps.is_match_prem_only item then []
-    else let
-      val ctxt = IncrContext.context_of ictxt
-      val {id, tname, prop, ...} = item
-      val (disj_head, csubs) = Logic_ProofSteps.dest_tname_of_disj tname
-      val subs = map Thm.term_of csubs
-      val len = length subs
-      fun is_vardef t =
-          is_eq_term t andalso
-          let val t1 = dest_arg1 t in
-            is_prod t1 andalso
-            is_Var (dest_arg1 t1) andalso is_Var (dest_arg t1)
-          end
-    in
-      if len = 1 then [] else
-      case find_first (is_vardef o get_neg) subs of
-          NONE => []
-        | SOME t =>
-          let
-            val (t1, _) = dest_eq (get_neg t)
-            val (v1, v2) = (dest_arg1 t1, dest_arg t1)
-            val cv = Conv.every_conv [
-                  move_outmost t,
-                  rewr_obj_eq (obj_sym UtilBase.imp_conv_disj_th)]
-            val prop' =
-                prop |> apply_to_thm' cv
-                     |> fold Thm.forall_intr (map (Thm.cterm_of ctxt) [v2, v1])
-                     |> apply_to_thm (UtilLogic.to_obj_conv ctxt)
-                     |> apply_to_thm' (rewr_obj_eq @{thm use_vardef_pair})
-          in
-            [ShadowItem {id = id, item = item},
-             Logic_ProofSteps.disj_to_update
-                 false disj_head (id, SOME (len - 1), prop')]
-          end
-    end
-
-val disj_use_vardef_pair_prfstep =
-    {name = "disj_use_vardef_pair",
-     args = [TypedUniv TY_DISJ],
-     priority = PRIORITY_NORM,
-     func = OneStep disj_use_vardef_pair}
-
 val add_time_proofsteps =
     fold add_assn_matcher [
       time_assn_matcher_gen
 
     ] #> fold add_prfstep [
-      time_credit_ge_prfstep, disj_use_vardef_pair_prfstep
+      time_credit_ge_prfstep
     ]
 
 end  (* structure SepTimeSteps *)
