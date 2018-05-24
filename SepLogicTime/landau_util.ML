@@ -3,6 +3,7 @@
 signature LANDAU_UTIL =
 sig
   val bd_of_th: thm -> term
+  val dest_abs_t: term -> term * term
 
   val add_asym_bound: thm -> theory -> theory
   val find_asym_bound: theory -> string -> thm option
@@ -58,9 +59,19 @@ structure Data = Theory_Data (
 fun bd_of_th th =
     th |> prop_of' |> dest_arg
 
+fun dest_abs_t t =
+    case t of
+        Abs (abs as (_, T, _)) =>
+        let
+          val (x, body) = Term.dest_abs abs
+        in
+          (Free (x, T), body)
+        end
+      | _ => raise Fail "dest_abs_t"
+
 fun add_asym_bound th thy =
     let
-      val (_, r_body) = Util.dest_abs_t (th |> prop_of' |> dest_arg1)
+      val (_, r_body) = dest_abs_t (th |> prop_of' |> dest_arg1)
       val body = dest_arg r_body
       val (f, _) = Term.strip_comb body
       val (nm, _) = Term.dest_Const f
@@ -221,7 +232,7 @@ fun norm_poly_log (cvar, ctxt) ct =
 fun norm_poly_log_abs ctxt ct =
     let
       val t = Thm.term_of ct
-      val (_, body) = Util.dest_abs_t t
+      val (_, body) = dest_abs_t t
     in
       if UtilArith.is_plus body then
         Conv.every_conv [rewr_obj_eq (obj_sym @{thm plus_fun_def}),
@@ -348,7 +359,7 @@ fun reduce_poly_log_all ctxt ct =
 
 fun asym_bound_th ctxt t =
     let
-      val (var, r_body) = Util.dest_abs_t t
+      val (var, r_body) = dest_abs_t t
       val body = dest_arg r_body
       val asym_cv = apply_to_thm' o Conv.arg_conv o Conv.arg_conv
     in

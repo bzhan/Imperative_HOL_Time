@@ -48,6 +48,9 @@ proof (induction n arbitrary: m rule: less_induct)
   qed
 qed
 
+lemma avg_diff1 [resolve]: "(l::nat) \<le> r \<Longrightarrow> r - (avg l r + 1) \<le> (r - l) div 2" by simp
+lemma avg_diff2 [resolve]: "(l::nat) \<le> r \<Longrightarrow> avg l r - l \<le> (r - l) div 2" by simp
+
 lemma binarysearch_correct [hoare_triple]:
   "r \<le> length xs \<Longrightarrow> l \<le> r \<Longrightarrow>
    <a \<mapsto>\<^sub>a xs * $(binarysearch_time (r - l))>

@@ -228,8 +228,6 @@ lemma size1_mset_tree [rewrite]:
 lemma skew_heap_empty_rule'' [hoare_triple]:
   "<$1> skew_heap_empty <skew_heap_mset {#}>\<^sub>t" by auto2
 
-setup {* add_property_const @{term heap} *}
-
 setup {* add_forward_prfstep @{thm Skew_Heap.heap_merge} *}
 setup {* add_rewrite_rule @{thm Skew_Heap.mset_merge} *}
 setup {* add_forward_prfstep @{thm Skew_Heap.heap_insert} *}

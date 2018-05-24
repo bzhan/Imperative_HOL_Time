@@ -50,7 +50,6 @@ definition proper :: "assn_raw \<Rightarrow> bool" where [rewrite]:
   "proper P = (
     (\<forall>h as n. aseval P (pHeap h as n) \<longrightarrow> in_range (h,as)) \<and>
     (\<forall>h h' as n. aseval P (pHeap h as n) \<longrightarrow> relH as h h' \<longrightarrow> in_range (h',as) \<longrightarrow> aseval P (pHeap h' as n)))"
-setup {* add_property_const @{term proper} *}
 
 fun in_range_assn :: "pheap \<Rightarrow> bool" where
   "in_range_assn (pHeap h as n) \<longleftrightarrow> (\<forall>a\<in>as. a < lim h)"

@@ -72,7 +72,7 @@ fun norm_poly_log2_abs ctxt ct =
       case t of
           Abs _ =>
           let
-            val (_, body) = Util.dest_abs_t t
+            val (_, body) = LandauUtil.dest_abs_t t
           in
             if UtilArith.is_plus body then
               Conv.every_conv [rewr_obj_eq (obj_sym @{thm plus_fun_def}),
@@ -278,7 +278,7 @@ fun asym_bound2_th ctxt t =
     let
       val thy = Proof_Context.theory_of ctxt
 
-      val (var, r_body) = Util.dest_abs_t t
+      val (var, r_body) = LandauUtil.dest_abs_t t
       val body' = dest_arg r_body
     in
       if UtilArith.is_plus body' then
