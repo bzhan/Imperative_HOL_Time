@@ -19,6 +19,14 @@ definition relH :: "addr set \<Rightarrow> heap \<Rightarrow> heap \<Rightarrow>
   "relH as h h' = (in_range (h, as) \<and> in_range (h', as) \<and>
      (\<forall>t. \<forall>a\<in>as. refs h t a = refs h' t a \<and> arrays h t a = arrays h' t a))"
 
+lemma relH_D [forward]:
+  "relH as h h' \<Longrightarrow> in_range (h, as) \<and> in_range (h', as)" by auto2
+
+lemma relH_D2 [rewrite]:
+  "relH as h h' \<Longrightarrow> a \<in> as \<Longrightarrow> refs h t a = refs h' t a"
+  "relH as h h' \<Longrightarrow> a \<in> as \<Longrightarrow> arrays h t a = arrays h' t a" by auto2+
+setup {* del_prfstep_thm_eqforward @{thm relH_def} *}
+
 lemma relH_dist_union [forward]:
   "relH (as \<union> as') h h' \<Longrightarrow> relH as h h' \<and> relH as' h h'" by auto2
 
@@ -363,6 +371,12 @@ definition hoare_triple :: "assn \<Rightarrow> 'a Heap \<Rightarrow> ('a \<Right
     (\<sigma> \<noteq> None \<and> pHeap (the \<sigma>) (new_addrs h as (the \<sigma>)) (n-t) \<Turnstile> Q r \<and> n\<ge>t \<and> relH {a . a < lim h \<and> a \<notin> as} h (the \<sigma>) \<and>
      lim h \<le> lim (the \<sigma>)))"
 
+lemma hoare_tripleD [forward]:
+  "<P> c <Q> \<Longrightarrow> run c (Some h) \<sigma> r t \<Longrightarrow> \<forall>as n. pHeap h as n \<Turnstile> P \<longrightarrow>
+    (\<sigma> \<noteq> None \<and> pHeap (the \<sigma>) (new_addrs h as (the \<sigma>)) (n-t) \<Turnstile> Q r \<and> n\<ge>t \<and> relH {a . a < lim h \<and> a \<notin> as} h (the \<sigma>) \<and>
+     lim h \<le> lim (the \<sigma>))" by auto2
+setup {* del_prfstep_thm_eqforward @{thm hoare_triple_def} *}
+
 abbreviation hoare_triple' :: "assn \<Rightarrow> 'r Heap \<Rightarrow> ('r \<Rightarrow> assn) \<Rightarrow> bool" ("<_> _ <_>\<^sub>t") where
   "<P> c <Q>\<^sub>t \<equiv> <P> c <\<lambda>r. Q r * true>"
 
@@ -398,14 +412,8 @@ lemma bind_rule:
     (* Second step from h' to h'' *)
     @obtain h'' where "\<sigma> = Some h''"
     @let "as'' = new_addrs h' as' h''"
-    @have "pHeap h'' as'' (n-t) \<Turnstile> R r \<and> n\<ge>t" @with
-      @have "(n-t')-(t-t') = n-t"
-    @end
+    @have "pHeap h'' as'' (n-t) \<Turnstile> R r \<and> n\<ge>t"
     @have "as'' = new_addrs h as h''"
-    @have "relH {a . a < lim h \<and> a \<notin> as} h h''" @with
-      @have "relH {a . a < lim h \<and> a \<notin> as} h h'"
-      @have "relH {a . a < lim h' \<and> a \<notin> as'} h' h''"
-    @end
   @end
 @qed
 
@@ -550,9 +558,6 @@ abbreviation (input) ex_assn_ascii :: "('a \<Rightarrow> assn) \<Rightarrow> ass
 
 abbreviation (input) models_ascii :: "pheap \<Rightarrow> assn \<Rightarrow> bool" (infix "|=" 50)
   where "h |= P \<equiv> h \<Turnstile> P"
-
-lemma use_vardef_pair:
-  "(\<forall>a b. (a, b) = x \<longrightarrow> P a b) \<longleftrightarrow> P (fst x) (snd x)" by auto
 
 ML_file "../../auto2/HOL/SepLogic/sep_util.ML"
 ML_file "rings.ML"

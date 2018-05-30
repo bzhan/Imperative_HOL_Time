@@ -20,6 +20,15 @@ open SepTimeUtil
 
 val plus_ac_info = Nat_Util.plus_ac_on_typ @{theory} natT
 
+(* Given natural numbers m and n, return the theorem m + n = p. *)
+fun plus_eq_th m n =
+    let
+      val expr = Const (@{const_name plus}, natT --> natT --> natT)
+                       $ mk_nat m $ mk_nat n
+    in
+      expr |> Thm.cterm_of @{context} |> Nat_Util.nat_fold_conv
+    end
+
 (* Assumes n is a single term. *)
 fun split_nat_one_term ctxt (id, (m, n)) =
     let
@@ -49,7 +58,7 @@ fun split_nat_one_term ctxt (id, (m, n)) =
             val (_, coeff') = NatRing.dest_monomial m'
 
             (* coeff' == coeff + (coeff' - coeff) *)
-            val th = meta_sym (Nat_Util.plus_eq_th coeff (coeff' - coeff))
+            val th = meta_sym (plus_eq_th coeff (coeff' - coeff))
 
             (* m' = n + p *)
             val th' =
