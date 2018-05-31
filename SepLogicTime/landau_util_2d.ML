@@ -387,7 +387,6 @@ val asym_bound2_prfstep =
         "asym_bound2"
         [WithItem (TY_PROP,
                    @{term_pat "~((?f::nat*nat=>real) : \<Theta>\<^sub>2(?g))"})]
-        PRIORITY_RESOLVE
         (fn ((id, _), ths) => fn _ => fn ctxt =>
             let
               val th = the_single ths

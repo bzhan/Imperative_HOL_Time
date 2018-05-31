@@ -476,7 +476,6 @@ val asym_bound_prfstep =
     ProofStep.prfstep_custom
         "asym_bound"
         [WithItem (TY_PROP, @{term_pat "~((?f::nat=>real) : \<Theta>(?g))"})]
-        PRIORITY_RESOLVE
         (fn ((id, _), ths) => fn _ => fn ctxt =>
             let
               val th = the_single ths

@@ -570,6 +570,8 @@ ML_file "../../auto2/HOL/SepLogic/sep_steps_test.ML"
 ML_file "sep_time_steps.ML"
 ML_file "sep_time_test.ML"
 
+setup {* SepLogic.add_sep_logic_proofsteps *}
+
 attribute_setup forward_ent = {* setup_attrib add_forward_ent_prfstep *}
 attribute_setup rewrite_ent = {* setup_attrib add_rewrite_ent_rule *}
 attribute_setup hoare_triple = {* setup_attrib add_hoare_triple_prfstep *}

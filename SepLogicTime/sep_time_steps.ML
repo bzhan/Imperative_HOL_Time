@@ -220,7 +220,7 @@ fun time_assn_matcher_gen ctxt (pat, ct) (id, inst) =
 
 val apply_to_precond = apply_to_thm' o Conv.arg_conv o Util.argn_conv 0
 
-fun time_credit_ge_prfstep_fn ictxt item1 item2 =
+fun time_credit_ge_prfstep_fn ctxt item1 item2 =
     if SepLogic.is_implies_item item1 then [] else
     let
       val {id = id1, prop, ...} = item1
@@ -231,7 +231,6 @@ fun time_credit_ge_prfstep_fn ictxt item1 item2 =
       if is_none opt_P' then []
       else let
         val P' = the opt_P'
-        val ctxt = IncrContext.context_of ictxt
 
         val {id = id2, prop = prop2, ...} = item2
         val (a, _) = prop2 |> prop_of' |> Util.dest_binop_args
@@ -239,7 +238,7 @@ fun time_credit_ge_prfstep_fn ictxt item1 item2 =
 
         val b = dest_time_credit P'
         val split_res = (split_nat_gen ctxt (id, (b, a)))
-                            |> IncrContext.replace_id_for_type' ictxt
+                            |> filter (BoxID.has_incr_id o fst)
 
         fun process_split_nat (id', eq_th) =
             (* eq_th is b == a + p. P is $b or R * $b. prop2 is a >=_t a'. *)
@@ -274,7 +273,6 @@ val time_credit_ge_prfstep =
     {name = "sep_time.time_credit_ge",
      args = [TypedUniv SepLogic.TY_CODE_POS,
              TypedMatch (TY_PROP, @{term_pat "time_credit_ge ?b ?a"})],
-     priority = PRIORITY_URGENT,
      func = TwoStep time_credit_ge_prfstep_fn}
 
 val add_time_proofsteps =
