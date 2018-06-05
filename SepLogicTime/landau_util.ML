@@ -491,7 +491,9 @@ fun asym_bound_th ctxt t =
         end
     end
 
-(* Use asym_bound_th to solve goal. *)
+(* Derive a theorem of the form t : \Theta(goal). This works by first finding
+   the asymptotic bound of t using asym_bound_th, then compare that bound to
+   the normalized form of goal. *)
 fun asym_bound_gen ctxt (ct, goal) =
     let
       val eq_th = Conv.abs_conv (to_real_t o snd) ctxt ct

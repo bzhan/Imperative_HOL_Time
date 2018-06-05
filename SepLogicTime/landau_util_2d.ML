@@ -33,6 +33,7 @@ struct
 
 open LandauUtil
 
+(* Simplify every argument of polylog2 a b c d *)
 val fold_polylog2_args =
     Conv.every_conv (
       map (fn i => Util.argn_conv i Nat_Util.nat_fold_conv) [0, 1, 2, 3])
@@ -40,6 +41,19 @@ val fold_polylog2_args =
 val fst_nat_t = @{term "fst::nat*nat=>nat"}
 val snd_nat_t = @{term "snd::nat*nat=>nat"}
 
+(* Normalization of a term into polylog2 form. Here, the two arguments are
+   fst(var) and snd(var).
+
+   Currently, can handle the following cases:
+
+   - Only fst(var) is present in the expression.
+
+   - Only snd(var) is present in the expression.
+
+   - Product of two valid expressions.
+
+   - Expressions of the form real(m*n), where real(m) and real(n) are valid.
+ *)
 fun norm_poly_log2 (cvar, ctxt) ct =
     let
       val var = Thm.term_of cvar
@@ -65,6 +79,8 @@ fun norm_poly_log2 (cvar, ctxt) ct =
         raise Fail "norm_poly_log2"
     end
 
+(* Normalize a term of the form %(x,y). f(x,y) into polylog2 form. This can
+   also handle a sum of functions. *)
 fun norm_poly_log2_abs ctxt ct =
     let
       val t = Thm.term_of ct
@@ -87,6 +103,7 @@ fun norm_poly_log2_abs ctxt ct =
         | _ => Conv.all_conv ct
     end
 
+(* Given t of the form polylog a b c d, return the four numbers a b c and d. *)
 fun analyze_poly_log2 t =
     let
       val (_, args) = Term.strip_comb t
@@ -95,6 +112,7 @@ fun analyze_poly_log2 t =
        UtilArith.dest_numc (nth args 2), UtilArith.dest_numc (nth args 3))
     end
 
+(* Compare two polylog2 expressions *)
 fun compare_poly_log2 ctxt (t1, t2) =
     let
       val (a1, b1, c1, d1) = analyze_poly_log2 t1
@@ -196,6 +214,9 @@ val bigtheta2 = @{term "\<Theta>\<^sub>2(b::nat*nat=>real)"}
 
 val plus_ac_fn = Nat_Util.plus_ac_on_typ @{theory} @{typ "nat*nat=>real"}
 
+(* Given ct of the form \Theta(a + b), and cv1, cv2 used for rewriting
+   \Theta(a) and \Theta(b), rewrite using cv1 and cv2 and combine the
+   results using theorem Theta_plus'. *)
 fun theta2_binop_cv' ctxt (cv1, cv2) ct =
     let
       val (ct1, ct2) = ct |> Thm.term_of |> dest_arg
@@ -244,6 +265,8 @@ fun reduce_poly_log2_plus1 ctxt ct =
               reduce_poly_log2_plus1 ctxt] ct
     end
 
+(* Reduce ct of the form Theta_2(f_1 + ... + f_n + (g_1 + ... + g_n)), by
+   calling the previous function on each of g_i. *)
 fun reduce_poly_log2_plusn ctxt ct =
     let
       val arg = ct |> Thm.term_of |> dest_arg
@@ -259,6 +282,7 @@ fun reduce_poly_log2_plusn ctxt ct =
           reduce_poly_log2_plusn ctxt] ct
     end
 
+(* Function for reducing a sum \Theta_2(a_1 + ... + a_n). *)
 fun reduce_poly_log2_sum ctxt ct =
     let
       val arg = ct |> Thm.term_of |> dest_arg
@@ -270,10 +294,16 @@ fun reduce_poly_log2_sum ctxt ct =
         Conv.all_conv ct
     end
 
+(* Normalization function of \Theta_2 targets. Converts a term of form
+   \Theta(f_1(x,y) + ... + f_n(x,y)) by first normalizing each of f_i to
+   polylog2, then add the terms. *)
 fun reduce_poly_log2_all ctxt ct =
     Conv.every_conv [Conv.arg_conv (norm_poly_log2_abs ctxt),
                      reduce_poly_log2_sum ctxt] ct
 
+(* Main function for deriving the asymptotic bound of a function t. Returns
+   a theorem of the form t : \Theta_2(f_1 + ... + f_n), where each f_i is in
+   polylog2 form. *)
 fun asym_bound2_th ctxt t =
     let
       val thy = Proof_Context.theory_of ctxt
@@ -371,6 +401,9 @@ fun asym_bound2_th ctxt t =
         end
     end
 
+(* Derive a theorem of the form t : \Theta_2(goal). This works by first finding
+   the asymptotic bound of t using asym_bound2_th, then compare that bound to
+   the normalized form of goal. *)
 fun asym_bound2_gen ctxt (ct, goal) =
     let
       val th = asym_bound2_th ctxt (Thm.term_of ct)
