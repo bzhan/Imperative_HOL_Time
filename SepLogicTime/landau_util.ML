@@ -1,4 +1,8 @@
-(* Utility for landau symbols *)
+(* Utility for landau symbols
+
+   We can handle asymptotic bounds of the form polylog m n, which is
+   the normalized form of %x. x^m (log x)^n.
+ *)
 
 signature LANDAU_UTIL =
 sig

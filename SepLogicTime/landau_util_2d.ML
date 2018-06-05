@@ -1,4 +1,9 @@
-(* Utility for landau symbols in two variables *)
+(* Utility for landau symbols in two variables.
+
+   In two variables, the normal form is polylog2 a b c d, which is the
+   normalized form of %(x,y). x^a (log x)^b y^c (log y)^d, and the sum
+   of these functions.
+ *)
 
 signature LANDAU_UTIL_2D =
 sig
@@ -312,7 +317,9 @@ fun asym_bound2_th ctxt t =
       val body' = dest_arg r_body
     in
       if UtilArith.is_plus body' then
-        (* Plus case *)
+        (* Plus case: find asymptotic bound of the two sides, then add
+           them together.
+         *)
         let
           val (a, b) = Util.dest_binop_args body'
           val t1 = (Term.abstract_over (var, nat_to_real $ a))
@@ -329,7 +336,9 @@ fun asym_bound2_th ctxt t =
               |> eta_contract
         end
       else if UtilArith.is_times body' then
-        (* Times case *)
+        (* Times case: currently only handle the case where both sides
+           are one polylog2.
+         *)
         let
           val (a, b) = Util.dest_binop_args body'
           val t1 = (Term.abstract_over (var, nat_to_real $ a))
