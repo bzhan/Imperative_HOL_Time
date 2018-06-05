@@ -23,8 +23,9 @@ sig
   val is_prod: term -> bool
   val bigtheta2: term
   val reduce_poly_log2_plus1: Proof.context -> conv
-  val reduce_poly_log2_plusn: Proof.context -> conv
   val reduce_poly_log2_sum: Proof.context -> conv
+  val reduce_poly_log2_times1: Proof.context -> conv
+  val reduce_poly_log2_times: Proof.context -> conv
   val reduce_poly_log2_all: Proof.context -> conv
   val asym_bound2_th: Proof.context -> term -> thm
   val asym_bound2_gen: Proof.context -> cterm * term -> thm
@@ -177,6 +178,12 @@ fun event_nonneg2_th ctxt t =
       in
         [th1, th2] MRS @{thm event_nonneg_add'}
       end
+    else if UtilArith.is_times t then
+      let
+        val (th1, th2) = apply2 (event_nonneg2_th ctxt) (Util.dest_binop_args t)
+      in
+        [th1, th2] MRS @{thm event_nonneg_mult'}
+      end
     else
       (apply_thm ctxt ([], event_nonneg2_t $ t) @{thm event_nonneg_polylog2})
           |> eta_contract
@@ -246,7 +253,8 @@ fun theta2_arg1_cv ctxt cv ct = theta2_binop_cv' ctxt (cv, Conv.all_conv) ct
 fun theta2_arg_cv ctxt cv ct = theta2_binop_cv' ctxt (Conv.all_conv, cv) ct
 
 (* Given ct of form Theta_2 (f_1 + ... + f_n + g), compare g to each
-   of f_i, reduce if possible.
+   of f_i, reduce if possible. Assume f_1 + ... + f_n is in normal
+   form.
  *)
 fun reduce_poly_log2_plus1 ctxt ct =
     let
@@ -270,9 +278,11 @@ fun reduce_poly_log2_plus1 ctxt ct =
               reduce_poly_log2_plus1 ctxt] ct
     end
 
-(* Reduce ct of the form Theta_2(f_1 + ... + f_n + (g_1 + ... + g_n)), by
-   calling the previous function on each of g_i. *)
-fun reduce_poly_log2_plusn ctxt ct =
+(* Reduce ct of the form Theta_2((f_1 + ... + f_n) + (g_1 + ... +
+   g_n)), by calling the previous function on each of g_i. Assume f_1
+   + ... + f_n and g_1 + ... + g_n are in normal forms.
+ *)
+fun reduce_poly_log2_sum ctxt ct =
     let
       val arg = ct |> Thm.term_of |> dest_arg
       val (_, gs) = arg |> Util.dest_binop_args
@@ -284,27 +294,60 @@ fun reduce_poly_log2_plusn ctxt ct =
         Conv.every_conv [
           Conv.arg_conv (ACUtil.assoc_sym_cv plus_ac_fn),
           theta2_arg1_cv ctxt (reduce_poly_log2_plus1 ctxt),
-          reduce_poly_log2_plusn ctxt] ct
+          reduce_poly_log2_sum ctxt] ct
     end
 
-(* Function for reducing a sum \Theta_2(a_1 + ... + a_n). *)
-fun reduce_poly_log2_sum ctxt ct =
+(* Function for reducing a term of the form (f_1 + f_2 + .. + f_n) *
+   g. Here we assume that f_1 + ... + f_n is normalized.
+ *)
+fun reduce_poly_log2_times1 ctxt ct =
+    let
+      val (a, _) = ct |> Thm.term_of |> dest_arg |> Util.dest_binop_args
+    in
+      if UtilArith.is_plus a then
+        Conv.every_conv [
+          Conv.arg_conv (rewr_obj_eq @{thm algebra_simps(17)}),
+          theta2_arg1_cv ctxt (reduce_poly_log2_times1 ctxt),
+          Conv.arg_conv (Conv.arg_conv (rewr_obj_eq @{thm landau_norms2'})),
+          Conv.arg_conv (Conv.arg_conv fold_polylog2_args),
+          reduce_poly_log2_plus1 ctxt] ct
+      else
+        Conv.every_conv [
+          Conv.arg_conv (rewr_obj_eq @{thm landau_norms2'}),
+          Conv.arg_conv fold_polylog2_args] ct
+    end
+
+(* Function for reducing a term of the form (f_1 + ... + f_n) * (g_1 +
+   ... + g_n).
+ *)
+fun reduce_poly_log2_times ctxt ct =
+    let
+      val (_, b) = ct |> Thm.term_of |> dest_arg |> Util.dest_binop_args
+    in
+      if UtilArith.is_plus b then
+        Conv.every_conv [
+          Conv.arg_conv (rewr_obj_eq @{thm algebra_simps(18)}),
+          theta2_arg1_cv ctxt (reduce_poly_log2_times ctxt),
+          theta2_arg_cv ctxt (reduce_poly_log2_times1 ctxt),
+          reduce_poly_log2_sum ctxt] ct
+      else
+        reduce_poly_log2_times1 ctxt ct
+    end
+
+(* General normalization function. *)
+fun reduce_poly_log2_all ctxt ct =
     let
       val arg = ct |> Thm.term_of |> dest_arg
     in
       if UtilArith.is_plus arg then
-        Conv.every_conv [theta2_binop_cv ctxt (reduce_poly_log2_sum ctxt),
-                         reduce_poly_log2_plusn ctxt] ct
+        Conv.every_conv [theta2_binop_cv ctxt (reduce_poly_log2_all ctxt),
+                         reduce_poly_log2_sum ctxt] ct
+      else if UtilArith.is_times arg then
+        Conv.every_conv [theta2_binop_cv ctxt (reduce_poly_log2_all ctxt),
+                         reduce_poly_log2_times ctxt] ct
       else
         Conv.all_conv ct
     end
-
-(* Normalization function of \Theta_2 targets. Converts a term of form
-   \Theta(f_1(x,y) + ... + f_n(x,y)) by first normalizing each of f_i to
-   polylog2, then add the terms. *)
-fun reduce_poly_log2_all ctxt ct =
-    Conv.every_conv [Conv.arg_conv (norm_poly_log2_abs ctxt),
-                     reduce_poly_log2_sum ctxt] ct
 
 (* Main function for deriving the asymptotic bound of a function t. Returns
    a theorem of the form t : \Theta_2(f_1 + ... + f_n), where each f_i is in
@@ -329,10 +372,10 @@ fun asym_bound2_th ctxt t =
           val (th1, th2) = apply2 (asym_bound2_th ctxt) (t1, t2)
           val g1 = dest_arg (bd_of_th th1)
           val g2 = dest_arg (bd_of_th th2)
+          val (nn1, nn2) = apply2 (event_nonneg2_th ctxt) (g1, g2)
         in
-          ([event_nonneg2_th ctxt g1, event_nonneg2_th ctxt g2,
-            th1, th2] MRS @{thm bigtheta_add})
-              |> apply_to_thm' (Conv.arg_conv (reduce_poly_log2_all ctxt))
+          ([nn1, nn2, th1, th2] MRS @{thm bigtheta_add})
+              |> apply_to_thm' (Conv.arg_conv (reduce_poly_log2_sum ctxt))
               |> eta_contract
         end
       else if UtilArith.is_times body' then
@@ -348,8 +391,8 @@ fun asym_bound2_th ctxt t =
           val (th1, th2) = apply2 (asym_bound2_th ctxt) (t1, t2)
         in
           ([th1, th2] MRS @{thm bigtheta_mult})
-              |> apply_to_thm' (Conv.arg_conv (Conv.arg_conv (rewr_obj_eq @{thm landau_norms2'})))
-              |> apply_to_thm' (Conv.arg_conv (Conv.arg_conv fold_polylog2_args))
+              |> apply_to_thm' (Conv.arg_conv (reduce_poly_log2_times ctxt))
+              |> eta_contract
         end
       else if not (Util.is_subterm (snd_nat_t $ var) body') then
         (* Only n appears *)
@@ -416,7 +459,9 @@ fun asym_bound2_th ctxt t =
 fun asym_bound2_gen ctxt (ct, goal) =
     let
       val th = asym_bound2_th ctxt (Thm.term_of ct)
-      val goal_th = reduce_poly_log2_all ctxt (Thm.cterm_of ctxt goal)
+      val cv = Conv.every_conv [Conv.arg_conv (norm_poly_log2_abs ctxt),
+                                reduce_poly_log2_all ctxt]
+      val goal_th = cv (Thm.cterm_of ctxt goal)
     in
       if Util.rhs_of goal_th aconv bd_of_th th then
         th |> apply_to_thm' (Conv.arg_conv (Conv.rewr_conv (meta_sym goal_th)))

@@ -56,13 +56,11 @@ lemma "(\<lambda>(n,m). 1 + f n + flog m + f_sum (n+1, m+1)) \<in> \<Theta>\<^su
 
 lemma "(\<lambda>(n,m::nat). (1 + f n) * m * flog m) \<in> \<Theta>\<^sub>2(\<lambda>(n::nat,m::nat). n * m * ln m)" by auto2
 
-(* Multiplication, where one side is the sum of several polylog2s. *)
-lemma "(\<lambda>(n,m::nat). (f m + f n) * m) \<in> \<Theta>\<^sub>2(\<lambda>(n::nat,m::nat). m^2 + n * m)" oops
+lemma "(\<lambda>(n,m::nat). (f m + f n) * m) \<in> \<Theta>\<^sub>2(\<lambda>(n::nat,m::nat). real (m^2) + real n * real m)" by auto2
 
 lemma "(\<lambda>x. real ((fst x * fst x + fst x) * snd x)) \<in> \<Theta>\<^sub>2(\<lambda>(n,m::nat). real (n^2) * real m)" by auto2
 
-(* Preprocess to %x. f (fst x) (snd x) form. *)
-lemma "(\<lambda>(n,m). real ((n * n + n) * m)) \<in> \<Theta>\<^sub>2(\<lambda>(n,m::nat). real (n^2) * real m)" oops
+lemma "(\<lambda>(n,m). real ((n * n + n) * m)) \<in> \<Theta>\<^sub>2(\<lambda>(n,m::nat). real (n^2) * real m)" by auto2
 
 ML_file "landau_util_test.ML"
 
