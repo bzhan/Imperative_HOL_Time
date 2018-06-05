@@ -631,6 +631,10 @@ lemma landau_norms2:
          landau_norms(6) polylog2_def polylog_def prod.collapse prod.simps(2))
   by (smt landau_norms(6) polylog2_def semiring_normalization_rules(13) split_beta)
 
+lemma landau_norms2':
+  "polylog2 a1 b1 a2 b2 * polylog2 a3 b3 a4 b4 = polylog2 (a1 + a3) (b1 + b3) (a2 + a4) (b2 + b4)"
+  using landau_norms2(3) by auto
+
 lemma mult_Theta_bivariate':
   assumes "(\<lambda>x. real (f1 x)) \<in> \<Theta>(polylog a b)"
     "(\<lambda>x. real (f2 x)) \<in> \<Theta>(polylog c d)"

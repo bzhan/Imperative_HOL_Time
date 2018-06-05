@@ -835,8 +835,8 @@ lemma bigtheta_linear:
   unfolding polylog_def by simp
 
 lemma bigtheta_mult:
-  "(\<lambda>x. real (f1 x)) \<in> \<Theta>(g1) \<Longrightarrow> (\<lambda>x. real (f2 x)) \<in> \<Theta>(g2) \<Longrightarrow>
-   (\<lambda>x. real (f1 x * f2 x)) \<in> \<Theta>(g1 * g2)"
+  "(\<lambda>x. real (f1 x)) \<in> \<Theta>[F](g1) \<Longrightarrow> (\<lambda>x. real (f2 x)) \<in> \<Theta>[F](g2) \<Longrightarrow>
+   (\<lambda>x. real (f1 x * f2 x)) \<in> \<Theta>[F](g1 * g2)"
   unfolding times_fun_def
   apply (subst bigtheta_mult_eq_set_mult)
   unfolding set_mult_def by auto

@@ -331,16 +331,16 @@ fun asym_bound2_th ctxt t =
       else if UtilArith.is_times body' then
         (* Times case *)
         let
-          val (arg1, arg2) = Util.dest_binop_args body'
-          val t1 = (Term.abstract_over (fst_nat_t $ var, nat_to_real $ arg1))
+          val (a, b) = Util.dest_binop_args body'
+          val t1 = (Term.abstract_over (var, nat_to_real $ a))
                        |> Term.lambda var
-          val t2 = (Term.abstract_over (snd_nat_t $ var, nat_to_real $ arg2))
+          val t2 = (Term.abstract_over (var, nat_to_real $ b))
                        |> Term.lambda var
-          val th1 = asym_bound_th ctxt t1
-          val th2 = asym_bound_th ctxt t2
+          val (th1, th2) = apply2 (asym_bound2_th ctxt) (t1, t2)
         in
-          ([th1, th2] MRS @{thm mult_Theta_bivariate'})
-              |> apply_to_thm' (Conv.arg_conv Thm.eta_conversion)
+          ([th1, th2] MRS @{thm bigtheta_mult})
+              |> apply_to_thm' (Conv.arg_conv (Conv.arg_conv (rewr_obj_eq @{thm landau_norms2'})))
+              |> apply_to_thm' (Conv.arg_conv (Conv.arg_conv fold_polylog2_args))
         end
       else if not (Util.is_subterm (snd_nat_t $ var) body') then
         (* Only n appears *)

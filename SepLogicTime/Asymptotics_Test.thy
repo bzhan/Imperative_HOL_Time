@@ -40,6 +40,10 @@ lemma "(\<lambda>(n,m). f (5*n)) \<in> \<Theta>\<^sub>2(\<lambda>(n,m::nat). rea
 
 lemma "(\<lambda>x. real (fst x * snd x + 2)) \<in> \<Theta>\<^sub>2(\<lambda>(n,m). real (n * m))" by auto2
 
+lemma "(\<lambda>x. real (fst x * fst x + 2)) \<in> \<Theta>\<^sub>2(\<lambda>(n,m::nat). real n * real n)" by auto2
+
+lemma "(\<lambda>x. real (fst x * fst x + snd x)) \<in> \<Theta>\<^sub>2(\<lambda>(n,m::nat). real n * real n + real m)" by auto2
+
 lemma "(\<lambda>(n,m). f_prod (n+1,m+1) + 1) \<in> \<Theta>\<^sub>2(\<lambda>(n,m). real n * real m)" by auto2
 
 lemma "(\<lambda>(n,m). f_sum (n+1,m+1)) \<in> \<Theta>\<^sub>2(\<lambda>(n,m). real n + real m)" by auto2
