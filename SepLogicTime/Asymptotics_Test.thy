@@ -68,6 +68,12 @@ lemma "(\<lambda>x. real ((fst x * fst x + fst x) * snd x)) \<in> \<Theta>\<^sub
 
 lemma "(\<lambda>(n,m). real ((n * n + n) * m)) \<in> \<Theta>\<^sub>2(\<lambda>(n,m::nat). real (n^2) * real m)" by auto2
 
+lemma "(\<lambda>(n,m). real (f m + n)) \<in> \<Theta>\<^sub>2(\<lambda>(n,m::nat). real (m + n))" by auto2
+
+lemma "(\<lambda>(n,m). real (f m * m + n)) \<in> \<Theta>\<^sub>2(\<lambda>(n,m::nat). real (m^2 + n))" by auto2
+
+lemma "(\<lambda>(n,m). real (f m * m + m * n + n * f n)) \<in> \<Theta>\<^sub>2(\<lambda>(n,m::nat). real (m^2 + m * n + n^2))" by auto2
+
 ML_file "landau_util_test.ML"
 
 hide_const f g flog f_prod f_sum

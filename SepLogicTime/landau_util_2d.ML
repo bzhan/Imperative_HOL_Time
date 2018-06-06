@@ -56,6 +56,8 @@ val snd_nat_t = @{term "snd::nat*nat=>nat"}
 
    - Only snd(var) is present in the expression.
 
+   - Sums in normalized form.
+
    - Product of two valid expressions.
 
    - Expressions of the form real(m*n), where real(m) and real(n) are valid.
@@ -73,10 +75,17 @@ fun norm_poly_log2 (cvar, ctxt) ct =
         Conv.every_conv [
           norm_poly_log (Thm.cterm_of ctxt (snd_nat_t $ var), ctxt),
           rewr_obj_eq @{thm landau_norms2(2)}] ct
+      else if UtilArith.is_plus t then
+        Conv.every_conv [Conv.binop_conv (norm_poly_log2 (cvar, ctxt)),
+                         rewr_obj_eq (obj_sym @{thm plus_fun_apply})] ct
       else if UtilArith.is_times t then
         Conv.every_conv [Conv.binop_conv (norm_poly_log2 (cvar, ctxt)),
                          rewr_obj_eq @{thm landau_norms2(3)},
                          fold_polylog2_args] ct
+      else if Term.head_of t aconv nat_to_real andalso
+              UtilArith.is_plus (dest_arg t) then
+        Conv.every_conv [rewr_obj_eq @{thm of_nat_add},
+                         norm_poly_log2 (cvar, ctxt)] ct
       else if Term.head_of t aconv nat_to_real andalso
               UtilArith.is_times (dest_arg t) then
         Conv.every_conv [rewr_obj_eq @{thm of_nat_mult},
