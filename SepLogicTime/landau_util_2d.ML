@@ -284,17 +284,15 @@ fun reduce_poly_log2_plus1 ctxt ct =
  *)
 fun reduce_poly_log2_sum ctxt ct =
     let
-      val arg = ct |> Thm.term_of |> dest_arg
-      val (_, gs) = arg |> Util.dest_binop_args
-                        |> apsnd (ACUtil.dest_ac plus_ac_fn)
+      val (_, b) = ct |> Thm.term_of |> dest_arg |> Util.dest_binop_args
     in
-      if length gs = 1 then
-        reduce_poly_log2_plus1 ctxt ct
-      else
+      if UtilArith.is_plus b then
         Conv.every_conv [
           Conv.arg_conv (ACUtil.assoc_sym_cv plus_ac_fn),
           theta2_arg1_cv ctxt (reduce_poly_log2_plus1 ctxt),
           reduce_poly_log2_sum ctxt] ct
+      else
+        reduce_poly_log2_plus1 ctxt ct
     end
 
 (* Function for reducing a term of the form (f_1 + f_2 + .. + f_n) *
@@ -465,8 +463,12 @@ fun asym_bound2_gen ctxt (ct, goal) =
     in
       if Util.rhs_of goal_th aconv bd_of_th th then
         th |> apply_to_thm' (Conv.arg_conv (Conv.rewr_conv (meta_sym goal_th)))
-      else
+      else let
+        val _ = trace_t ctxt "Produced asym bound: " (bd_of_th th)
+        val _ = trace_t ctxt "Needed asym bound: " (Util.rhs_of goal_th)
+      in
         raise Fail "asym_bound2_gen"
+      end
     end
 
 val asym_bound2_prfstep =
