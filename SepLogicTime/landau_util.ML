@@ -1,4 +1,8 @@
-(* Utility for landau symbols *)
+(* Utility for landau symbols
+
+   We can handle asymptotic bounds of the form polylog m n, which is
+   the normalized form of %x. x^m (log x)^n.
+ *)
 
 signature LANDAU_UTIL =
 sig
@@ -504,8 +508,12 @@ fun asym_bound_gen ctxt (ct, goal) =
       if Util.rhs_of goal_th aconv bd_of_th th then
         th |> apply_to_thm' (Conv.arg1_conv (Conv.rewr_conv (meta_sym eq_th)))
            |> apply_to_thm' (Conv.arg_conv (Conv.rewr_conv (meta_sym goal_th)))
-      else
+      else let
+        val _ = trace_t ctxt "Produced asym bound: " (bd_of_th th)
+        val _ = trace_t ctxt "Needed asym bound: " (Util.rhs_of goal_th)
+      in
         raise Fail "asym_bound_gen"
+      end
     end
 
 val asym_bound_prfstep =

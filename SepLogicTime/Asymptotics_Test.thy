@@ -40,9 +40,9 @@ lemma "(\<lambda>(n,m). f (5*n)) \<in> \<Theta>\<^sub>2(\<lambda>(n,m::nat). rea
 
 lemma "(\<lambda>x. real (fst x * snd x + 2)) \<in> \<Theta>\<^sub>2(\<lambda>(n,m). real (n * m))" by auto2
 
-lemma "(\<lambda>x. real (fst x * fst x + 2)) \<in> \<Theta>\<^sub>2(\<lambda>(n,m::nat). real n * real n)" by auto2
+lemma "(\<lambda>x. real (fst x * fst x + 2)) \<in> \<Theta>\<^sub>2(\<lambda>(n,m::nat). real (n^2))" by auto2
 
-lemma "(\<lambda>x. real (fst x * fst x + snd x)) \<in> \<Theta>\<^sub>2(\<lambda>(n,m::nat). real n * real n + real m)" by auto2
+lemma "(\<lambda>x. real (fst x * fst x + snd x)) \<in> \<Theta>\<^sub>2(\<lambda>(n,m::nat). real (n^2) + real m)" by auto2
 
 lemma "(\<lambda>(n,m). f_prod (n+1,m+1) + 1) \<in> \<Theta>\<^sub>2(\<lambda>(n,m). real n * real m)" by auto2
 
@@ -53,6 +53,26 @@ lemma "(\<lambda>(n,m). f_prod (n+1,m+1) + f_sum (n+1,m+1) + 1) \<in> \<Theta>\<
 lemma "(\<lambda>(n,m). f n + flog m + n * m + f_prod (n div 3,m+1)) \<in> \<Theta>\<^sub>2(\<lambda>(n,m). real n * real m)" by auto2
 
 lemma "(\<lambda>(n,m). 1 + f n + flog m + f_sum (n+1, m+1)) \<in> \<Theta>\<^sub>2(\<lambda>(n,m). real n + real m)" by auto2
+
+lemma "(\<lambda>(n,m). (1 + f n) * m * flog m) \<in> \<Theta>\<^sub>2(\<lambda>(n::nat,m). n * m * ln m)" by auto2
+
+lemma "(\<lambda>(n,m). (1 + f n) * m * flog m) \<in> \<Theta>\<^sub>2(\<lambda>(n::nat,m::nat). n * m * ln m)" by auto2
+
+lemma "(\<lambda>(n,m). (f m + f n) * m) \<in> \<Theta>\<^sub>2(\<lambda>(n,m). real (m^2) + real n * real m)" by auto2
+
+lemma "(\<lambda>(n,m). m * (f m + f n)) \<in> \<Theta>\<^sub>2(\<lambda>(n,m). real (m^2) + real n * real m)" by auto2
+
+lemma "(\<lambda>(n,m). (f m + n) * (m + f n)) \<in> \<Theta>\<^sub>2(\<lambda>(n,m). real (m^2) + real n * real m + real (n^2))" by auto2
+
+lemma "(\<lambda>x. real ((fst x * fst x + fst x) * snd x)) \<in> \<Theta>\<^sub>2(\<lambda>(n,m::nat). real (n^2) * real m)" by auto2
+
+lemma "(\<lambda>(n,m). real ((n * n + n) * m)) \<in> \<Theta>\<^sub>2(\<lambda>(n,m::nat). real (n^2) * real m)" by auto2
+
+lemma "(\<lambda>(n,m). real (f m + n)) \<in> \<Theta>\<^sub>2(\<lambda>(n,m::nat). real (m + n))" by auto2
+
+lemma "(\<lambda>(n,m). real (f m * m + n)) \<in> \<Theta>\<^sub>2(\<lambda>(n,m::nat). real (m^2 + n))" by auto2
+
+lemma "(\<lambda>(n,m). real (f m * m + m * n + n * f n)) \<in> \<Theta>\<^sub>2(\<lambda>(n,m::nat). real (m^2 + m * n + n^2))" by auto2
 
 ML_file "landau_util_test.ML"
 

@@ -486,6 +486,17 @@ proof -
   ultimately show ?thesis by auto
 qed
 
+lemma polylog_power_compose:
+  "polylog a b o (\<lambda>n. n ^ c) \<in> \<Theta>(polylog (c * a) b)"
+  unfolding polylog_def unfolding comp_def
+proof -
+  fix x::nat assume "x > 0"
+  then have "ln (real (x ^ c)) = c * ln (real x)"
+    using ln_realpow by auto
+  then have "ln (real (x ^ c)) ^ b = c ^ b * ln (real x) ^ b"
+    by (simp add: semiring_normalization_rules(30))
+oops
+
 lemma bigTheta_compose_linear:
   fixes f1  g1 :: "nat\<Rightarrow>real" and f2 :: "nat \<Rightarrow> nat"
   assumes "stablebigO g1" "event_mono g1"

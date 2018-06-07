@@ -177,9 +177,12 @@ val test_reduce_poly_log2_all =
         (* %(n,m) input *)
         ("%(n,m). real n * real m", "polylog2 1 0 1 0")
       ]
+
+      val cv = Conv.every_conv [
+            Conv.arg_conv (LandauUtil2D.norm_poly_log2_abs ctxt),
+            LandauUtil2D.reduce_poly_log2_all ctxt]
     in
-      map (test_theta_conv ctxt (LandauUtil2D.reduce_poly_log2_all ctxt)
-                           bigtheta2 "reduce_poly_log2_all") test_data
+      map (test_theta_conv ctxt cv bigtheta2 "reduce_poly_log2_all") test_data
     end
 
 fun test_asym_bound ctxt f bigtheta (str1, str2) =
