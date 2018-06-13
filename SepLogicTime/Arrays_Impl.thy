@@ -52,7 +52,7 @@ lemma atake_copies [hoare_triple]:
     atake n xs
    <\<lambda>r. r \<mapsto>\<^sub>a take n as * xs \<mapsto>\<^sub>a as>\<^sub>t"
 @proof
-  @have "length as + 1 \<ge>\<^sub>t n + 1" 
+  @have "length as + 1 \<ge>\<^sub>t n + 1"  (* TODO: why is this needed *)
 @qed 
 
 lemma atake_time_bound [asym_bound]:
