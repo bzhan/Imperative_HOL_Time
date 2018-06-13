@@ -169,7 +169,8 @@ setup {* del_prfstep_thm @{thm coeffs_monom_mult_time_def} *}
 
 section {* Implementation of Karatsuba *}
 
-partial_function (heap) karatsuba_main_impl :: "'a::{heap,comm_ring_1} array \<Rightarrow> 'a array \<Rightarrow> nat \<Rightarrow> 'a array Heap" where
+partial_function (heap) karatsuba_main_impl ::
+  "'a::{heap,comm_ring_1} array \<Rightarrow> 'a array \<Rightarrow> nat \<Rightarrow> 'a array Heap" where
  "karatsuba_main_impl a b n =
   (if n \<le> karatsuba_lower_bound then
      coeffs_prod_impl a b
@@ -191,7 +192,8 @@ partial_function (heap) karatsuba_main_impl :: "'a::{heap,comm_ring_1} array \<R
     })"
 
 function karatsuba_main_impl_time :: "nat \<Rightarrow> nat" where
-  "n \<le> karatsuba_lower_bound \<Longrightarrow> karatsuba_main_impl_time n = coeffs_prod_impl_time n n"
+  "n \<le> karatsuba_lower_bound \<Longrightarrow> karatsuba_main_impl_time n =
+     coeffs_prod_impl_time n n"
 | "n > karatsuba_lower_bound \<Longrightarrow> karatsuba_main_impl_time n =
      (asplit_time n * 2 +
       coeffs_minus_time (n - n div 2) * 2 +
@@ -203,6 +205,7 @@ function karatsuba_main_impl_time :: "nat \<Rightarrow> nat" where
        karatsuba_main_impl_time (n div 2)))"
   by force simp_all
   termination by (relation "Wellfounded.measure (\<lambda>n. n)") (auto simp: karatsuba_lower_bound_def)
+setup {* fold add_rewrite_rule @{thms karatsuba_main_impl_time.simps} *}
 
 lemma karatsuba_main_impl_time_pos: "0 < karatsuba_main_impl_time x"
   by (cases "x \<le> karatsuba_lower_bound") (simp_all add: coeffs_prod_impl_time_def)
@@ -216,15 +219,14 @@ lemma div2_floor: "nat \<lfloor>real n / 2\<rfloor> = n div 2" by linarith
 
 lemma powr_1: "real x powr 1 = real x" by simp
 
-lemma "karatsuba_main_impl_time' \<in> \<Theta>(\<lambda>n. real n powr log 2 3)"
+lemma "(\<lambda>n. karatsuba_main_impl_time n) \<in> \<Theta>(\<lambda>n. real n powr log 2 3)"
+  unfolding karatsuba_main_impl_time'_def[symmetric]
   apply (master_theorem2 1 p': 1 recursion: karatsuba_main_impl_time.simps(2)
-         rew: karatsuba_main_impl_time'_def div2_ceil[symmetric] div2_floor[symmetric] )
+         rew: karatsuba_main_impl_time'_def div2_ceil[symmetric] div2_floor[symmetric])
   prefer 6 apply (rule Landau_Symbols_Definition.bigthetaD1)
-           apply (simp only: div2_ceil' div2_floor powr_1) apply auto2
-  by (simp_all add: powr_divide karatsuba_main_impl_time'_def karatsuba_main_impl_time_pos
-        karatsuba_lower_bound_def)
-
-setup {* fold add_rewrite_rule @{thms karatsuba_main_impl_time.simps} *}
+          apply (simp only: div2_ceil' div2_floor powr_1) apply auto2
+  by (simp_all add: powr_divide karatsuba_main_impl_time'_def
+        karatsuba_main_impl_time_pos karatsuba_lower_bound_def)
 
 lemma karatsuba_main_impl_correct [hoare_triple]:
   "length as = n \<Longrightarrow> length bs = n \<Longrightarrow>

@@ -75,12 +75,13 @@ partial_function (heap) merge_sort_impl :: "'a::{heap,linorder} array \<Rightarr
   }"
 
 function merge_sort_time :: "nat \<Rightarrow> nat" where
-  "n < 2 \<Longrightarrow> merge_sort_time n = 2"
-| "n \<ge> 2 \<Longrightarrow> merge_sort_time n =
-    atake_time n + adrop_time n + mergeinto_time n + 2 +
+  "n \<le> 1 \<Longrightarrow> merge_sort_time n = 2"
+| "n > 1 \<Longrightarrow> merge_sort_time n =
+    atake_time n + adrop_time n + mergeinto_time n + 1 +
     (merge_sort_time (n div 2) + merge_sort_time (n - n div 2))"
   by force simp_all
   termination by (relation "Wellfounded.measure (\<lambda>n. n)") auto
+setup {* fold add_rewrite_rule @{thms merge_sort_time.simps} *}
 
 definition merge_sort_time' :: "nat \<Rightarrow> real" where
   "merge_sort_time' n = real (merge_sort_time n)"
@@ -88,16 +89,13 @@ definition merge_sort_time' :: "nat \<Rightarrow> real" where
 lemma div_2_to_rounding:
   "n - n div 2 = nat \<lceil>n / 2\<rceil>" "n div 2 = nat \<lfloor>n / 2\<rfloor>" by linarith+
 
-lemma merge_sort_time_Theta: "merge_sort_time' \<in> \<Theta>(\<lambda>n. real n * ln (real n))"
-  apply (master_theorem2 2.3 recursion: merge_sort_time.simps(2) rew: merge_sort_time'_def div_2_to_rounding)
-  prefer 2 apply auto2
-  by (auto simp: merge_sort_time'_def)
-
 lemma merge_sort_time_O:
   "(\<lambda>n. merge_sort_time n) \<in> \<Theta>(\<lambda>n. real n * ln (real n))"
-  using merge_sort_time_Theta unfolding merge_sort_time'_def by blast
-
-setup {* fold add_rewrite_rule @{thms merge_sort_time.simps} *}
+  unfolding merge_sort_time'_def[symmetric]
+  apply (master_theorem2 2.3 recursion: merge_sort_time.simps(2)
+         rew: merge_sort_time'_def div_2_to_rounding)
+  apply (auto simp: merge_sort_time'_def div_2_to_rounding)
+  by auto2
 
 lemma mergeSort_to_fun [hoare_triple]:
   "<p \<mapsto>\<^sub>a xs * $(merge_sort_time (length xs))>

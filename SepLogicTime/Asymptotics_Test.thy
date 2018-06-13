@@ -70,9 +70,9 @@ lemma "(\<lambda>(n,m). real ((n * n + n) * m)) \<in> \<Theta>\<^sub>2(\<lambda>
 
 lemma "(\<lambda>(n,m). real (f m + n)) \<in> \<Theta>\<^sub>2(\<lambda>(n,m::nat). real (m + n))" by auto2
 
-lemma "(\<lambda>(n,m). real (f m * m + n)) \<in> \<Theta>\<^sub>2(\<lambda>(n,m::nat). real (m^2 + n))" by auto2
+lemma "(\<lambda>(n,m). f m * m + n) \<in> \<Theta>\<^sub>2(\<lambda>(n,m::nat). m^2 + n)" by auto2
 
-lemma "(\<lambda>(n,m). real (f m * m + m * n + n * f n)) \<in> \<Theta>\<^sub>2(\<lambda>(n,m::nat). real (m^2 + m * n + n^2))" by auto2
+lemma "(\<lambda>(n,m). f m * m + m * n + n * f n) \<in> \<Theta>\<^sub>2(\<lambda>(n,m::nat). m^2 + m * n + n^2)" by auto2
 
 ML_file "landau_util_test.ML"
 
