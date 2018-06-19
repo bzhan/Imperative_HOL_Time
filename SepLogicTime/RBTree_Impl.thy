@@ -763,7 +763,7 @@ lemma rbt_insert_rule' [hoare_triple]:
          * \<up>((M {k \<rightarrow> v}) = rbt_map (RBTree.rbt_insert k v t)) >\<^sub>t"
 @proof
   @have  " rbt_insert_logN (sizeM1 M) \<ge>\<^sub>t rbt_insert_time (max_depth t)"
-  @qed 
+@qed 
 
 
 subsection \<open>search\<close>
@@ -829,7 +829,8 @@ lemma rbt_delete_rule' [hoare_triple]:
   "is_rbt t \<Longrightarrow> rbt_sorted t \<Longrightarrow> M = rbt_map t \<Longrightarrow>
     <btree t p * $(rbt_delete_time_logN (sizeM1 M))>
    rbt_delete k p
-   <rbt_map_assn (delete_map k M)>\<^sub>t"
+   <\<lambda>p. btree (RBTree.delete k t) p * \<up>(is_rbt (RBTree.delete k t))
+       * \<up>(rbt_sorted (RBTree.delete k t)) * \<up>((delete_map k M) = rbt_map (RBTree.delete k t))>\<^sub>t"
 @proof
   @have  " rbt_delete_time_logN (sizeM1 M) \<ge>\<^sub>t rbt_delete_time (max_depth t)"
 @qed 
@@ -839,7 +840,7 @@ section {* Outer interface *}
  
 
 definition rbt_map_assn :: "('a, 'b) map \<Rightarrow> ('a::{heap,linorder}, 'b::heap) rbt_node ref option \<Rightarrow> assn" where
-  "rbt_map_assn M p = (\<exists>\<^sub>At. btree t p * \<up>(is_rbt t) * \<up>(rbt_sorted t) * \<up>(M = rbt_map t) * \<up>(M = rbt_map t))"
+  "rbt_map_assn M p = (\<exists>\<^sub>At. btree t p * \<up>(is_rbt t) * \<up>(rbt_sorted t) * \<up>(M = rbt_map t))"
 setup {* add_rewrite_ent_rule @{thm rbt_map_assn_def} *}
 
 subsection \<open>tree empty\<close>
@@ -874,6 +875,6 @@ lemma rbt_delete_time_logN_bound[asym_bound]:
   "(\<lambda>n. rbt_delete_time_logN n) \<in> \<Theta>(\<lambda>n. ln n)" unfolding rbt_delete_time_logN_def rbt_delete_time_def btree_del_time_def by auto2
 
 theorem rbt_delete_rule [hoare_triple]:
-  "<rbt_b_map_assn M n b * $(rbt_delete_time_logN (sizeM1 M))> rbt_delete k b <rbt_map_assn (delete_map k M)>\<^sub>t" by auto2
+  "<rbt_map_assn M b * $(rbt_delete_time_logN (sizeM1 M))> rbt_delete k b <rbt_map_assn (delete_map k M)>\<^sub>t" by auto2
 
 end
