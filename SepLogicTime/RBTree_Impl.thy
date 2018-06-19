@@ -644,6 +644,33 @@ proof -
   thus ?thesis by simp
 qed  
 
+subsection "size1 of operations"
+
+lemma size1Leaf[rewrite]: "size1 Leaf = 1" by (simp add: size1_def)
+
+lemma size1_paint[simp]: "size1 (RBTree.paint b t) = size1 t" by(induct t, auto simp: size1_def)
+lemma size_paint[simp]: "size (RBTree.paint b t) = size t" by(induct t, auto)
+
+
+lemma size_red_subs: "rbt.cl t = R \<Longrightarrow> size t = size (rbt.lsub t) + size (rbt.rsub t) + 1"
+   apply(cases t) by auto 
+
+lemma size_balanceR[simp]: "size (RBTree.balanceR l k v r) = 1 + size l + size r"
+  apply( auto simp: balanceR_def)
+  apply(cases "rbt.cl (rbt.lsub r)") by (auto simp: Let_def size_red_subs)
+
+                                   
+lemma size_balance[simp]: "size (RBTree.balance l k v r) = 1 + size l + size r"
+  by (auto simp: balance_def Let_def size_red_subs) 
+
+lemma size1_ins[simp]: "size1 (RBTree.ins k v t) \<le> size1 t + 1" by (induct t, auto simp: size1_def)
+
+lemma size1_rbt_insert[resolve]: "size1 (RBTree.rbt_insert k v t) \<le> size1 t + 1"
+  apply(simp add: RBTree.rbt_insert_def) using size1_ins by simp
+
+
+
+
 section {* size of map *}
 
 lemma [simp]: "g = Map (meval g)" apply(cases g) by auto
@@ -685,41 +712,9 @@ lemma card_keysof_size: "RBTree.rbt_sorted t \<Longrightarrow> card (keys_of (rb
   subgoal apply (auto simp: rbt_map_card) done
   done
 
-section {* Outer interface *}
- 
+definition sizeM1 :: "('a, 'b) Mapping_Str.map \<Rightarrow> nat" where "sizeM1 M = 1 + card (keys_of M)"
 
-definition rbt_map_assn :: "('a, 'b) map \<Rightarrow> ('a::{heap,linorder}, 'b::heap) rbt_node ref option \<Rightarrow> assn" where
-  "rbt_map_assn M p = (\<exists>\<^sub>At. btree t p * \<up>(is_rbt t) * \<up>(rbt_sorted t) * \<up>(M = rbt_map t) * \<up>(M = rbt_map t))"
-setup {* add_rewrite_ent_rule @{thm rbt_map_assn_def} *}
-
-definition rbt_b_map_assn :: "('a, 'b) map \<Rightarrow> nat \<Rightarrow> ('a::{heap,linorder}, 'b::heap) rbt_node ref option \<Rightarrow> assn" where
-  "rbt_b_map_assn M n p = (\<exists>\<^sub>At. btree t p * \<up>(is_rbt t) * \<up>(rbt_sorted t) * \<up>(M = rbt_map t) * \<up>(M = rbt_map t)* \<up>(size1 t \<le> n))"
-setup {* add_rewrite_ent_rule @{thm rbt_b_map_assn_def} *}
- 
-lemma size1Leaf[rewrite]: "size1 Leaf = 1" by (simp add: size1_def)
-
-theorem rbt_empty_rule [hoare_triple]:
-  "<$1> tree_empty <rbt_b_map_assn empty_map 1>" by auto2
-
-lemma size1_paint[simp]: "size1 (RBTree.paint b t) = size1 t" by(induct t, auto simp: size1_def)
-lemma size_paint[simp]: "size (RBTree.paint b t) = size t" by(induct t, auto)
-
-
-lemma size_red_subs: "rbt.cl t = R \<Longrightarrow> size t = size (rbt.lsub t) + size (rbt.rsub t) + 1"
-   apply(cases t) by auto 
-
-lemma size_balanceR[simp]: "size (RBTree.balanceR l k v r) = 1 + size l + size r"
-  apply( auto simp: balanceR_def)
-  apply(cases "rbt.cl (rbt.lsub r)") by (auto simp: Let_def size_red_subs)
-
-                                   
-lemma size_balance[simp]: "size (RBTree.balance l k v r) = 1 + size l + size r"
-  by (auto simp: balance_def Let_def size_red_subs) 
-
-lemma size1_ins[simp]: "size1 (RBTree.ins k v t) \<le> size1 t + 1" by (induct t, auto simp: size1_def)
-
-lemma size1_rbt_insert[resolve]: "size1 (RBTree.rbt_insert k v t) \<le> size1 t + 1"
-  apply(simp add: RBTree.rbt_insert_def) using size1_ins by simp
+section \<open>Runtime in terms of size of the map\<close>
 
 definition rbt_absch :: "nat \<Rightarrow> nat"  where "rbt_absch n = (nat (ceiling (2 * log 2 n + 1)))"
 
@@ -735,31 +730,16 @@ lemma rbt_absch_mono: "x > 0 \<Longrightarrow> x \<le> y \<Longrightarrow> rbt_a
 lemma "is_rbt t \<Longrightarrow> size1 t \<le> n \<Longrightarrow> rbt_absch (size1 t) \<le> rbt_absch n"  
   apply(rule rbt_absch_mono) by(auto simp: size1_def) 
 
+subsection \<open>insert\<close>
+
+
 lemma rbt_insert_time_mono: "x \<le> y \<Longrightarrow> rbt_insert_time x \<le> rbt_insert_time y"
   unfolding rbt_insert_time_def rbt_ins_time_def by auto     
 
 definition rbt_insert_logN :: "nat \<Rightarrow> nat" where "rbt_insert_logN n = rbt_insert_time (rbt_absch n)"
 
-lemma rbt_insert_logN_bound[asym_bound]: 
-  "(\<lambda>n. rbt_insert_logN n) \<in> \<Theta>(\<lambda>n. ln n)" unfolding rbt_insert_logN_def rbt_insert_time_def rbt_ins_time_def  
-  by auto2 
-
-
-lemma assumes "is_rbt t" "size1 t \<le> n" shows "rbt_insert_time (max_depth t) \<le> rbt_insert_logN n"
-  unfolding rbt_insert_logN_def
-proof (rule rbt_insert_time_mono)  
-  have A: "rbt_absch (size1 t) \<le> rbt_absch n" 
-    apply(rule rbt_absch_mono) using assms(2) by(auto simp: size1_def) 
-  have B: "max_depth t \<le> rbt_absch (size1 t)"
-    unfolding rbt_absch_def 
-      using assms(1) apply(auto dest!: rbt_height_le simp: rbt_insert_time_mono)
-      by linarith  
-  from A B show "max_depth t \<le> rbt_absch n" by auto
-qed
-
-
-definition sizeM1 :: "('a, 'b) Mapping_Str.map \<Rightarrow> nat" where "sizeM1 M = 1 + card (keys_of M)"
- 
+lemma rbt_insert_logN_mono: "0 < x \<Longrightarrow> x\<le>y \<Longrightarrow> rbt_insert_logN x \<le> rbt_insert_logN y"
+  by(auto simp: rbt_insert_logN_def intro!: rbt_insert_time_mono rbt_absch_mono)
 
 lemma rbt_insert_time_absch: assumes "is_rbt t" "rbt_sorted t" "rbt_map t = M" shows K[backward]: "rbt_insert_time (max_depth t) \<le> rbt_insert_logN (sizeM1 M)"
   unfolding rbt_insert_logN_def
@@ -768,14 +748,11 @@ proof (rule rbt_insert_time_mono)
     using card_keysof_size[OF assms(2)] assms(3) by(auto simp: size1_def sizeM1_def) 
   have B: "max_depth t \<le> rbt_absch (size1 t)"
     unfolding rbt_absch_def 
-      using assms(1) apply(auto dest!: rbt_height_le simp: rbt_insert_time_mono)
+      using assms(1) apply(auto dest!: rbt_height_le )
       by linarith  
   from A B show "max_depth t \<le> rbt_absch (sizeM1 M)" by auto
 qed
-
-(* how to tell auto2 to use rbt_insert_time_absch, giving a hint with \<le>\<^sub>t does not work
-  as the tree is not available at the out side.
-*)
+ 
 
 lemma rbt_insert_rule' [hoare_triple]:
   "is_rbt t \<Longrightarrow> rbt_sorted t \<Longrightarrow> M = rbt_map t \<Longrightarrow>
@@ -789,36 +766,18 @@ lemma rbt_insert_rule' [hoare_triple]:
   @qed 
 
 
-theorem rbt_insert_rule [hoare_triple]:
-  "<rbt_map_assn M b * $(rbt_insert_logN (sizeM1 M))> rbt_insert k v b <rbt_map_assn (M {k \<rightarrow> v})>\<^sub>t"
-by auto2 
+subsection \<open>search\<close>
 
 
 definition rbt_search_time_logN :: "nat \<Rightarrow> nat" where "rbt_search_time_logN n = rbt_search_time (rbt_absch n)"
 
-lemma rbt_search_time_logN_bound[asym_bound]:
-  "(\<lambda>n. rbt_search_time_logN n) \<in> \<Theta>(\<lambda>n. ln n)" unfolding rbt_search_time_logN_def rbt_search_time_def by auto2
-
-
 lemma rbt_search_time_mono: "x \<le> y \<Longrightarrow> rbt_search_time x \<le> rbt_search_time y"
   unfolding rbt_search_time_def by auto
 
-lemma assumes "is_rbt t" "size1 t \<le> n" shows rbt_search_time_absch[resolve]: "rbt_search_time (max_depth t) \<le> rbt_search_time_logN n"
-  unfolding rbt_search_time_logN_def
-proof (rule rbt_search_time_mono)  
-  have A: "rbt_absch (size1 t) \<le> rbt_absch n" 
-    apply(rule rbt_absch_mono) using assms(2) by(auto simp: size1_def) 
-  have B: "max_depth t \<le> rbt_absch (size1 t)"
-    unfolding rbt_absch_def 
-      using assms(1) apply(auto dest!: rbt_height_le simp: rbt_search_time_mono)
-      by linarith  
-  from A B show "max_depth t \<le> rbt_absch n" by auto
-qed
-(*
-theorem rbt_search [hoare_triple]:
-  "<rbt_b_map_assn M n b * $(rbt_search_time_logN n)> rbt_search x b <\<lambda>r. rbt_b_map_assn M n b * \<up>(r = M\<langle>x\<rangle>)>\<^sub>t"
-  by auto2
-*)
+lemma rbt_search_time_logN_mono: "0 < x \<Longrightarrow> x \<le> y \<Longrightarrow> rbt_search_time_logN x \<le> rbt_search_time_logN y"
+  by(auto simp: rbt_search_time_logN_def intro!: rbt_absch_mono rbt_search_time_mono) 
+ 
+
 lemma assumes "is_rbt t" "rbt_sorted t" "rbt_map t = M" shows L[backward]: "rbt_search_time (max_depth t) \<le> rbt_search_time_logN (sizeM1 M)"
   unfolding rbt_search_time_logN_def
 proof (rule rbt_search_time_mono)   
@@ -826,7 +785,7 @@ proof (rule rbt_search_time_mono)
     using card_keysof_size[OF assms(2)] assms(3) by(auto simp: size1_def sizeM1_def) 
   have B: "max_depth t \<le> rbt_absch (size1 t)"
     unfolding rbt_absch_def 
-      using assms(1) apply(auto dest!: rbt_height_le simp: rbt_insert_time_mono)
+      using assms(1) apply(auto dest!: rbt_height_le  )
       by linarith  
   from A B show "max_depth t \<le> rbt_absch (sizeM1 M)" by auto
 qed
@@ -839,36 +798,82 @@ lemma rbt_search_rule' [hoare_triple]:
    <\<lambda>r. btree t p * \<up>(r = RBTree.rbt_search t k)>\<^sub>t"
 @proof
   @have  " rbt_search_time_logN (sizeM1 M) \<ge>\<^sub>t rbt_search_time (max_depth t)"
-  @qed 
+@qed 
+
+subsection \<open>delete\<close>
+
+
+definition rbt_delete_time_logN :: "nat \<Rightarrow> nat" where "rbt_delete_time_logN n = rbt_delete_time (rbt_absch n)"
+
+
+lemma rbt_delete_time_mono: "x \<le> y \<Longrightarrow> rbt_delete_time x \<le> rbt_delete_time y"
+  unfolding rbt_delete_time_def btree_del_time_def by auto
+
+lemma rbt_delete_time_logN_mono: "0 < x \<Longrightarrow> x \<le> y \<Longrightarrow> rbt_delete_time_logN x \<le> rbt_delete_time_logN y"
+  by(auto simp: rbt_delete_time_logN_def intro!: rbt_absch_mono rbt_delete_time_mono) 
+
+
+lemma assumes "is_rbt t" "rbt_sorted t" "rbt_map t = M" shows rbt_delete_time_absch[backward]: "rbt_delete_time (max_depth t) \<le> rbt_delete_time_logN (sizeM1 M)"
+  unfolding rbt_delete_time_logN_def
+proof (rule rbt_delete_time_mono)   
+  have A: "rbt_absch (size1 t) = rbt_absch (sizeM1 M)" 
+    using card_keysof_size[OF assms(2)] assms(3) by(auto simp: size1_def sizeM1_def) 
+  have B: "max_depth t \<le> rbt_absch (size1 t)"
+    unfolding rbt_absch_def 
+      using assms(1) apply(auto dest!: rbt_height_le  )
+      by linarith  
+  from A B show "max_depth t \<le> rbt_absch (sizeM1 M)" by auto
+qed
+
+lemma rbt_delete_rule' [hoare_triple]:
+  "is_rbt t \<Longrightarrow> rbt_sorted t \<Longrightarrow> M = rbt_map t \<Longrightarrow>
+    <btree t p * $(rbt_delete_time_logN (sizeM1 M))>
+   rbt_delete k p
+   <rbt_map_assn (delete_map k M)>\<^sub>t"
+@proof
+  @have  " rbt_delete_time_logN (sizeM1 M) \<ge>\<^sub>t rbt_delete_time (max_depth t)"
+@qed 
+
+
+section {* Outer interface *}
+ 
+
+definition rbt_map_assn :: "('a, 'b) map \<Rightarrow> ('a::{heap,linorder}, 'b::heap) rbt_node ref option \<Rightarrow> assn" where
+  "rbt_map_assn M p = (\<exists>\<^sub>At. btree t p * \<up>(is_rbt t) * \<up>(rbt_sorted t) * \<up>(M = rbt_map t) * \<up>(M = rbt_map t))"
+setup {* add_rewrite_ent_rule @{thm rbt_map_assn_def} *}
+
+subsection \<open>tree empty\<close>
+
+theorem rbt_empty_rule [hoare_triple]:
+  "<$1> tree_empty <rbt_map_assn empty_map>" by auto2
+
+subsection \<open>insert\<close>
+
+theorem rbt_insert_rule [hoare_triple]:
+  "<rbt_map_assn M b * $(rbt_insert_logN (sizeM1 M))> rbt_insert k v b <rbt_map_assn (M {k \<rightarrow> v})>\<^sub>t"
+by auto2 
+
+lemma rbt_insert_logN_bound[asym_bound]: 
+  "(\<lambda>n. rbt_insert_logN n) \<in> \<Theta>(\<lambda>n. ln n)"
+  unfolding rbt_insert_logN_def rbt_insert_time_def rbt_ins_time_def  
+  by auto2 
+
+subsection \<open>search\<close>
+
+lemma rbt_search_time_logN_bound[asym_bound]:
+  "(\<lambda>n. rbt_search_time_logN n) \<in> \<Theta>(\<lambda>n. ln n)" unfolding rbt_search_time_logN_def rbt_search_time_def by auto2
 
 theorem rbt_search [hoare_triple]:
   "<rbt_map_assn M b * $(rbt_search_time_logN (sizeM1 M))> rbt_search x b <\<lambda>r. rbt_map_assn M b * \<up>(r = M\<langle>x\<rangle>)>\<^sub>t"
   by auto2
 
-(*
-lemma size_sub_noLeaf: "rbt.cl r = B \<Longrightarrow> r \<noteq> Leaf \<Longrightarrow> size r = (size (rbt.lsub r)) + (size (rbt.rsub r)) + 1" apply (cases r) by auto
 
-lemma size_balL[simp]: "size (RBTree.balL l k v r) = 1 + size l + size r"
-  by(cases "rbt.cl r", auto simp: balL_def Let_def size_red_subs dest!: size_sub_noLeaf) 
+subsection \<open>delete\<close>
 
-lemma size_balR[simp]: "size (RBTree.balR l k v r) = 1 + size l + size r"
-  by(cases "rbt.cl l", auto simp: balR_def Let_def size_red_subs dest!: size_sub_noLeaf) 
-
-lemma size_combine: "size (RBTree.combine t1 t2) = size t1 + size t2"
-  by (induct rule: RBTree.combine.induct, auto simp: Let_def size_red_subs)
-
-lemma size_del[simp]: "size (RBTree.del k t) \<le> size t" by (induct t, auto simp: size_combine) 
-
-lemma "size1 t \<ge> size1 (RBTree.delete k t)"
-  by(auto simp: delete_def size1_def)  
-
-
+lemma rbt_delete_time_logN_bound[asym_bound]:
+  "(\<lambda>n. rbt_delete_time_logN n) \<in> \<Theta>(\<lambda>n. ln n)" unfolding rbt_delete_time_logN_def rbt_delete_time_def btree_del_time_def by auto2
 
 theorem rbt_delete_rule [hoare_triple]:
-  "<rbt_b_map_assn M n b> rbt_delete k b <rbt_map_assn (delete_map k M)>\<^sub>t" by auto2
-*)
-
-
-
+  "<rbt_b_map_assn M n b * $(rbt_delete_time_logN (sizeM1 M))> rbt_delete k b <rbt_map_assn (delete_map k M)>\<^sub>t" by auto2
 
 end
