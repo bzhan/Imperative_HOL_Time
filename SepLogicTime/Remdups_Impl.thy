@@ -73,7 +73,7 @@ fun remdups_impl_time :: "nat \<Rightarrow> nat" where
 lemma remdups_impl_time_bound[asym_bound]: "remdups_impl_time \<in> \<Theta>(\<lambda>n. n * ln n)"
   apply(rule bigTheta_linear_recurrence_log[where g = "(\<lambda>n. rbt_search_time_logN (1 + n)
                                       + rbt_insert_logN (1 + n) + 28)" and N=11])
-       apply simp apply simp apply auto2
+       apply simp  apply auto2
   by auto
 
 
