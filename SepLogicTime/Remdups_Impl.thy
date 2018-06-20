@@ -1,5 +1,5 @@
-theory Remdups_Impl
-imports RBTree_Impl DynamicArray2 Asymptotics_Recurrences
+theory Remdups_Impl 
+imports RBTree_Impl DynamicArray2 Asymptotics_Recurrences Rev_Impl
 begin
 
 
@@ -44,13 +44,18 @@ lemma remdups3: "n\<le>length xs \<Longrightarrow> remdups3 xs n = remdups2 (dro
   apply(auto)    apply(auto intro!: zz simp add: z simp del: rev.simps)
         apply(simp_all only: kl)  by auto
 
-fun remdups_impl :: "('a::{heap,linorder}) array \<Rightarrow> nat \<Rightarrow> (('a, unit) rbt_node ref option \<times> 'a dynamic_array) Heap"  where
-  "remdups_impl p 0 = do { 
+lemma remdups3_correct[rewrite]: "fst (remdups3 xs (length xs)) = rev (remdups xs)"
+  by (simp add: remdups3 Z)
+  
+
+
+fun remdups'_impl :: "('a::{heap,linorder}) array \<Rightarrow> nat \<Rightarrow> (('a, unit) rbt_node ref option \<times> 'a dynamic_array) Heap"  where
+  "remdups'_impl p 0 = do { 
             M \<leftarrow> tree_empty;
             A \<leftarrow> dyn_array_new;
           return (M,A) }   "
-| "remdups_impl p (Suc n) = do {
-      X \<leftarrow> remdups_impl p n;
+| "remdups'_impl p (Suc n) = do {
+      X \<leftarrow> remdups'_impl p n;
       M \<leftarrow> return (fst X);
       A \<leftarrow> return (snd X);
       l \<leftarrow> Array.len p;
@@ -63,21 +68,21 @@ fun remdups_impl :: "('a::{heap,linorder}) array \<Rightarrow> nat \<Rightarrow>
 
 (* rbt search costs: rbt_search_time_logN (sizeM1 M) *)
 
-fun remdups_impl_time :: "nat \<Rightarrow> nat" where
-  "remdups_impl_time 0 = 9"
-| "remdups_impl_time (Suc n) = remdups_impl_time n + rbt_search_time_logN (Suc n)
+fun remdups'_impl_time :: "nat \<Rightarrow> nat" where
+  "remdups'_impl_time 0 = 9"
+| "remdups'_impl_time (Suc n) = remdups'_impl_time n + rbt_search_time_logN (Suc n)
                                       + rbt_insert_logN (Suc n) + 28"                           
 (* 27+1 *)
  
 
-lemma remdups_impl_time_bound[asym_bound]: "remdups_impl_time \<in> \<Theta>(\<lambda>n. n * ln n)"
+lemma remdups'_impl_time_bound[asym_bound]: "remdups'_impl_time \<in> \<Theta>(\<lambda>n. n * ln n)"
   apply(rule bigTheta_linear_recurrence_log[where g = "(\<lambda>n. rbt_search_time_logN (1 + n)
                                       + rbt_insert_logN (1 + n) + 28)" and N=11])
        apply simp  apply auto2
   by auto
 
 
-setup {* fold add_rewrite_rule @{thms remdups_impl_time.simps} *}
+setup {* fold add_rewrite_rule @{thms remdups'_impl_time.simps} *}
 setup {* fold add_rewrite_rule @{thms remdups3.simps} *}
 
 
@@ -111,8 +116,9 @@ setup {* del_prfstep_thm @{thm rbt_map_def} *}
 setup {* del_prfstep_thm @{thm rbt_in_traverse_fst} *}
 setup {* del_prfstep_thm @{thm rbt_map_assn_def} *}
 
-lemma "n\<le>length xs \<Longrightarrow> <p \<mapsto>\<^sub>a xs * $(remdups_impl_time n)>
-    remdups_impl p n
+lemma remdups'_impl_rule[hoare_triple]: 
+  "n\<le>length xs \<Longrightarrow> <p \<mapsto>\<^sub>a xs * $(remdups'_impl_time n)>
+    remdups'_impl p n
    <\<lambda>(M,A). p \<mapsto>\<^sub>a xs * dyn_array (fst (remdups3 xs n)) A * rbt_map_assn (setmap (snd (remdups3 xs n))) M >\<^sub>t"
 @proof @fun_induct "remdups3 xs n" @with
   @subgoal "(xs = xs, n = 0)"
@@ -128,11 +134,34 @@ lemma "n\<le>length xs \<Longrightarrow> <p \<mapsto>\<^sub>a xs * $(remdups_imp
   @end
 @qed
 
-lemma "<p \<mapsto>\<^sub>a xs * $m>
-    remdups_impl p n
-   <\<lambda>(M,A). p \<mapsto>\<^sub>a xs * dyn_array (rev (remdups (drop n xs))) A * rbt_map_assn (setmap (set (drop n xs))) M >\<^sub>t"
-  sorry
 
+definition remdups_impl :: "('a::{heap,linorder}) array \<Rightarrow> 'a array Heap"  where [rewrite]:
+    "remdups_impl p = do {
+        len \<leftarrow> Array.len p;
+        (_,A) \<leftarrow> remdups'_impl p len;
+        r \<leftarrow> destroy A;
+        rev_impl r
+    }"
+ 
+lemma rev_impl_time_absch[resolve]: "rev_impl_time (length xs) \<ge> rev_impl_time (length (remdups xs))"
+  by(rule rev_impl_time_mono, simp)
+  
+
+definition remdups_impl_time :: "nat \<Rightarrow> nat" where [rewrite]:
+  "remdups_impl_time n = 4 + remdups'_impl_time n + rev_impl_time n"
+
+lemma remdups_impl_time_bound[asym_bound]: 
+    "remdups_impl_time \<in> \<Theta>(\<lambda>n. n * ln n)"
+  unfolding remdups_impl_time_def by auto2
+
+lemma rev_rev[rewrite]: "rev (rev xs) = xs" by simp
+
+lemma remdups_impl_rule[hoare_triple]: "<p \<mapsto>\<^sub>a xs * $(remdups_impl_time (length xs))>
+    remdups_impl p
+   <\<lambda>r. p \<mapsto>\<^sub>a xs * r \<mapsto>\<^sub>a remdups xs>\<^sub>t"
+@proof 
+  @have "rev_impl_time (length xs) \<ge>\<^sub>t rev_impl_time (length (remdups xs))" 
+@qed
 
 
 
