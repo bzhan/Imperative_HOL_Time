@@ -2,7 +2,6 @@ theory Rev_Impl
 imports SepAuto Asymptotics_Recurrences
 begin
 
-term "list_update xs i e"
 fun rev_fun :: "'a list \<Rightarrow> 'a list \<Rightarrow> nat \<Rightarrow> 'a list" where
   "rev_fun xs ys 0 = ys"
 | "rev_fun xs ys (Suc n) = (let ys' = rev_fun xs ys n 
@@ -47,15 +46,8 @@ lemma rev_impl'_rule'[hoare_triple]:
           <p \<mapsto>\<^sub>a xs * q \<mapsto>\<^sub>a ys * $(rev_impl'_time n)>
             rev_impl' p q n
           <%_. p \<mapsto>\<^sub>a xs * q \<mapsto>\<^sub>a rev_fun xs ys n>\<^sub>t"
-@proof
-  @fun_induct "rev_fun xs ys n" @with
-    @subgoal "(xs = xs, ys = ys, n = 0)" @endgoal
-    @subgoal "(xs = xs, ys = ys, n = Suc n)"
-    @endgoal
-  @end
-  @qed
+@proof @fun_induct "rev_fun xs ys n" @qed
  
-
 definition rev_impl where
   "rev_impl p = do {
       len \<leftarrow> Array.len p;
@@ -63,7 +55,6 @@ definition rev_impl where
       rev_impl' p q len; 
       return q
     }"
-
 
 definition rev_impl_time :: "nat \<Rightarrow> nat" where [rewrite]:
   "rev_impl_time n = n + rev_impl'_time n + 3"
