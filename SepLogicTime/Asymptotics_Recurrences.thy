@@ -350,6 +350,23 @@ proof -
 qed
 
 
+lemma bigTheta_linear_recurrence_const:
+  fixes f g :: "nat \<Rightarrow> real"
+  assumes "\<And>i. i\<ge>N \<Longrightarrow> f (Suc i) = f i + g i"  
+      and g: "g \<in> \<Theta>(\<lambda>n. 1)" and "\<And>n. f n \<ge> 0" "\<And>n. g n \<ge> 0"
+  shows "f \<in> \<Theta>(\<lambda>n. n )" 
+proof 
+  have "f \<in> O(\<lambda>n. n * 1)" 
+    apply (rule bigO_linear_recurrence'[where g=g and N="max N 3"])
+    using assms by auto
+  thus "f \<in> O(\<lambda>n. n )" by simp
+
+  have "f \<in> \<Omega>(\<lambda>n. n * 1)"
+    apply (rule bigOmega_linear_recurrence'[where g=g and N="max N 3" and C=3])
+    using assms by (auto)
+  thus "f \<in> \<Omega>(\<lambda>n. n)" by simp
+qed
+
 
 lemma bigTheta_linear_recurrence_log:
   fixes f g :: "nat \<Rightarrow> real"
