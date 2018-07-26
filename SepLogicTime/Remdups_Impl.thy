@@ -2,10 +2,6 @@ theory Remdups_Impl
 imports RBTree_Impl DynamicArray2 Asymptotics_Recurrences Rev_Impl
 begin
 
-
-
-term remdups
-         
 fun remdups2 :: "'a list \<Rightarrow> ('a list * 'a set)" where
   "remdups2 [] = ([],{})"
 | "remdups2 (x#xs) = (let (rxs,S) = remdups2 xs in
@@ -66,13 +62,10 @@ fun remdups'_impl :: "('a::{heap,linorder}) array \<Rightarrow> nat \<Rightarrow
                else  return (M,A) )    
     }"
 
-(* rbt search costs: rbt_search_time_logN (sizeM1 M) *)
-
 fun remdups'_impl_time :: "nat \<Rightarrow> nat" where
   "remdups'_impl_time 0 = 9"
 | "remdups'_impl_time (Suc n) = remdups'_impl_time n + rbt_search_time_logN (Suc n)
-                                      + rbt_insert_logN (Suc n) + 28"                           
-(* 27+1 *)
+                                      + rbt_insert_logN (Suc n) + 28"  
  
 
 lemma remdups'_impl_time_bound[asym_bound]: "remdups'_impl_time \<in> \<Theta>(\<lambda>n. n * ln n)"
@@ -90,27 +83,18 @@ definition setmap where [rewrite]: "setmap S = Map (%x. if x\<in>S then Some () 
 
 lemma t: "{x. (if x \<in> set (drop (length xs - n) xs) then Some () else None) = Some ()}
       =  set (drop (length xs - n) xs)" by auto
-lemma h: "card A \<le> n \<Longrightarrow> card (insert b A) \<le> Suc n"  
-  by (simp add: card_insert_le_m1)   
 
 lemma sizeofmap_ub: "n\<le>length xs \<Longrightarrow> sizeM1 (setmap (snd (remdups3 xs n))) \<le> Suc n"
   unfolding sizeM1_def setmap_def apply (auto simp: remdups3 Z)
   apply(induct n) apply (auto simp: keys_of_def) apply(simp only: kl)
   apply auto subgoal for n apply(cases "xs ! (length xs - Suc n) \<in> (set (drop (length xs - n) xs))")
-     apply auto by (simp_all only: t h)  done
-
-thm rbt_search_time_mono
+     apply auto by (simp_all only: t card_insert_le_m1)  done
 
 lemma rbt_search_time_logN_ub[resolve]: "n\<le>length xs \<Longrightarrow> rbt_search_time_logN (sizeM1 (setmap (snd (remdups3 xs n)))) \<le>  rbt_search_time_logN (Suc n) "
   apply(auto simp: sizeofmap_ub  intro!: rbt_search_time_logN_mono) by(auto simp: sizeM1_def)
 
-
 lemma rbt_insert_logN_ub[resolve]: "n\<le>length xs \<Longrightarrow> rbt_insert_logN (sizeM1 (setmap (snd (remdups3 xs n)))) \<le>  rbt_insert_logN (Suc n) "
   apply(auto simp: sizeofmap_ub  intro!: rbt_insert_logN_mono) by (auto simp: sizeM1_def)
-
-thm Option.is_none_def
-setup {* add_rewrite_rule @{thm Option.is_none_def} *}
-
 
 setup {* del_prfstep_thm @{thm rbt_map_def} *}
 setup {* del_prfstep_thm @{thm rbt_in_traverse_fst} *}
