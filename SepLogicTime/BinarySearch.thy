@@ -1,5 +1,5 @@
 theory BinarySearch
-  imports "../../auto2/HOL/Auto2_Main"
+  imports Auto2_HOL.Auto2_Main
 begin
 
 fun avg :: "nat \<Rightarrow> nat \<Rightarrow> nat" where
