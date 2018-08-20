@@ -207,6 +207,20 @@ lemma ex_distrib_star: "(\<exists>\<^sub>Ax. P x * Q) = (\<exists>\<^sub>Ax. P x
   @end
 @qed
 
+subsection {* Disjunction *}
+
+definition or_assn :: "assn \<Rightarrow> assn \<Rightarrow> assn" (infixr "\<or>\<^sub>A" 61)  where [rewrite]:
+  "A \<or>\<^sub>A B = Abs_assn (Assn (\<lambda>h. h\<Turnstile>A \<or> h\<Turnstile>B ) )"
+
+lemma or_assn_conv: "h \<Turnstile> A \<or>\<^sub>A B \<longleftrightarrow> (h \<Turnstile> A \<or> h \<Turnstile> B)" by auto2
+
+subsection {* Conjunction *}
+
+definition and_assn :: "assn \<Rightarrow> assn \<Rightarrow> assn" (infixr "\<and>\<^sub>A" 61)  where [rewrite]:
+  "A \<and>\<^sub>A B = Abs_assn (Assn (\<lambda>h. h\<Turnstile>A \<and> h\<Turnstile>B ) )"
+
+lemma and_assn_conv: "h \<Turnstile> A \<and>\<^sub>A B \<longleftrightarrow> (h \<Turnstile> A \<and> h \<Turnstile> B)" by auto2
+
 subsection {* Pointers *}
 
 definition sngr_assn :: "'a::heap ref \<Rightarrow> 'a \<Rightarrow> assn" (infix "\<mapsto>\<^sub>r" 82) where [rewrite]:
@@ -424,6 +438,11 @@ lemma bind_rule':
 lemma pre_rule':
   "\<not> <P * R> f <Q> \<Longrightarrow> P \<Longrightarrow>\<^sub>A P' \<Longrightarrow> \<not> <P' * R> f <Q>"
 @proof @have "P * R \<Longrightarrow>\<^sub>A P' * R" @qed
+
+
+lemma pre_rule:
+  "P'\<Longrightarrow>\<^sub>A P \<Longrightarrow> <P> f <Q> \<Longrightarrow> <P' > f <Q>"
+@proof @qed
 
 lemma pre_rule'':
   "<P> f <Q> \<Longrightarrow> P' \<Longrightarrow>\<^sub>A P * R \<Longrightarrow> <P'> f <\<lambda>x. Q x * R>"

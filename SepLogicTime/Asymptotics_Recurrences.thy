@@ -54,7 +54,87 @@ proof -
         finally show ?case .
       qed
       done
+  qed
+
+lemma bigO_linear_recurrence':
+  fixes f g :: "nat \<Rightarrow> real"
+  assumes "\<And>i. i\<ge>N \<Longrightarrow> f (Suc i) = f i + g i" and g: "g \<in> O(G)"
+    and monoG: "\<And>x y. x\<ge>N \<Longrightarrow> x\<le> y \<Longrightarrow> G x \<le> G y"
+    and posG: "\<And>x. x\<ge>N \<Longrightarrow> G x > 0" 
+  shows "f \<in> O(\<lambda>n. n * G n)"
+proof -
+  from g have "\<exists>c>0. \<forall>\<^sub>F x in at_top. norm (g x) \<le> c * norm (G x)"
+    unfolding bigo_def by auto
+  then obtain cg Ng where nncg: "cg > 0" and b: "\<forall>n\<ge>Ng. norm (g n) \<le> cg * norm (G n)"
+    using eventually_sequentially by auto
+  let ?cg = "max cg 1"
+  from nncg b have nncg2: "?cg \<ge> 1" and b2: "\<forall>n\<ge>Ng. norm (g n) \<le> ?cg * norm (G n)"
+    apply auto
+    by (metis (no_types) abs_not_less_zero b comm_monoid_mult_class.mult_1 landau_omega.R_trans max_def mult_le_cancel_right2 real_norm_def)
+
+  define K where  "K = max (nat (ceiling (1 / G N))) N"
+  have KK: "\<And>x. x\<ge>K \<Longrightarrow> norm (((x) * (G x))) \<ge> 1"
+  proof -
+    fix x assume "K \<le> x"
+    then have x: "x \<ge> N" and xi: "x \<ge> 1 / G N" apply (auto simp: K_def) done
+    have i: "norm (((x) * (G x))) = x * G x" using x posG apply auto
+      by (meson abs_of_nonneg less_eq_real_def mult_nonneg_nonneg not_le of_nat_0_le_iff of_nat_less_iff) 
+    have p: "G (real N) > 0" using posG by auto
+    have o: "G N \<le> G x" using x monoG by auto
+    have "1 = (1/G N) * G N" using p by auto
+    also have "\<dots> \<le> x * G N" using xi p apply auto
+      by (metis calculation linordered_field_class.sign_simps(24) real_mult_le_cancel_iff2) 
+    also have "\<dots> \<le> x * G x" using o  by (simp add:  mult_left_mono) 
+    finally show "norm (((x) * (G x))) \<ge> 1"
+      unfolding i .
+  qed
+
+  let ?N = "max Ng (max (N+1) K)"
+  define nfN  where "nfN = (max (norm (f ?N)) 1)"
+
+  show ?thesis apply(rule bigoI[where c="nfN * ?cg"])
+    apply(rule eventually_sequentiallyI[where c="?N"])
+    subgoal for x
+      proof (induction rule: Nat.dec_induct)
+        case base
+        have nn2: "norm (((?N) * (G ?N))) \<ge> 1"
+          apply(rule KK) by auto
+        have "norm (f ?N) \<le> nfN" by (auto simp: nfN_def)
+        also have "\<dots> \<le> nfN * ?cg * norm (real ?N * G ?N)" apply(rule K) 
+            subgoal by (auto simp: nfN_def) apply(rule nncg2)  apply(rule nn2) done 
+        finally show ?case . 
+      next
+        case (step n)
+        from step(1) have nN: "n\<ge>N" by auto
+        with assms(1) posG have i: "f (Suc n) = f n + g n" and ii: "G (real n) > 0" by auto
+        have z: "nfN \<ge> 1" by (auto simp: nfN_def)
+        from ii have zz: "norm (G (real n)) > 0"  by auto
+        from step(1) b2 have ii: "norm (g n) \<le> ?cg * norm (G n)" by auto
+        also have "\<dots> \<le> nfN * ?cg * norm (G n)" using z nncg zz
+          by (simp add: mult_le_cancel_right1) 
+        finally have ii: "norm (g n) \<le> nfN * ?cg * norm (G n) " .
+        have kl: "G n \<le> G (Suc n)" using monoG nN by auto
+        have t: "norm (real n * G n) + norm (G n) = (n * G n) + (G n)" using   ii
+          by (metis abs_of_nonneg less_eq_real_def linordered_semidom_class.of_nat_le_iff nN norm_mult norm_of_nat posG real_norm_def) 
+        also have "\<dots> \<le> (Suc n * G (Suc n))" using kl
+          by (metis add.commute distrib_right mult.left_neutral mult_left_mono of_nat_0_le_iff of_nat_Suc)  
+        also have "\<dots> = norm (Suc n * G (Suc n))" using kl ii
+          using less_eq_real_def nN posG by fastforce 
+        finally have pf: "norm (real n * G n) + norm (G n) \<le>norm (Suc n * G (Suc n))" .
+
+        have "norm (f (Suc n)) = norm (f n + g n)" using i by auto
+        also have "\<dots> \<le> norm (f n) + norm (g n)" by simp
+        also have "\<dots> \<le> (nfN * ?cg * norm (real n * G n)) + norm (g n)" using step(3) by simp
+        also have "\<dots> \<le> (nfN * ?cg * norm (real n * G n)) + nfN * ?cg * norm (G n) " using ii by simp
+        also have "\<dots> = nfN * ?cg * (norm (real n * G n) + norm (G n))" by algebra
+        also have "\<dots> \<le>  nfN * ?cg * norm (real (Suc n) * G (Suc n))" using pf z by auto 
+        finally show ?case .
+      qed
+      done
 qed
+
+
+
 
 lemma bigOmega_linear_recurrence:
   fixes f g :: "nat \<Rightarrow> real"
@@ -135,6 +215,174 @@ proof -
       qed
       done
 qed
+
+
+lemma bigOmega_linear_recurrence':
+  fixes f g :: "nat \<Rightarrow> real"
+  assumes "\<And>i. i\<ge>N \<Longrightarrow> f (Suc i) = f i + g i"
+      and g: "g \<in> \<Omega>(G)" and "\<And>n. f n \<ge> 0" "\<And>n. g n \<ge> 0"
+    and posG: "\<And>x. x\<ge>N \<Longrightarrow> G x > 0" 
+    and C: "\<And>n. n\<ge>N \<Longrightarrow> (n+1) * G (n+1) \<le> n * G n + C * G n"
+      (* conjecture: proposition C always holds for G being polylog, or even stablebigO *)
+    and Cpos: "C\<ge>0"
+    shows "f \<in> \<Omega>(\<lambda>n. n * G n)"
+proof -
+  from g have "\<exists>c>0. \<forall>\<^sub>F x in at_top. norm (g x) \<ge> c * norm (G x)"
+    unfolding bigomega_def by auto
+  then obtain cg Ng where nncg: "cg > 0" and b: "\<forall>n\<ge>Ng. norm (g n) \<ge> cg * norm (G n)"
+    using eventually_sequentially by auto
+  let ?cg = "max (1/cg) 1"
+  have nncg2: "?cg \<ge> 1" by auto
+  have b2: "\<And>n. n\<ge>max Ng N \<Longrightarrow>  G n  \<le> ?cg * norm (g n)"
+  proof -
+    fix n assume n:"n\<ge>max Ng N"
+    then have n: "n\<ge> Ng" and nl: "n\<ge> N" by auto
+    from nl posG have "G n \<ge> 0"
+      using less_eq_real_def linordered_semidom_class.of_nat_le_iff by blast 
+    then have "G n = norm (G n)" by auto
+    also from n have "norm (G n) \<le> norm (g n) / cg" using b nncg
+      by (simp add: linordered_field_class.sign_simps(24) pos_le_divide_eq)  
+    also have "\<dots> = (1/cg) * norm (g n)" by auto
+    also have "\<dots> \<le> ?cg * norm (g n)" apply(rule mult_right_mono) by auto 
+    finally show "G n \<le> max (1 / cg) 1 * norm (g n)" .
+  qed
+
+  let ?N' = "max Ng (N+1)"
+  let ?N = "2*?N'"
+  have n: "norm (f ?N) > 0"
+  proof -
+    have "?N>0" by auto then
+    obtain N' where f: "?N=Suc N'" using gr0_implies_Suc by blast
+    then have p: "N' \<ge> N"
+      by (metis Suc_eq_plus1 Suc_le_mono max.cobounded2 nat_le_prod_with_le zero_neq_numeral) 
+    have gN: "G N' > 0" apply(rule posG) using p by simp
+    have n: "N'\<ge>Ng" using f
+      by (metis add_le_cancel_left antisym_conv le_add_same_cancel1 le_simps(3) linorder_not_le max.bounded_iff nat_mult_2 zero_order(1)) 
+    have "0 < cg * norm (G N')" using gN nncg by auto
+    also have "\<dots> \<le>  norm (g N')" using b n  by auto
+    also have "\<dots> \<le> norm (f N' + g N')" using assms(3,4) by auto
+    also have "\<dots> = norm (f ?N)" unfolding f using p assms(1) by auto 
+    finally show ?thesis .
+  qed
+  let ?nfN = "norm (?N * G ?N)/(norm (f ?N))"
+ 
+  define nfN' where "nfN' = max ?nfN C" 
+
+  show ?thesis apply(rule bigomegaI[where c="?cg * nfN'"])
+    apply(rule eventually_sequentiallyI[where c="?N"])
+    subgoal for x
+      proof(induction rule: Nat.dec_induct)
+        case base
+        have "norm (?N * G ?N) = 1 * (?nfN * (norm (f ?N)))" using n by auto      
+        also have "\<dots> \<le> ?cg * (?nfN * (norm (f ?N)))" apply(rule mult_right_mono) using nncg2 by auto 
+        also have "\<dots> = (?cg * ?nfN) * (norm (f ?N))" by auto
+        also have "\<dots> \<le> (?cg * nfN') * (norm (f ?N))" unfolding nfN'_def apply(rule mult_right_mono) apply(rule mult_left_mono) by auto
+        finally show ?case by auto
+      next
+        case (step n)
+        then have nN: "n\<ge>N"
+          by (metis Suc_eq_plus1 Suc_leD le_trans max.cobounded2 nat_le_prod_with_le zero_neq_numeral) 
+        then have rNN: "real N \<le> n" by auto
+        from step(1) have nNg: "n\<ge>Ng"
+          by (metis le_trans max.cobounded1 nat_le_prod_with_le zero_neq_numeral) 
+        from nN assms(1) have i: "f (Suc n) = f n + g n" by auto
+         have b3: "G n \<le> ?cg * norm (g n)" apply(rule b2) using nN nNg by auto
+        have Gm: "G (n+1) > 0" apply(rule posG)  using nN by auto
+        from step(1) have "n\<ge>1"
+          by (metis One_nat_def Suc_eq_plus1 gr0I le_0_eq le_simps(3) max.cobounded2 mult_is_0 nat.simps(3) numeral_eq_Suc) 
+
+        have 4: "C\<le>nfN'" unfolding nfN'_def by auto
+        have "norm ((Suc n) * G (Suc n)) = (n+1)*(G (n+1))" using Gm by auto
+        also have "\<dots> \<le>  n*G n + C * G n" using 
+            C(1)[OF rNN]
+          by (metis Suc_eq_plus1 add.commute of_nat_Suc) 
+        also have "\<dots> \<le> ?cg * nfN' * norm (f n) + C * G n" using  step(3) by auto
+        also have "\<dots> \<le> ?cg * nfN' * norm (f n) + C*(?cg * norm (g n))" using b3 Cpos apply auto apply(rule mult_left_mono) by auto 
+        also have "\<dots> \<le> ?cg * nfN' * norm (f n) + nfN'*(?cg * norm (g n))" using 4 apply auto apply(rule mult_right_mono) by auto
+        also have "\<dots> = (?cg * nfN') * norm (f n) + (?cg * nfN') * norm (g n)" by auto
+        also have "\<dots> = (?cg * nfN') * (norm (f n) + norm (g n))" by argo
+        also have "\<dots> = (?cg* nfN') * (norm (f n + g n))" using assms(3,4) by auto
+        also have "\<dots> = (?cg* nfN') * norm (f (Suc n))" using i by auto
+        finally    
+        show "norm ((Suc n) * G (Suc n)) \<le> (?cg * nfN') * norm (f (Suc n))" . 
+      qed
+      done
+qed
+
+
+lemma chara_ln: "(x::real)\<ge>3 \<Longrightarrow> (x + 1) * ln (x + 1) \<le> x * ln x +  3 * ln x"
+proof -
+ { fix x :: real
+    assume e: "x\<ge>exp 1"
+    then have x1: "ln x\<ge>1"
+      using exp_gt_zero less_le_trans ln_ge_iff by blast  
+    from e have x2: "1/x \<le> ln x"
+      by (metis (mono_tags) landau_o.R_linear landau_o.R_trans ln_less_self mult.left_neutral not_exp_le_zero not_less pos_le_divide_eq x1) 
+     
+    have x0: "x>0"
+      using e exp_gt_zero less_le_trans by blast
+    then  have "x+1 = x * (1+ 1/x)"
+      by (metis distrib_left divide_self_if less_numeral_extra(3) mult.commute mult.left_neutral times_divide_eq_right)  
+    then have"ln (x+1) = ln (x * (1+1/x))" by auto
+    also have "\<dots> = ln x + ln (1+ 1/x)" 
+      using x0 by(auto intro: ln_mult simp add: add_pos_pos) 
+    also have "ln (1+ 1/x) \<le> 1/x" apply(rule ln_add_one_self_le_self) 
+      using x0 by auto
+    finally have lnx1:  "ln (x + 1) \<le> ln x + 1 / x " by auto
+    then have "x * ln (x+1) \<le> x * (ln x + 1 / x)" apply(rule mult_left_mono) using x0 by simp
+    also have "\<dots> = x*ln x + 1" using x0
+      by (metis distrib_left nonzero_mult_div_cancel_left not_le order_refl times_divide_eq_right)
+    also have "\<dots> \<le> x*ln x + ln x" using x1 by auto 
+    finally have i: "x * ln (x + 1) \<le> x * ln x + ln x " .
+
+    
+    from lnx1 x2 have ii: "ln (x+1) \<le> ln x + ln x" by auto
+
+    have "(x+1)*ln(x+1) = x*ln(x+1) + ln(x+1)" 
+      by (simp add: add.commute semiring_normalization_rules(3))
+    also have "\<dots> \<le> x * ln x + ln x + ln (x+1)" using i by auto
+    also have "\<dots> \<le> x * ln x + ln x + ln x + ln x" using ii by auto
+    also have "\<dots> = x*ln x + 3*ln x" by auto
+    finally have "(x + 1) * ln (x + 1) \<le> x * ln x +  3 * ln x" .
+  } note p=this  
+  assume "x\<ge>3"
+  then show ?thesis using exp_le by(auto intro!: p)
+qed
+
+
+lemma bigTheta_linear_recurrence_const:
+  fixes f g :: "nat \<Rightarrow> real"
+  assumes "\<And>i. i\<ge>N \<Longrightarrow> f (Suc i) = f i + g i"  
+      and g: "g \<in> \<Theta>(\<lambda>n. 1)" and "\<And>n. f n \<ge> 0" "\<And>n. g n \<ge> 0"
+  shows "f \<in> \<Theta>(\<lambda>n. n )" 
+proof 
+  have "f \<in> O(\<lambda>n. n * 1)" 
+    apply (rule bigO_linear_recurrence'[where g=g and N="max N 3"])
+    using assms by auto
+  thus "f \<in> O(\<lambda>n. n )" by simp
+
+  have "f \<in> \<Omega>(\<lambda>n. n * 1)"
+    apply (rule bigOmega_linear_recurrence'[where g=g and N="max N 3" and C=3])
+    using assms by (auto)
+  thus "f \<in> \<Omega>(\<lambda>n. n)" by simp
+qed
+
+
+lemma bigTheta_linear_recurrence_log:
+  fixes f g :: "nat \<Rightarrow> real"
+  assumes "\<And>i. i\<ge>N \<Longrightarrow> f (Suc i) = f i + g i"  
+      and g: "g \<in> \<Theta>(ln)" and "\<And>n. f n \<ge> 0" "\<And>n. g n \<ge> 0"
+  shows "f \<in> \<Theta>(\<lambda>n. n * ln n)" 
+proof
+  show "f \<in> O(\<lambda>n. n * ln n)" 
+    apply (rule bigO_linear_recurrence'[where g=g and N="max N 3"])
+    using assms by auto
+
+  show "f \<in> \<Omega>(\<lambda>n. n * ln n)"
+    apply (rule bigOmega_linear_recurrence'[where g=g and N="max N 3" and C=3])
+    using assms by (auto intro!: chara_ln)  
+qed
+
 
 lemma bigTheta_linear_recurrence:
   fixes f g :: "nat \<Rightarrow> real"
