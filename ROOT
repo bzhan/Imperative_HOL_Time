@@ -28,3 +28,7 @@ session SepLogicTime_Impl = SepLogicTime_Fun +
   *}
   theories
     "SepLogicTime/Sep_Time_Examples"
+
+session SepLogicTime_RBTreeBasic = SepLogicTime_Base + 
+  theories 
+    "SepLogicTime/RBTree_Impl"
