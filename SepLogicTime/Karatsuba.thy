@@ -1,5 +1,5 @@
 theory Karatsuba
-  imports "../../auto2/HOL/Auto2_Main" Berlekamp_Zassenhaus.Karatsuba_Multiplication
+  imports "Auto2_HOL.Auto2_Main" Berlekamp_Zassenhaus.Karatsuba_Multiplication
 begin
 
 section {* List version of polynomial operations *}

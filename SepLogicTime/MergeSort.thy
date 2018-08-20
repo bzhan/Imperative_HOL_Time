@@ -2,7 +2,7 @@
 *)
 
 theory MergeSort
-  imports "../../auto2/HOL/Auto2_Main"
+  imports "Auto2_HOL.Auto2_Main"
 begin
 
 section \<open>Simple functional version\<close>

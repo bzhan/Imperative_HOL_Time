@@ -48,14 +48,14 @@ proof (induction xs arbitrary: i rule: list.induct)
   show ?case
   proof (cases i)
     case 0
-    thus ?thesis using Cons.prems by (auto simp: sorted_Cons filter_mset_is_empty_iff)
+    thus ?thesis using Cons.prems by (auto simp: sorted2 filter_mset_is_empty_iff)
   next
     case (Suc i')
     have "{#y \<in># mset (x # xs). y < (x # xs) ! i#} \<subseteq># add_mset x {#y \<in># mset xs. y < xs ! i'#}"
-      using Suc Cons.prems by (auto simp: sorted_Cons)
+      using Suc Cons.prems by (auto simp: sorted2)
     also have "\<dots> \<subseteq># add_mset x (mset (take i' xs))"
       unfolding mset_subset_eq_add_mset_cancel using Cons.prems Suc
-      by (intro Cons.IH) (auto simp: sorted_Cons)
+      by (intro Cons.IH) (auto simp: sorted2)
     also have "\<dots> = mset (take i (x # xs))" by (simp add: Suc)
     finally show ?thesis .
   qed
@@ -74,9 +74,9 @@ proof (induction xs arbitrary: i rule: list.induct)
   next
     case (Suc i')
     have "{#y \<in># mset (x # xs). y > (x # xs) ! i#} \<subseteq># {#y \<in># mset xs. y > xs ! i'#}"
-      using Suc Cons.prems by (auto simp: sorted_Cons set_conv_nth)
+      using Suc Cons.prems by (auto simp: sorted2 set_conv_nth)
     also have "\<dots> \<subseteq># mset (drop (Suc i') xs)"
-      using Cons.prems Suc by (intro Cons.IH) (auto simp: sorted_Cons)
+      using Cons.prems Suc by (intro Cons.IH) (auto simp: sorted2)
     also have "\<dots> = mset (drop (Suc i) (x # xs))" by (simp add: Suc)
     finally show ?thesis .
   qed
@@ -127,7 +127,7 @@ context
 begin
 
 lemma chop_transfer [transfer_rule]: 
-  "(op = ===> list_all2 R ===> list_all2 (list_all2 R)) chop chop"
+  "((=) ===> list_all2 R ===> list_all2 (list_all2 R)) chop chop"
 proof (intro rel_funI)
   fix m n ::nat and xs :: "'a list" and ys :: "'b list"
   assume "m = n" "list_all2 R xs ys"
@@ -345,8 +345,8 @@ context
   includes lifting_syntax
 begin
 lemma transfer_is_median [transfer_rule]:
-  assumes [transfer_rule]: "(r ===> r ===> op =) op < op <"
-  shows   "(r ===> list_all2 r ===> op =) is_median is_median"
+  assumes [transfer_rule]: "(r ===> r ===> (=)) (<) (<)"
+  shows   "(r ===> list_all2 r ===> (=)) is_median is_median"
   unfolding is_median_def by transfer_prover
 
 lemma list_all2_eq_fun_conv_map: "list_all2 (\<lambda>x y. x = f y) xs ys \<longleftrightarrow> xs = map f ys"
@@ -361,7 +361,7 @@ next
 qed
 
 lemma transfer_is_median_dual_ord [transfer_rule]:
-  "(pcr_dual_ord op = ===> list_all2 (pcr_dual_ord op =) ===> op =) is_median is_median"
+  "(pcr_dual_ord (=) ===> list_all2 (pcr_dual_ord (=)) ===> (=)) is_median is_median"
   by (auto simp: pcr_dual_ord_def cr_dual_ord_def OO_def rel_fun_def is_median_def 
         list_all2_eq_fun_conv_map o_def less_dual_ord.rep_eq)
 end
@@ -552,7 +552,7 @@ proof -
   define med' where "med' = (\<lambda>xs. to_dual_ord (med (map of_dual_ord xs)))"
   have "xs = map of_dual_ord ys" if "list_all2 cr_dual_ord xs ys" for xs :: "'a list" and ys
     using that by induction (auto simp: cr_dual_ord_def)
-  hence [transfer_rule]: "(list_all2 (pcr_dual_ord op =) ===> pcr_dual_ord op =) med med'"
+  hence [transfer_rule]: "(list_all2 (pcr_dual_ord (=)) ===> pcr_dual_ord (=)) med med'"
     by (auto simp: rel_fun_def pcr_dual_ord_def OO_def med'_def cr_dual_ord_def 
                    dual_ord.to_dual_ord_inverse)
 

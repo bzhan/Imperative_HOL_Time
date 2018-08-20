@@ -292,7 +292,7 @@ proof -
     show ?thesis using ineq1 ineq2 by (simp only: of_nat_add of_nat_nat assms)
   qed
   then show ?thesis
-    using linordered_semidom_class.of_nat_le_iff by blast
+    using of_nat_le_iff by blast
 qed
 
 lemma a_splay [resolve]:

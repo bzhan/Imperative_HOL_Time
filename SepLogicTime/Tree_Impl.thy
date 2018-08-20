@@ -1,5 +1,5 @@
 theory Tree_Impl
-  imports SepAuto Tree
+  imports SepAuto "HOL-Library.Tree"
 begin
 
 section {* Abstract tree *}

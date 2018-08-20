@@ -1,7 +1,7 @@
 (* Verification of imperative red-black trees. *)
 
 theory RBTree_Impl
-  imports "../../auto2/HOL/DataStrs/RBTree" SepAuto Asymptotics_1D
+  imports "DataStrs.RBTree" SepAuto Asymptotics_1D
 begin
 
 section {* Tree nodes *}
@@ -640,7 +640,7 @@ proof -
     by (simp add: powr_realpow bheight_size_bound  )
   finally have "2 powr ((max_depth t -1) / 2) \<le> size1 t" .
   hence "(max_depth t -1) / 2 \<le> log 2 (size1 t)"
-    by(simp add: le_log_iff size1_def del: Int.divide_le_eq_numeral1(1))
+    by(simp add: le_log_iff size1_def del: divide_le_eq_numeral1(1))
   thus ?thesis by simp
 qed  
 

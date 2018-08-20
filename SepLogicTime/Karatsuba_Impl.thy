@@ -223,7 +223,7 @@ lemma "(\<lambda>n. karatsuba_main_impl_time n) \<in> \<Theta>(\<lambda>n. real 
   unfolding karatsuba_main_impl_time'_def[symmetric]
   apply (master_theorem2 1 p': 1 recursion: karatsuba_main_impl_time.simps(2)
          rew: karatsuba_main_impl_time'_def div2_ceil[symmetric] div2_floor[symmetric])
-  prefer 6 apply (rule Landau_Symbols_Definition.bigthetaD1)
+  prefer 6 apply (rule bigthetaD1)
           apply (simp only: div2_ceil' div2_floor powr_1) apply auto2
   by (simp_all add: powr_divide karatsuba_main_impl_time'_def
         karatsuba_main_impl_time_pos karatsuba_lower_bound_def)

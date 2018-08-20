@@ -127,12 +127,12 @@ definition remdups_impl :: "('a::{heap,linorder}) array \<Rightarrow> 'a array H
         rev_impl r
     }"
  
-lemma rev_impl_time_absch[resolve]: "rev_impl_time (length xs) \<ge> rev_impl_time (length (remdups xs))"
+lemma rev_impl_time_absch[resolve]: "rev_time (length xs) \<ge> rev_time (length (remdups xs))"
   by(rule rev_impl_time_mono, simp)
   
 
 definition remdups_impl_time :: "nat \<Rightarrow> nat" where [rewrite]:
-  "remdups_impl_time n = 4 + remdups'_impl_time n + rev_impl_time n"
+  "remdups_impl_time n = 4 + remdups'_impl_time n + rev_time n"
 
 lemma remdups_impl_time_bound[asym_bound]: 
     "remdups_impl_time \<in> \<Theta>(\<lambda>n. n * ln n)"
@@ -144,7 +144,7 @@ lemma remdups_impl_rule[hoare_triple]: "<p \<mapsto>\<^sub>a xs * $(remdups_impl
     remdups_impl p
    <\<lambda>r. p \<mapsto>\<^sub>a xs * r \<mapsto>\<^sub>a remdups xs>\<^sub>t"
 @proof 
-  @have "rev_impl_time (length xs) \<ge>\<^sub>t rev_impl_time (length (remdups xs))" 
+  @have "rev_time (length xs) \<ge>\<^sub>t rev_time (length (remdups xs))" 
 @qed
 
 

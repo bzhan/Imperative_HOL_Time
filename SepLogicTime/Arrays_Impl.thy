@@ -1,5 +1,5 @@
 theory Arrays_Impl
-  imports SepAuto Asymptotics_1D "../../auto2/HOL/DataStrs/Arrays_Ex"
+  imports SepAuto Asymptotics_1D "DataStrs.Arrays_Ex"
 begin
 
 definition acopy :: "'a::heap array \<Rightarrow> 'a array Heap" where

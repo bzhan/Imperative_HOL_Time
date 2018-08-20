@@ -107,7 +107,7 @@ proof -
         using rhs_ge_zero apply auto
         using a_merge''' by simp
     qed
-    show ?thesis using a_merge'' linordered_semidom_class.of_nat_le_iff by blast
+    show ?thesis using a_merge'' of_nat_le_iff by blast
   qed
   show ?thesis
   apply (simp only: merge_time_def skew_heap_P_def merge_atime_def)
@@ -167,7 +167,7 @@ proof -
         using rhs_ge_zero t_del_min_def [of t] apply auto
         using a_del_min''' by simp
     qed
-    show ?thesis using a_del_min'' linordered_semidom_class.of_nat_le_iff by blast
+    show ?thesis using a_del_min'' of_nat_le_iff by blast
   qed
   show ?thesis
   apply (simp only: del_min_time_rule skew_heap_P_def del_min_atime_def)

@@ -8,8 +8,8 @@ lemma event_nonneg_real: "eventually_nonneg F (\<lambda>x. real (f x))"
   by (simp add: eventually_nonneg_def)
 
 lemma event_nonneg_ln: "eventually_nonneg at_top (\<lambda>x. ln (real x))"
-  unfolding eventually_nonneg_def
-  by (smt eventually_sequentiallyI ln_ge_zero of_nat_mono of_nat_nonneg semiring_1_class.of_nat_simps(2))
+  unfolding eventually_nonneg_def apply(rule eventually_sequentiallyI[where c=1]) 
+  using ln_ge_zero real_of_nat_ge_one_iff by blast 
 
 lemma event_nonneg_ln_pow: "eventually_nonneg at_top (\<lambda>x. ln (real x) ^ m)"
   using event_nonneg_ln by (simp add: eventually_mono eventually_nonneg_def)
@@ -287,7 +287,7 @@ proof -
   {fix x assume "x\<ge>n"
     with f1 have f1': "f x \<le> c * g x" by auto
     then have "f x \<le> (nat \<lceil>c\<rceil>) * g x" using c1
-      by (smt linordered_semidom_class.of_nat_le_iff mult_right_mono of_nat_0_le_iff of_nat_mult real_nat_ceiling_ge) 
+      by (smt mult_right_mono of_nat_0_le_iff of_nat_ceiling of_nat_le_iff of_nat_mult) 
   } then have "\<forall>x\<ge>n. f x \<le> (nat \<lceil>c\<rceil>) * g x" by auto
   from c1' and this show ?thesis by (rule that)
 qed

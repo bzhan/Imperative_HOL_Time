@@ -4,9 +4,9 @@ Verifying asymptotic time complexity of imperative programs in Isabelle/HOL.
 Paper at: https://arxiv.org/abs/1802.01336
 
 The paper corresponds to the initial commit 8d336cd, which uses the version
-of auto2 (https://github.com/bzhan/auto2) at commit 167808b.
+of auto2 (https://github.com/bzhan/auto2) at commit 167808b and Isabelle2017.
 
-The current commit corresponds to commit e644965 in auto2.
+The current commit corresponds to commit 16d8325 in auto2 and Isabelle2018.
 
 ### Abstract:
 

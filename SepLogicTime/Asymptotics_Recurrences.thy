@@ -115,7 +115,7 @@ proof -
         finally have ii: "norm (g n) \<le> nfN * ?cg * norm (G n) " .
         have kl: "G n \<le> G (Suc n)" using monoG nN by auto
         have t: "norm (real n * G n) + norm (G n) = (n * G n) + (G n)" using   ii
-          by (metis abs_of_nonneg less_eq_real_def linordered_semidom_class.of_nat_le_iff nN norm_mult norm_of_nat posG real_norm_def) 
+          by (metis abs_of_nonneg less_eq_real_def of_nat_le_iff nN norm_mult norm_of_nat posG real_norm_def) 
         also have "\<dots> \<le> (Suc n * G (Suc n))" using kl
           by (metis add.commute distrib_right mult.left_neutral mult_left_mono of_nat_0_le_iff of_nat_Suc)  
         also have "\<dots> = norm (Suc n * G (Suc n))" using kl ii
@@ -238,7 +238,7 @@ proof -
     fix n assume n:"n\<ge>max Ng N"
     then have n: "n\<ge> Ng" and nl: "n\<ge> N" by auto
     from nl posG have "G n \<ge> 0"
-      using less_eq_real_def linordered_semidom_class.of_nat_le_iff by blast 
+      using less_eq_real_def of_nat_le_iff by blast 
     then have "G n = norm (G n)" by auto
     also from n have "norm (G n) \<le> norm (g n) / cg" using b nncg
       by (simp add: linordered_field_class.sign_simps(24) pos_le_divide_eq)  
@@ -464,7 +464,7 @@ proof -
       from pf have "?N > 0" by auto
       with pf have nm: "n*m\<ge>?N*?N" using mult_le_mono by blast
       then   have urghs: "C / (n*m) \<le> C / (?N*?N)" using NN
-        by (meson Cpos frac_le linordered_semidom_class.of_nat_le_iff of_nat_0_less_iff order_refl)  
+        by (meson Cpos frac_le of_nat_le_iff of_nat_0_less_iff order_refl)  
       from pf have Nn: "N \<le> n " and mNg: "m \<ge> Ng" and nm0: "n*m>0"  by auto
       then have "norm (f (n, m)) \<le> norm (C + (n-N) * g m)" using k[of "n"] fpos''
         by (smt real_norm_def) 
