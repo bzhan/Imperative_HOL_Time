@@ -1,5 +1,5 @@
 theory Asymptotics_1D
-  imports Akra_Bazzi.Akra_Bazzi_Method "../../auto2/HOL/Auto2_Main"
+  imports Akra_Bazzi.Akra_Bazzi_Method Auto2_HOL.Auto2_Main
 begin
 
 section \<open>Eventually nonneg\<close>
@@ -458,7 +458,7 @@ proof -
   proof eventually_elim
     case (elim x) 
     have "norm (f1 (f2 x)) \<le> c1 * norm (g1 (f2 x))" using f1[where x="f2 x"] elim
-      using linordered_semidom_class.of_nat_le_iff by blast 
+      by blast 
     also { have "norm (g1 (f2 x)) \<le> norm (g1 (c2 * g2 x))"
         apply(rule g1) using f2 elim by auto 
       also have "\<dots> \<le> c3 * norm (g1 (g2 x))" using elim f3 by auto 
