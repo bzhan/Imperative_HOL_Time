@@ -12,11 +12,13 @@ sig
   val add_time_proofsteps: theory -> theory
 end;
 
-structure SepTimeSteps : SEP_TIME_STEPS =
+functor SepTimeSteps(SepUtil : SEP_UTIL) : SEP_TIME_STEPS =
 struct
 
 open SepUtil
 open SepTimeUtil
+structure AssnMatcher = AssnMatcher(SepUtil)
+structure SepLogic = SepLogic(SepUtil)
 
 val plus_ac_info = Nat_Util.plus_ac_on_typ @{theory} natT
 
@@ -198,7 +200,7 @@ fun time_assn_matcher_gen ctxt (pat, ct) (id, inst) =
                               |> apply_to_entail_r (move_outmost t')
 
                   (* th': ct ==> rest * (t' * t'') *)
-                  val th' = [th, entail_th] MRS @{thm entail_trans2}
+                  val th' = [th, entail_th] MRS entails_trans2_th
 
                   (* th'': ct ==> (rest * t'') * t' *)
                   val th'' = th' |> apply_to_entail_r
@@ -276,7 +278,7 @@ val time_credit_ge_prfstep =
      func = TwoStep time_credit_ge_prfstep_fn}
 
 val add_time_proofsteps =
-    fold add_assn_matcher [
+    fold AssnMatcher.add_assn_matcher [
       time_assn_matcher_gen
 
     ] #> fold add_prfstep [
@@ -284,5 +286,3 @@ val add_time_proofsteps =
     ]
 
 end  (* structure SepTimeSteps *)
-
-val _ = Theory.setup (SepTimeSteps.add_time_proofsteps)

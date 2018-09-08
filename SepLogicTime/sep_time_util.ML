@@ -10,8 +10,6 @@ end;
 structure SepTimeUtil : SEP_TIME_UTIL =
 struct
 
-open SepUtil
-
 fun is_time_credit t =
     case t of
         Const (@{const_name timeCredit_assn}, _) $ _ => true
@@ -23,6 +21,6 @@ fun dest_time_credit t =
       | _ => raise Fail "dest_time_credit: unexpected t."
 
 fun mk_time_credit n =
-    Const (@{const_name timeCredit_assn}, natT --> assnT) $ n
+    Const (@{const_name timeCredit_assn}, natT --> @{typ assn}) $ n
 
 end  (* structure SepTimeUtil *)

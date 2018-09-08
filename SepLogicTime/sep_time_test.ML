@@ -11,7 +11,7 @@ val test_normalize_time =
       val ctxt' = ctxt |> fold Variable.auto_fixes [
             Free ("P", assnT), Free ("S", natT --> assnT),
             Free ("T", natT --> assnT)]
-      val test = Util.test_conv ctxt' (SepUtilExtra.normalize_assn_cv ctxt')
+      val test = Util.test_conv ctxt' (SepUtil.normalize_assn_cv ctxt')
                                 "normalize_assn"
 
       val test_data = [
