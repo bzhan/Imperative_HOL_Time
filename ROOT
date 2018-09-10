@@ -36,3 +36,5 @@ session SepLogicTime_RBTreeBasic = SepLogicTime_Base +
     Auto2_HOL DataStrs	
   theories 
     "SepLogicTime/RBTree_Impl"
+    "SepLogicTime/DynamicArray2"
+                      
