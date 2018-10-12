@@ -614,7 +614,7 @@ attribute_setup hoare_triple = {* setup_attrib add_hoare_triple_prfstep *}
 setup {* fold add_hoare_triple_prfstep [
   @{thm assert_rule}, @{thm update_rule}, @{thm nth_rule}, @{thm upd_rule},
   @{thm return_rule}, @{thm ref_rule}, @{thm lookup_rule}, @{thm new_rule},
-  @{thm of_list_rule}, @{thm length_rule}, @{thm freeze_rule}] *}
+  @{thm make_rule}, @{thm of_list_rule}, @{thm length_rule}, @{thm freeze_rule}] *}
 
 (* Some simple tests *)
 
