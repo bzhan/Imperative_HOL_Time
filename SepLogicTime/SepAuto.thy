@@ -555,6 +555,11 @@ setup {* add_rewrite_rule @{thm execute_new} *}
 lemma new_rule:
   "<$(n+1)> Array.new n x <\<lambda>r. r \<mapsto>\<^sub>a replicate n x>" by auto2
 
+
+setup {* add_rewrite_rule @{thm execute_make} *}
+lemma make_rule:
+  "<$(n+1)> Array.make n f <\<lambda>r. r \<mapsto>\<^sub>a map f [0 ..< n]>" by auto2
+
 setup {* add_rewrite_rule @{thm execute_of_list} *}
 lemma of_list_rule:
   "<$ (1+length xs)> Array.of_list xs <\<lambda>r. r \<mapsto>\<^sub>a xs>" by auto2
