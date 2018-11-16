@@ -738,6 +738,9 @@ lemma rbt_insert_time_mono: "x \<le> y \<Longrightarrow> rbt_insert_time x \<le>
 
 definition rbt_insert_logN :: "nat \<Rightarrow> nat" where "rbt_insert_logN n = rbt_insert_time (rbt_absch n)"
 
+lemma rbt_insert_logN_gt0[resolve]: "rbt_insert_logN n > 0"
+  by (simp add: rbt_insert_logN_def rbt_absch_def rbt_insert_time_def)
+
 lemma rbt_insert_logN_mono: "0 < x \<Longrightarrow> x\<le>y \<Longrightarrow> rbt_insert_logN x \<le> rbt_insert_logN y"
   by(auto simp: rbt_insert_logN_def intro!: rbt_insert_time_mono rbt_absch_mono)
 
@@ -770,6 +773,9 @@ subsection \<open>search\<close>
 
 
 definition rbt_search_time_logN :: "nat \<Rightarrow> nat" where "rbt_search_time_logN n = rbt_search_time (rbt_absch n)"
+
+lemma rbt_search_time_logN_gt0[resolve]: "rbt_search_time_logN n > 0"
+  by (simp add: rbt_search_time_logN_def rbt_absch_def rbt_search_time_def)
 
 lemma rbt_search_time_mono: "x \<le> y \<Longrightarrow> rbt_search_time x \<le> rbt_search_time y"
   unfolding rbt_search_time_def by auto
@@ -805,6 +811,8 @@ subsection \<open>delete\<close>
 
 definition rbt_delete_time_logN :: "nat \<Rightarrow> nat" where "rbt_delete_time_logN n = rbt_delete_time (rbt_absch n)"
 
+lemma rbt_delete_time_logN_gt0[resolve]: "rbt_delete_time_logN n > 0"
+  by (simp add: rbt_delete_time_logN_def rbt_absch_def rbt_delete_time_def)
 
 lemma rbt_delete_time_mono: "x \<le> y \<Longrightarrow> rbt_delete_time x \<le> rbt_delete_time y"
   unfolding rbt_delete_time_def btree_del_time_def by auto
