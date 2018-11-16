@@ -16,7 +16,7 @@ session SepLogicTime_Fun = SepLogicTime_Base +
     Functional algorithms
   *}
   sessions
-    Auto2_HOL DataStrs
+    Auto2_HOL
   theories
     "SepLogicTime/BinarySearch"
     "SepLogicTime/MergeSort"
@@ -29,14 +29,13 @@ session SepLogicTime_Impl = SepLogicTime_Fun +
     Separation logic with time.
   *}
   sessions
-    SepLogic
+    Auto2_HOL
   theories
     "SepLogicTime/Sep_Time_Examples"
 
 session SepLogicTime_RBTreeBasic = SepLogicTime_Base +
   sessions
-    SepLogic DataStrs
+    Auto2_HOL
   theories
     "SepLogicTime/RBTree_Impl"
     "SepLogicTime/DynamicArray2"
-                      
