@@ -2,7 +2,7 @@
    (by Lammich and Meis) in the AFP *)
 
 theory SepAuto
-  imports SepLogic.SepLogic_Base "../Imperative_HOL"
+  imports Auto2_HOL.SepLogic_Base "../Imperative_HOL"
 begin
 
 section {* Partial Heaps *}

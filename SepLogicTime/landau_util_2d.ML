@@ -490,8 +490,15 @@ val asym_bound2_prfstep =
               val th = the_single ths
               val (t, goal) = th |> prop_of' |> dest_not |> Util.dest_binop_args
               val res = asym_bound2_gen ctxt (Thm.cterm_of ctxt t, goal)
+              val contra = ([th, res] MRS UtilBase.contra_triv_th)
+                              |> fold Thm.implies_intr (map (Thm.cterm_of ctxt) (Thm.hyps_of res))
+              val contra = if Util.is_implies (Thm.prop_of contra) then
+                             contra |> apply_to_thm UtilLogic.rewrite_from_contra_form
+                                    |> apply_to_thm (UtilLogic.to_obj_conv ctxt)
+                           else
+                             contra
             in
-              [Update.thm_update (id, [th, res] MRS UtilBase.contra_triv_th)]
+              [Update.thm_update (id, contra)]
             end)
 
 val add_asym_bound2_proofsteps =

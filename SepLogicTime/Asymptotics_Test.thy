@@ -32,6 +32,10 @@ lemma "(\<lambda>x. real (f (5 * x))) \<in> \<Theta>(\<lambda>n. real n)" by aut
 
 lemma "(\<lambda>n. f (n + 1) + n * flog (2 * n) + 3 * n * flog (n div 3)) \<in> \<Theta>(\<lambda>n. n * ln n)" by auto2
 
+(* Examples of f applied to constants *)
+declare f_def [rewrite]
+lemma "(\<lambda>x::nat. real (f 5)) \<in> \<Theta>(\<lambda>n. 1::real)" by auto2
+
 (* how to incorporate 1D into 2D *)
 
 lemma "(\<lambda>(n,m). f (5*m)) \<in> \<Theta>\<^sub>2(\<lambda>(n::nat,m). real m)" by auto2
@@ -73,6 +77,15 @@ lemma "(\<lambda>(n,m). real (f m + n)) \<in> \<Theta>\<^sub>2(\<lambda>(n,m::na
 lemma "(\<lambda>(n,m). f m * m + n) \<in> \<Theta>\<^sub>2(\<lambda>(n,m::nat). m^2 + n)" by auto2
 
 lemma "(\<lambda>(n,m). f m * m + m * n + n * f n) \<in> \<Theta>\<^sub>2(\<lambda>(n,m::nat). m^2 + m * n + n^2)" by auto2
+
+(* Examples of f or f_sum applied to constants *)
+declare f_sum.simps [rewrite]
+
+lemma "(\<lambda>x. real (f 1)) \<in> \<Theta>\<^sub>2(\<lambda>(n::nat,m::nat). 1)"
+  apply (subst surjective_pairing) by auto2
+
+lemma "(\<lambda>x. real (f_sum (5,3))) \<in> \<Theta>\<^sub>2(\<lambda>(n::nat,m::nat). 1)"
+  apply (subst surjective_pairing) by auto2
 
 ML_file "landau_util_test.ML"
 
