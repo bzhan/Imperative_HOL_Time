@@ -39,4 +39,5 @@ session SepLogicTime_RBTreeBasic = SepLogicTime_Base +
   theories
     "SepLogicTime/RBTree_Impl"
     "SepLogicTime/DynamicArray2"
+    "SepLogicTime/Asymptotics_2D"
                       
