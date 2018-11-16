@@ -316,7 +316,7 @@ lemma execute_bind_eq_SomeI:
 term "return x \<bind> f"    
     
 definition wait :: "nat \<Rightarrow> unit Heap"  where 
-  [simp]: "wait n = Heap (\<lambda>h. Some ((),h,n))"   
+   [execute_simps]: "wait n = Heap (\<lambda>h. Some ((),h,n))"   
   
 lemma [simp]: "wait n \<bind> (%_. wait m) = wait (n+m)"  
  unfolding wait_def bind_def by auto 
@@ -325,10 +325,10 @@ lemma [simp]: "wait n \<bind> (%_. wait m) = wait (n+m)"
 term "wait 1 \<bind> (%_. f x)"   
 term "return x \<bind> f"
   
-lemma return_bind [simp]: "return x \<bind> f = (wait 1) \<then> f x"
+lemma return_bind [execute_simps]: "return x \<bind> f = (wait 1) \<then> f x"
   by (rule Heap_eqI) (simp add: execute_simps)
 
-lemma bind_return [simp]: "f \<bind> return = wait 1 \<then> f"
+lemma bind_return [execute_simps]: "f \<bind> return = wait 1 \<then> f"
   by (rule Heap_eqI) (simp add: bind_def execute_simps split: option.splits)
 
 lemma bind_bind [simp]: "(f \<bind> g) \<bind> k = (f :: 'a Heap) \<bind> (\<lambda>x. g x \<bind> k)"
@@ -367,7 +367,7 @@ lemma assert_cong [fundef_cong]:
   assumes "P = P'"
   assumes "\<And>x. P' x \<Longrightarrow> f x = f' x"
   shows "(assert P x \<bind> f) = (assert P' x \<bind> f')"
-  by (rule Heap_eqI) (insert assms, simp add: assert_def)
+  by (rule Heap_eqI) (insert assms, simp add: assert_def execute_simps)
 
 
 subsubsection \<open>Plain lifting\<close>
