@@ -446,6 +446,12 @@ fun asym_bound_th ctxt t =
         in
           c_gt_0 RS @{thm bigtheta_const}
         end
+      else if not (Term.is_Const body orelse Util.occurs_free var body) then
+        let
+          val c_gt_0 = Thm.assume (Thm.cterm_of ctxt (HOLogic.mk_Trueprop (Nat_Util.mk_less (Nat_Util.nat0, body))))
+        in
+          c_gt_0 RS @{thm bigtheta_const}
+        end             
       else if UtilArith.is_divide body then
         (* Divide case *)
         let
@@ -525,8 +531,15 @@ val asym_bound_prfstep =
               val th = the_single ths
               val (t, goal) = th |> prop_of' |> dest_not |> Util.dest_binop_args
               val res = asym_bound_gen ctxt (Thm.cterm_of ctxt t, goal)
+              val contra = ([th, res] MRS UtilBase.contra_triv_th)
+                              |> fold Thm.implies_intr (map (Thm.cterm_of ctxt) (Thm.hyps_of res))
+              val contra = if Util.is_implies (Thm.prop_of contra) then
+                             contra |> apply_to_thm UtilLogic.rewrite_from_contra_form
+                                    |> apply_to_thm (UtilLogic.to_obj_conv ctxt)
+                           else
+                             contra
             in
-              [Update.thm_update (id, [th, res] MRS UtilBase.contra_triv_th)]
+              [Update.thm_update (id, contra)]
             end)
 
 val add_asym_bound_proofsteps =
