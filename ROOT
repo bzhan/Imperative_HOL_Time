@@ -38,6 +38,8 @@ session SepLogicTime_RBTreeBasic = SepLogicTime_Base +
     Auto2_HOL
   theories
     "SepLogicTime/RBTree_Impl"
+    "SepLogicTime/LinkedList"
     "SepLogicTime/DynamicArray2"
     "SepLogicTime/Asymptotics_2D"
+    "SepLogicTime/MergeSort_Impl"
                       
