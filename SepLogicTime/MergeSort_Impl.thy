@@ -2,7 +2,7 @@ theory MergeSort_Impl
   imports MergeSort Arrays_Impl
 begin
 
-section {* Imperative version *}
+section \<open>Imperative version\<close>
 
 function mergeinto :: "nat \<Rightarrow> nat \<Rightarrow> 'a::{heap,linorder} array \<Rightarrow> 'a array \<Rightarrow> 'a array \<Rightarrow> unit Heap" where
   "mergeinto 0 0 a b c = return ()"
@@ -59,7 +59,7 @@ lemma mergeinto_correct [hoare_triple]:
 lemma mergeinto_time_bound [asym_bound]: "(\<lambda>n. mergeinto_time n) \<in> \<Theta>(\<lambda>n. n)"
   by (simp only: mergeinto_time_def) auto2
 
-setup {* del_prfstep_thm @{thm mergeinto_time_def} *}
+setup \<open>del_prfstep_thm @{thm mergeinto_time_def}\<close>
 
 partial_function (heap) merge_sort_impl :: "'a::{heap,linorder} array \<Rightarrow> unit Heap" where
   "merge_sort_impl X = do {
@@ -81,7 +81,7 @@ function merge_sort_time :: "nat \<Rightarrow> nat" where
     (merge_sort_time (n div 2) + merge_sort_time (n - n div 2))"
   by force simp_all
   termination by (relation "Wellfounded.measure (\<lambda>n. n)") auto
-setup {* fold add_rewrite_rule @{thms merge_sort_time.simps} *}
+setup \<open>fold add_rewrite_rule @{thms merge_sort_time.simps}\<close>
 
 definition merge_sort_time' :: "nat \<Rightarrow> real" where
   "merge_sort_time' n = real (merge_sort_time n)"

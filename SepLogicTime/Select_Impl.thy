@@ -5,7 +5,7 @@ theory Select_Impl
   imports Select DynamicArray2 LinkedList
 begin
 
-subsection {* Choose the nth element by insertion sort *}
+subsection \<open>Choose the nth element by insertion sort\<close>
 
 definition select_small :: "'a::{ord,heap} list \<Rightarrow> nat \<Rightarrow> 'a Heap" where
   "select_small xs n = do {
@@ -24,9 +24,9 @@ lemma select_small_rule [hoare_triple]:
 @proof
   @have "os_insert_sort_time B \<ge>\<^sub>t os_insert_sort_time (length xs)"
 @qed
-setup {* del_prfstep_thm @{thm select_small_time_def} *}
+setup \<open>del_prfstep_thm @{thm select_small_time_def}\<close>
 
-subsection {* Extract sublist from l to r *}
+subsection \<open>Extract sublist from l to r\<close>
 
 function extract_sublist :: "'a::heap array \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> 'a list Heap" where
   "extract_sublist a l r = (if r \<le> l then return [] else do {
@@ -58,10 +58,10 @@ lemma extract_sublist_correct [hoare_triple]:
   @have "extract_sublist_time (r - l) \<ge>\<^sub>t extract_sublist_time (r - (l + 1)) + 2"
 @qed
 
-subsection {* nth term of chop *}
+subsection \<open>nth term of chop\<close>
 
-setup {* register_wellform_data ("chop n xs", ["n > 0"]) *}
-setup {* fold add_rewrite_rule @{thms chop.simps(1,3)} *}
+setup \<open>register_wellform_data ("chop n xs", ["n > 0"])\<close>
+setup \<open>fold add_rewrite_rule @{thms chop.simps(1,3)}\<close>
 
 lemma nth_chop:
   "i < length (chop 5 xs) \<Longrightarrow> chop 5 xs ! i = take 5 (drop (5*i) xs)"
@@ -83,9 +83,9 @@ lemma take_drop_to_sublist [rewrite]:
   "i < length (chop 5 xs) \<Longrightarrow> chop 5 xs ! i = sublist (5*i) (5*i+(min 5 (length xs-5*i))) xs"
   by (simp add: add.commute min_def sublist_def take_drop nth_chop)
 
-setup {* fold del_prfstep_thm @{thms chop.simps(1,3)} *}
+setup \<open>fold del_prfstep_thm @{thms chop.simps(1,3)}\<close>
 
-subsection {* Array-based refinement of medians of chop *}
+subsection \<open>Array-based refinement of medians of chop\<close>
 
 fun chopmed5_aux_fun :: "'a::linorder list \<Rightarrow> 'a list \<Rightarrow> nat \<Rightarrow> 'a::linorder list" where 
   "chopmed5_aux_fun xs ys 0 = ys"
@@ -93,7 +93,7 @@ fun chopmed5_aux_fun :: "'a::linorder list \<Rightarrow> 'a list \<Rightarrow> n
     (let l = min 5 (length xs-5*n);
          m = median (sublist (5*n) (5*n+l) xs) in
        list_update (chopmed5_aux_fun xs ys n) n m)"
-setup {* fold add_rewrite_rule @{thms chopmed5_aux_fun.simps} *}
+setup \<open>fold add_rewrite_rule @{thms chopmed5_aux_fun.simps}\<close>
 
 lemma length_chopmed5_aux_fun [rewrite_arg]:
   "length (chopmed5_aux_fun xs ys n) = length ys"
@@ -110,7 +110,7 @@ lemma chopmed5_aux_fun_correct [rewrite]:
   @have "length (chopmed5_aux_fun xs ys (length ys)) = length (map median (chop 5 xs))"
 @qed
 
-subsection {* Imperative version of chopmed5 *}
+subsection \<open>Imperative version of chopmed5\<close>
 
 definition medchop :: "'a::{linorder,heap} array \<Rightarrow> nat \<Rightarrow> 'a Heap" where
   "medchop a n = do {
@@ -192,7 +192,7 @@ lemma chopmed5_aux_correct [hoare_triple]:
 lemma chopmed5_aux_time_bound [asym_bound]: "(\<lambda>n. chopmed5_aux_time n) \<in> \<Theta>(\<lambda>n. n)"
   unfolding chopmed5_aux_time_def medchop_time81 apply simp by auto2 
 
-setup {* del_prfstep_thm @{thm chopmed5_aux_time_def} *}
+setup \<open>del_prfstep_thm @{thm chopmed5_aux_time_def}\<close>
  
 definition chopmed5 :: "'a::{linorder,heap} array \<Rightarrow> 'a array Heap" where
   "chopmed5 a = do {
@@ -235,7 +235,7 @@ lemma filter_impl_rule [hoare_triple]:
 lemma filter_impl_time_bound [asym_bound]: "(\<lambda>n. filter_impl_time n) \<in> \<Theta>(\<lambda>n. n)"
   unfolding filter_impl_time_def by auto2
 
-setup {* del_prfstep_thm @{thm filter_impl_time_def} *}
+setup \<open>del_prfstep_thm @{thm filter_impl_time_def}\<close>
 
 definition threeway_partition_impl :: "'a \<Rightarrow> ('a::{heap,linorder}) array \<Rightarrow> ('a array * 'a array * 'a array) Heap" where
  "threeway_partition_impl med a = do {
@@ -264,7 +264,7 @@ lemma threeway_partition_impl_time_bound [asym_bound]:
   "(\<lambda>n. threeway_partition_impl_time n) \<in> \<Theta>(\<lambda>n. n)"
   unfolding threeway_partition_impl_time_def by auto2
 
-setup {* del_prfstep_thm @{thm threeway_partition_impl_time_def} *}
+setup \<open>del_prfstep_thm @{thm threeway_partition_impl_time_def}\<close>
 
 subsection \<open>The deterministic linear-time selection algorithm\<close>               
 
@@ -384,7 +384,7 @@ proof -
   have "length xs = size (mset xs)" by auto
   also have "\<dots> = size (mset (filter (\<lambda>y. y < x) xs) + mset (filter (\<lambda>y. y = x) xs)
          + mset (filter (\<lambda>y. y > x) xs))" using a by auto
-  finally show ?thesis by simp
+  finally show ?thesis by (metis size_mset size_union)  
 qed
 
 lemma k_inbounds [backward2]:
@@ -394,7 +394,7 @@ lemma k_inbounds [backward2]:
          k - length (filter (\<lambda>y. y < x) xs) - length (filter (\<lambda>y. y = x) xs) < length (filter (\<lambda>y. y > x) xs)"
   by (simp add: length_filter_split[of xs x])
 
-setup {* fold add_rewrite_rule @{thms select_time.simps} *}
+setup \<open>fold add_rewrite_rule @{thms select_time.simps}\<close>
   
 lemma n_div_5_pos [backward]: "(n::nat) > 0 \<Longrightarrow> (n + 4) div 5 > 0" by linarith
 
@@ -423,13 +423,13 @@ lemma select_rule_aux [hoare_triple]:
   @end
 @qed
 
-setup {* add_rewrite_rule @{thm fast_select_correct} *}
+setup \<open>add_rewrite_rule @{thm fast_select_correct}\<close>
 lemma select_rule [hoare_triple]:
   "k < length as \<Longrightarrow>
    <a \<mapsto>\<^sub>a as * $(select_time (length as))>
     select k a
    <\<lambda>r. a \<mapsto>\<^sub>a as * \<up>(r = Select.select k as)>\<^sub>t" by auto2
-setup {* del_prfstep_thm @{thm fast_select_correct} *}
+setup \<open>del_prfstep_thm @{thm fast_select_correct}\<close>
 
 corollary select_time_bound [asym_bound]:
   "(\<lambda>n. select_time n) \<in> \<Theta>(\<lambda>n. n)"

@@ -532,12 +532,12 @@ proof -
   have estim: "\<And>x. x > c \<Longrightarrow> c>0 \<Longrightarrow> real (c*2) * real (x div c) \<ge> real (x)"
   proof -
     fix x::nat assume "x>c" "c>0"
-    have "1 = c div c" using `c>0` by auto
-    also have "\<dots> \<le> x div c" using `x>c` by(auto intro!: div_le_mono)
+    have "1 = c div c" using \<open>c>0\<close> by auto
+    also have "\<dots> \<le> x div c" using \<open>x>c\<close> by(auto intro!: div_le_mono)
     finally have i: "1\<le>x div c" . 
     have "real x = real (x mod c + c * (x div c))" by simp
     also have "\<dots> = real (x mod c) + real (c * (x div c))" using of_nat_add by blast 
-    also have "\<dots> \<le> real c + real c * real (x div c)" using `c>0` by auto
+    also have "\<dots> \<le> real c + real c * real (x div c)" using \<open>c>0\<close> by auto
     also have "\<dots> \<le> real c * real (x div c) + real c * real (x div c)" using i \<open>0 < c\<close>  by auto
     also have "\<dots> = real (c*2) * real (x div c)" by auto
     finally show "real x \<le> real (c * 2) * real (x div c)" .
@@ -854,11 +854,11 @@ lemma bigtheta_mult:
 
 ML_file "landau_util.ML"
 
-attribute_setup asym_bound = {* setup_attrib LandauUtil.add_asym_bound *}
+attribute_setup asym_bound = \<open>setup_attrib LandauUtil.add_asym_bound\<close>
 
 ML_file "master_theorem_wrapper.ML"
 
-method_setup master_theorem2 = {* setup_master_theorem *}
+method_setup master_theorem2 = \<open>setup_master_theorem\<close>
   "automatically apply the Master theorem for recursive functions"
 
 end

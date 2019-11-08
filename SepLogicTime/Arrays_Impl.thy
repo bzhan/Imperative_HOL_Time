@@ -1,5 +1,5 @@
 theory Arrays_Impl
-  imports SepAuto Asymptotics_1D Auto2_HOL.Arrays_Ex
+  imports SepAuto Asymptotics_1D Auto2_Imperative_HOL.Arrays_Ex
 begin
 
 definition acopy :: "'a::heap array \<Rightarrow> 'a array Heap" where
@@ -20,7 +20,7 @@ lemma acopy_time_bound [asym_bound]:
   "(\<lambda>n. acopy_time n) \<in> \<Theta>(\<lambda>n. n)"
   apply (simp only: acopy_time_def) by auto2
 
-setup {* del_prfstep_thm @{thm acopy_time_def} *}
+setup \<open>del_prfstep_thm @{thm acopy_time_def}\<close>
 
 fun array_copy :: "'a::heap array \<Rightarrow> 'a array \<Rightarrow> nat \<Rightarrow> unit Heap" where
   "array_copy a b 0 = (return ())"
@@ -59,7 +59,7 @@ lemma atake_time_bound [asym_bound]:
   "(\<lambda>n. atake_time n) \<in> \<Theta>(\<lambda>n. n)"
   by (simp only: atake_time_def) auto2
 
-setup {* del_prfstep_thm @{thm atake_time_def} *}
+setup \<open>del_prfstep_thm @{thm atake_time_def}\<close>
 
 
 definition adrop :: "nat \<Rightarrow> 'a::heap array \<Rightarrow> 'a array Heap" where
@@ -84,7 +84,7 @@ lemma adrop_time_bound [asym_bound]:
   "(\<lambda>n. adrop_time n) \<in> \<Theta>(\<lambda>n. n)"
   by (simp only: adrop_time_def) auto2
 
-setup {* del_prfstep_thm @{thm adrop_time_def} *}
+setup \<open>del_prfstep_thm @{thm adrop_time_def}\<close>
 
 definition asplit :: "'a::heap array \<Rightarrow> nat \<Rightarrow> ('a array \<times> 'a array) Heap" where
   "asplit a n = do {
@@ -109,6 +109,6 @@ lemma asplit_time_bound [asym_bound]:
   "(\<lambda>n. asplit_time n) \<in> \<Theta>(\<lambda>n. n)"
   by (simp only: asplit_time_def) auto2
 
-setup {* del_prfstep_thm @{thm asplit_time_def} *}
+setup \<open>del_prfstep_thm @{thm asplit_time_def}\<close>
 
 end

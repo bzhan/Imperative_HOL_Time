@@ -235,7 +235,7 @@ proof -
   from c1 and f1 show ?thesis by (rule that)
 qed 
 
-section {* Composition in the two variable case *}
+section \<open>Composition in the two variable case\<close>
 
 lemma mult_bivariate_I:
   fixes f :: "nat \<Rightarrow> nat"
@@ -619,7 +619,7 @@ proof -
   show ?thesis using polylog2_compare(1)[OF 2 3 1] by simp
 qed
 
-section {* Setup for automation *}
+section \<open>Setup for automation\<close>
 
 lemma landau_norms2:
   "polylog a1 b1 (fst x) = polylog2 a1 b1 0 0 x"

@@ -16,8 +16,8 @@ function binarysearch_fun :: "nat \<Rightarrow> nat \<Rightarrow> 'a::linorder \
 by pat_completeness auto
 termination by (relation "Wellfounded.measure (\<lambda>(l,r,a,f). r-l)") auto
 
-setup {* register_wellform_data ("binarysearch_fun l r x xs", ["l \<le> r", "r \<le> length xs"]) *}
-setup {* add_prfstep_check_req ("binarysearch_fun l r x xs", "l \<le> r \<and> r \<le> length xs") *}
+setup \<open>register_wellform_data ("binarysearch_fun l r x xs", ["l \<le> r", "r \<le> length xs"])\<close>
+setup \<open>add_prfstep_check_req ("binarysearch_fun l r x xs", "l \<le> r \<and> r \<le> length xs")\<close>
 
 lemma avg_between [backward]:
   "l + 1 < r \<Longrightarrow> r > avg l r"

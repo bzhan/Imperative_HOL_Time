@@ -2,6 +2,7 @@ chapter Imperative_HOL_Time
 
 session SepLogicTime_Base = HOL +
   sessions
+    Auto2_Imperative_HOL
     Berlekamp_Zassenhaus
     Akra_Bazzi
     Amortized_Complexity
@@ -12,9 +13,9 @@ session SepLogicTime_Base = HOL +
     "Amortized_Complexity.Skew_Heap_Analysis"
 
 session SepLogicTime_Fun = SepLogicTime_Base +
-  description {*
+  description \<open>
     Functional algorithms
-  *}
+\<close>
   sessions
     Auto2_HOL
   theories
@@ -25,9 +26,9 @@ session SepLogicTime_Fun = SepLogicTime_Base +
     "SepLogicTime/Knapsack"
 
 session SepLogicTime_Impl = SepLogicTime_Fun +
-  description {*
+  description \<open>
     Separation logic with time.
-  *}
+\<close>
   sessions
     Auto2_HOL
   theories

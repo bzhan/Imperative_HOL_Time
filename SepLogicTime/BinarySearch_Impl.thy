@@ -32,7 +32,7 @@ lemma binarysearch_time'_Theta: "(\<lambda>n. binarysearch_time' n) \<in> \<Thet
   prefer 2 apply auto2
   by (auto simp: binarysearch_time'_def)
 
-setup {* fold add_rewrite_rule @{thms binarysearch_time.simps} *}
+setup \<open>fold add_rewrite_rule @{thms binarysearch_time.simps}\<close>
 
 lemma binarysearch_mono [backward]:
   "m \<le> n \<Longrightarrow> binarysearch_time m \<le> binarysearch_time n" 

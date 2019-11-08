@@ -2,7 +2,7 @@ theory TwoDArray
   imports SepAuto Asymptotics_2D
 begin
 
-section {* Some lemmas about indexing *}
+section \<open>Some lemmas about indexing\<close>
 
 lemma matrix_id_less [backward]: "(i::nat) < m \<Longrightarrow> j < n \<Longrightarrow> i * n + j < m * n"
 @proof
@@ -15,7 +15,7 @@ lemma matrix_id_inj [forward]:
   "i * n + j = i' * n + j' \<Longrightarrow> (j::nat) < n \<Longrightarrow> j' < n \<Longrightarrow> i = i' \<and> j = j'"
   by (smt Suc_leI add.commute add_scale_eq_noteq div_eq_0_iff div_mult_mod_eq le_0_eq mod_mult_self3 mult.commute nat.simps(3))
 
-section {* Abstract matrix as a list of lists *}
+section \<open>Abstract matrix as a list of lists\<close>
 
 definition empty_matrix :: "nat \<Rightarrow> nat \<Rightarrow> 'a \<Rightarrow> 'a list list" where [rewrite]:
   "empty_matrix m n x = replicate m (replicate n x)"
@@ -23,10 +23,10 @@ definition empty_matrix :: "nat \<Rightarrow> nat \<Rightarrow> 'a \<Rightarrow>
 definition mat_update :: "'a list list \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> 'a \<Rightarrow> 'a list list" where [rewrite]:
   "mat_update M i j x = list_update M i (list_update (M ! i) j x)"
 
-section {* Implementation of a matrix *}
+section \<open>Implementation of a matrix\<close>
 
 datatype 'a matrix = Matrix (nrow: nat) (ncol: nat) (aref: "'a array")
-setup {* add_simple_datatype "matrix" *}
+setup \<open>add_simple_datatype "matrix"\<close>
 
 (* m is number of rows, n is number of columns *)
 definition init_matrix :: "nat \<Rightarrow> nat \<Rightarrow> 'a \<Rightarrow> 'a::heap matrix Heap" where
@@ -50,7 +50,7 @@ definition matrix_rel :: "'a list list \<Rightarrow> nat \<Rightarrow> nat \<Rig
 
 fun matrix_assn :: "nat \<Rightarrow> 'a::heap list list \<Rightarrow> 'a matrix \<Rightarrow> assn" where
   "matrix_assn nc xs (Matrix m n a) = (\<exists>\<^sub>Aas. a \<mapsto>\<^sub>a as * \<up>(matrix_rel xs m n as) * \<up>(n = nc))"
-setup {* add_rewrite_ent_rule @{thm matrix_assn.simps} *}
+setup \<open>add_rewrite_ent_rule @{thm matrix_assn.simps}\<close>
 
 lemma matrix_rel_empty [resolve]:
   "matrix_rel (empty_matrix m n x) m n (replicate (m * n) x)"
@@ -87,6 +87,6 @@ lemma upd_matrix_correct [hoare_triple]:
     upd_matrix i j x p
    <\<lambda>_. matrix_assn n (mat_update xs i j x) p>" by auto2
 
-setup {* del_prfstep_thm @{thm matrix_assn.simps} *}
+setup \<open>del_prfstep_thm @{thm matrix_assn.simps}\<close>
 
 end

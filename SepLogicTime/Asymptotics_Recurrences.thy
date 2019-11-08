@@ -2,7 +2,7 @@ theory Asymptotics_Recurrences
 imports Asymptotics_2D
 begin
  
-section {* Linear recurrences in the one variable case *}
+section \<open>Linear recurrences in the one variable case\<close>
 
 lemma fixes a b c :: real
   shows K: "a \<ge> 0 \<Longrightarrow> b \<ge> 1 \<Longrightarrow> c \<ge> 1 \<Longrightarrow> a \<le> a * b * c"  
@@ -398,7 +398,7 @@ proof
     using assms by auto
 qed
 
-section {* Example *}
+section \<open>Example\<close>
 
 fun bla_time :: "nat \<Rightarrow> real" where
    "bla_time 0 = 1"
@@ -411,7 +411,7 @@ lemma "bla_time \<in> \<Theta>(\<lambda>n. real n * real n)"
   apply (rule bigTheta_linear_recurrence[where N=0 and g="(\<lambda>n. n)"])
   by (auto simp: bla_time_nneg)
 
-section {* Linear recurrence in the two variable case *}
+section \<open>Linear recurrence in the two variable case\<close>
 
 lemma bivariate:
   assumes "\<And>n m. n\<ge>N \<Longrightarrow>  f (Suc n,m) = f (n,m) + g m"  
@@ -574,7 +574,7 @@ proof -
   ultimately show ?thesis by auto
 qed
 
-section {* Examples in the bivariate case *}
+section \<open>Examples in the bivariate case\<close>
 
 fun ex :: "nat \<times> nat \<Rightarrow> real" where
   "ex (0,m) = 1"

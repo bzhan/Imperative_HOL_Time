@@ -2,7 +2,7 @@ theory Karatsuba_Impl
   imports Karatsuba Arrays_Impl
 begin
 
-section {* Imperative version of shift_plus *}
+section \<open>Imperative version of shift_plus\<close>
 
 fun coeffs_shift_plus_ind_impl :: "nat \<Rightarrow> 'a::{heap,comm_ring_1} \<Rightarrow> 'a array \<Rightarrow> 'a array \<Rightarrow> nat \<Rightarrow> unit Heap" where
   "coeffs_shift_plus_ind_impl s m a b 0 = (return ())"
@@ -56,7 +56,7 @@ lemma coeffs_plus_impl_correct [hoare_triple]:
    <a \<mapsto>\<^sub>a as * b \<mapsto>\<^sub>a bs * $(coeffs_shift_plus_time (length as))>
    coeffs_plus_impl a b
    <\<lambda>_. a \<mapsto>\<^sub>a as * b \<mapsto>\<^sub>a (bs +\<^sub>l as)>\<^sub>t" by auto2
-setup {* del_prfstep_thm @{thm coeffs_shift_plus_time_def} *}
+setup \<open>del_prfstep_thm @{thm coeffs_shift_plus_time_def}\<close>
 
 definition coeffs_splus_impl :: "nat \<Rightarrow> 'a::{heap,comm_ring_1} array \<Rightarrow> 'a array \<Rightarrow> unit Heap" where
   "coeffs_splus_impl s a b = coeffs_shift_plus_impl s 1 a b"
@@ -67,7 +67,7 @@ lemma coeffs_splus_impl_correct [hoare_triple]:
    coeffs_splus_impl s a b
    <\<lambda>_. a \<mapsto>\<^sub>a as * b \<mapsto>\<^sub>a (bs +\<^sub>l coeffs_monom_mult s as)>\<^sub>t" by auto2
 
-section {* Subtraction creating a new array *}
+section \<open>Subtraction creating a new array\<close>
 
 (* Subtracting a from b. Assuming b is at least as big as a. *)
 definition coeffs_minus_impl :: "'a::{heap,comm_ring_1} array \<Rightarrow> 'a array \<Rightarrow> 'a array Heap" where
@@ -88,13 +88,13 @@ lemma coeffs_minus_impl_correct [hoare_triple]:
 @proof
   @have "coeffs_shift_plus_time (length as) \<ge>\<^sub>t coeffs_shift_plus_time (length bs)"
 @qed
-setup {* del_prfstep_thm @{thm coeffs_minus_time_def} *}
+setup \<open>del_prfstep_thm @{thm coeffs_minus_time_def}\<close>
 
 lemma coeffs_minus_time_bound [asym_bound]:
   "(\<lambda>n. coeffs_minus_time n) \<in> \<Theta>(\<lambda>n. n)"
   by (simp only: coeffs_minus_time_def) auto2
 
-section {* Imperative version of coeffs_prod_ind *}
+section \<open>Imperative version of coeffs_prod_ind\<close>
 
 fun coeffs_prod_ind_impl :: "'a::{heap,comm_ring_1} array \<Rightarrow> 'a array \<Rightarrow> nat \<Rightarrow> 'a array Heap" where
   "coeffs_prod_ind_impl a b 0 = do {
@@ -113,7 +113,7 @@ fun coeffs_prod_ind_impl :: "'a::{heap,comm_ring_1} array \<Rightarrow> 'a array
 fun coeffs_prod_ind_impl_time :: "nat \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> nat" where
   "coeffs_prod_ind_impl_time la lb 0 = 4 + (la + lb - 1)"
 | "coeffs_prod_ind_impl_time la lb (Suc n) = coeffs_prod_ind_impl_time la lb n + coeffs_shift_plus_time lb + 2"
-setup {* fold add_rewrite_rule @{thms coeffs_prod_ind_impl_time.simps} *}
+setup \<open>fold add_rewrite_rule @{thms coeffs_prod_ind_impl_time.simps}\<close>
 
 lemma coeffs_prod_ind_impl_correct [hoare_triple]:
   "n \<le> length as \<Longrightarrow>
@@ -140,9 +140,9 @@ lemma coeffs_prod_impl_correct [hoare_triple]:
    coeffs_prod_impl a b
    <\<lambda>c. a \<mapsto>\<^sub>a as * b \<mapsto>\<^sub>a bs * c \<mapsto>\<^sub>a coeffs_prod as bs>" by auto2
 
-setup {* del_prfstep_thm @{thm coeffs_prod_impl_time_def} *}
+setup \<open>del_prfstep_thm @{thm coeffs_prod_impl_time_def}\<close>
 
-section {* Implementation of shifting *}
+section \<open>Implementation of shifting\<close>
 
 definition coeffs_monom_mult_impl :: "nat \<Rightarrow> 'a::{heap,comm_ring_1} array \<Rightarrow> 'a array Heap" where
   "coeffs_monom_mult_impl n a = do {
@@ -165,9 +165,9 @@ lemma coeffs_monom_mult_time_bound [asym_bound]:
   "(\<lambda>n. coeffs_monom_mult_time n) \<in> \<Theta>(\<lambda>n. n)"
   by (simp only: coeffs_monom_mult_time_def) auto2
 
-setup {* del_prfstep_thm @{thm coeffs_monom_mult_time_def} *}
+setup \<open>del_prfstep_thm @{thm coeffs_monom_mult_time_def}\<close>
 
-section {* Implementation of Karatsuba *}
+section \<open>Implementation of Karatsuba\<close>
 
 partial_function (heap) karatsuba_main_impl ::
   "'a::{heap,comm_ring_1} array \<Rightarrow> 'a array \<Rightarrow> nat \<Rightarrow> 'a array Heap" where
@@ -205,7 +205,7 @@ function karatsuba_main_impl_time :: "nat \<Rightarrow> nat" where
        karatsuba_main_impl_time (n div 2)))"
   by force simp_all
   termination by (relation "Wellfounded.measure (\<lambda>n. n)") (auto simp: karatsuba_lower_bound_def)
-setup {* fold add_rewrite_rule @{thms karatsuba_main_impl_time.simps} *}
+setup \<open>fold add_rewrite_rule @{thms karatsuba_main_impl_time.simps}\<close>
 
 lemma karatsuba_main_impl_time_pos: "0 < karatsuba_main_impl_time x"
   by (cases "x \<le> karatsuba_lower_bound") (simp_all add: coeffs_prod_impl_time_def)

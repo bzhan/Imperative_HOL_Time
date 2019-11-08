@@ -119,10 +119,10 @@ lemma splay_time_simp:
                else if rr = Leaf then 15 else splay_time a rr + 15))"
   by (auto split!: tree.split simp: splay_time_def)
 declare splay_time_simp [rewrite]
-setup {* add_fun_induct_rule (@{term_pat splay}, @{thm t_splay.induct}) *}
+setup \<open>add_fun_induct_rule (@{term_pat splay}, @{thm t_splay.induct})\<close>
 
 lemma splay_not_Leaf: "splay x \<langle>l, a, r\<rangle> \<noteq> Leaf" by auto
-setup {* add_forward_prfstep_cond @{thm splay_not_Leaf} [with_term "splay ?x \<langle>?l, ?a, ?r\<rangle>"] *}
+setup \<open>add_forward_prfstep_cond @{thm splay_not_Leaf} [with_term "splay ?x \<langle>?l, ?a, ?r\<rangle>"]\<close>
 
 lemma splay_correct [hoare_triple]:
   "<btree t a * $(splay_time x t)>
@@ -174,9 +174,9 @@ definition insert_impl :: "'a::{heap,linorder} \<Rightarrow> 'a ptree \<Rightarr
 definition insert_time :: "'a::linorder \<Rightarrow> 'a tree \<Rightarrow> nat" where [rewrite]:
   "insert_time x t = splay_time x t + 4"
 
-setup {* add_rewrite_rule @{thm Splay_Tree.insert.simps} *}
-setup {* fold add_rewrite_rule @{thms cmp_val.case} *}
-setup {* add_cases_rule @{thm cmp_val.induct} *}
+setup \<open>add_rewrite_rule @{thm Splay_Tree.insert.simps}\<close>
+setup \<open>fold add_rewrite_rule @{thms cmp_val.case}\<close>
+setup \<open>add_cases_rule @{thm cmp_val.induct}\<close>
 
 lemma insert_correct [hoare_triple]:
   "<btree t a * $(insert_time x t)>
@@ -184,7 +184,7 @@ lemma insert_correct [hoare_triple]:
    <btree (insert x t)>\<^sub>t"
 @proof
   @case "t = Leaf"
-  @let "V = cmp x (root_val (splay x t))"
+  @let "V = cmp x (value (splay x t))"
   @cases V
 @qed
 
@@ -215,10 +215,10 @@ lemma splay_max_time_simps [rewrite]:
   "splay_max_time \<langle>l, b, \<langle>rl, c, rr\<rangle>\<rangle> = (if rr=Leaf then 15 else splay_max_time rr + 15)"
   by (simp add: splay_max_time_def)+
 
-setup {* fold add_rewrite_rule @{thms splay_max.simps} *}
+setup \<open>fold add_rewrite_rule @{thms splay_max.simps}\<close>
 
 lemma splay_max_not_Leaf: "splay_max \<langle>l, a, r\<rangle> \<noteq> Leaf" by auto
-setup {* add_forward_prfstep_cond @{thm splay_max_not_Leaf} [with_term "splay_max \<langle>?l, ?a, ?r\<rangle>"] *}
+setup \<open>add_forward_prfstep_cond @{thm splay_max_not_Leaf} [with_term "splay_max \<langle>?l, ?a, ?r\<rangle>"]\<close>
 
 lemma splay_max_correct [hoare_triple]:
   "<btree t a * $(splay_max_time t)>
@@ -257,7 +257,7 @@ lemma delete_time_simps [rewrite]:
       else 5))"
   by (auto split!: tree.split simp: splay_time_def splay_max_time_def delete_time_def t_delete_def)
 
-setup {* add_rewrite_rule @{thm Splay_Tree.delete_def} *}
+setup \<open>add_rewrite_rule @{thm Splay_Tree.delete_def}\<close>
 
 lemma splay_delete_correct [hoare_triple]:
   "<btree t a * $(delete_time x t)>
@@ -265,10 +265,10 @@ lemma splay_delete_correct [hoare_triple]:
    <btree (delete x t)>\<^sub>t"
 @proof
   @case "t = Leaf"
-  @case "x = root_val (splay x t)"
+  @case "x = value (splay x t)"
 @qed
 
-section {* Amortized analysis *}
+section \<open>Amortized analysis\<close>
 
 definition splay_tree_P :: "'a tree \<Rightarrow> nat" where
   "splay_tree_P t = 15 * nat \<lceil>\<Phi> t\<rceil>"
@@ -392,9 +392,9 @@ lemma splay_tree_delete_amor [hoare_triple]:
   @have "splay_tree_P t + delete_atime (size1 t) \<ge>\<^sub>t delete_time x t + splay_tree_P (delete x t)"
 @qed
 
-setup {* del_prfstep_thm @{thm splay_tree_def} *}
+setup \<open>del_prfstep_thm @{thm splay_tree_def}\<close>
 
-section {* Abstract assertion *}
+section \<open>Abstract assertion\<close>
 
 definition splay_tree_set :: "'a::{heap,linorder} set \<Rightarrow> 'a ptree \<Rightarrow> assn" where [rewrite_ent]:
   "splay_tree_set S a = (\<exists>\<^sub>At. splay_tree t a * \<up>(bst t) * \<up>(set_tree t = S))"
@@ -416,24 +416,24 @@ lemma size1_set_tree [rewrite]:
   "bst t \<Longrightarrow> card (set_tree t) + 1 = size1 t"
   using size_set_tree by auto
 
-setup {* add_forward_prfstep_cond @{thm bst_splay} [with_term "splay ?a ?t"] *}
-setup {* add_rewrite_rule @{thm set_splay} *}
+setup \<open>add_forward_prfstep_cond @{thm bst_splay} [with_term "splay ?a ?t"]\<close>
+setup \<open>add_rewrite_rule @{thm set_splay}\<close>
 
 lemma splay_tree_splay_rule [hoare_triple]:
   "<splay_tree_set S a * $(splay_atime (card S + 1))>
     splay_impl x a
    <splay_tree_set S>\<^sub>t" by auto2
 
-setup {* add_forward_prfstep_cond @{thm bst_insert} [with_term "insert ?a ?t"] *}
-setup {* add_rewrite_rule @{thm set_insert} *}
+setup \<open>add_forward_prfstep_cond @{thm bst_insert} [with_term "insert ?a ?t"]\<close>
+setup \<open>add_rewrite_rule @{thm set_insert}\<close>
 
 lemma splay_tree_insert_rule [hoare_triple]:
   "<splay_tree_set S a * $(insert_atime (card S + 1))>
     insert_impl x a
    <splay_tree_set ({x} \<union> S)>\<^sub>t" by auto2
 
-setup {* add_forward_prfstep_cond @{thm bst_delete} [with_term "delete ?a ?t"] *}
-setup {* add_rewrite_rule @{thm set_delete} *}
+setup \<open>add_forward_prfstep_cond @{thm bst_delete} [with_term "delete ?a ?t"]\<close>
+setup \<open>add_rewrite_rule @{thm set_delete}\<close>
 
 lemma splay_tree_delete_rule [hoare_triple]:
   "<splay_tree_set S a * $(delete_atime (card S + 1))>

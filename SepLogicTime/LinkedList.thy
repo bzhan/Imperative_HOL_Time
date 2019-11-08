@@ -4,11 +4,11 @@ theory LinkedList
 imports SepAuto Asymptotics_Recurrences
 begin
 
-section {* List assertion *}
+section \<open>List assertion\<close>
 
 datatype 'a node = Node (val: "'a") (nxt: "'a node ref option")
-setup {* fold add_rewrite_rule @{thms node.sel} *}
-setup {* add_forward_prfstep (equiv_forward_th @{thm node.simps(1)}) *}
+setup \<open>fold add_rewrite_rule @{thms node.sel}\<close>
+setup \<open>add_forward_prfstep (equiv_forward_th @{thm node.simps(1)})\<close>
 
 fun node_encode :: "'a::heap node \<Rightarrow> nat" where
   "node_encode (Node x r) = to_nat (x, r)"
@@ -23,7 +23,7 @@ fun os_list :: "'a::heap list \<Rightarrow> 'a node ref option \<Rightarrow> ass
   "os_list [] p = \<up>(p = None)"
 | "os_list (x # l) (Some p) = (\<exists>\<^sub>Aq. p \<mapsto>\<^sub>r Node x q * os_list l q)"
 | "os_list (x # l) None = false"
-setup {* fold add_rewrite_ent_rule @{thms os_list.simps} *}
+setup \<open>fold add_rewrite_ent_rule @{thms os_list.simps}\<close>
 
 lemma os_list_empty [forward_ent]:
   "os_list [] p \<Longrightarrow>\<^sub>A \<up>(p = None)" by auto2
@@ -37,12 +37,12 @@ lemma os_list_none: "emp \<Longrightarrow>\<^sub>A os_list [] None" by auto2
 lemma os_list_constr_ent:
   "p \<mapsto>\<^sub>r Node x q * os_list l q \<Longrightarrow>\<^sub>A os_list (x # l) (Some p)" by auto2
 
-setup {* fold add_entail_matcher [@{thm os_list_none}, @{thm os_list_constr_ent}] *}
-setup {* fold del_prfstep_thm @{thms os_list.simps} *}
+setup \<open>fold add_entail_matcher [@{thm os_list_none}, @{thm os_list_constr_ent}]\<close>
+setup \<open>fold del_prfstep_thm @{thms os_list.simps}\<close>
 
 type_synonym 'a os_list = "'a node ref option"
 
-section {* Basic operations *}
+section \<open>Basic operations\<close>
 
 definition os_empty :: "'a::heap os_list Heap" where
   "os_empty = return None"
@@ -100,7 +100,7 @@ lemma os_reverse_rule:
 
 section \<open>Remove\<close>
 
-setup {* fold add_rewrite_rule @{thms removeAll.simps} *}
+setup \<open>fold add_rewrite_rule @{thms removeAll.simps}\<close>
 
 partial_function (heap) os_rem :: "'a::heap \<Rightarrow> 'a node ref option \<Rightarrow> 'a node ref option Heap" where
   "os_rem x b = (case b of 
@@ -143,7 +143,7 @@ fun list_insert :: "'a::ord \<Rightarrow> 'a list \<Rightarrow> 'a list" where
   "list_insert x [] = [x]"
 | "list_insert x (y # ys) = (
     if x \<le> y then x # (y # ys) else y # list_insert x ys)"
-setup {* fold add_rewrite_rule @{thms list_insert.simps} *}
+setup \<open>fold add_rewrite_rule @{thms list_insert.simps}\<close>
 
 lemma list_insert_length [rewrite_arg]:
   "length (list_insert x xs) = length xs + 1"
@@ -183,7 +183,7 @@ section \<open>Insertion sort\<close>
 fun insert_sort :: "'a::ord list \<Rightarrow> 'a list" where
   "insert_sort [] = []"
 | "insert_sort (x # xs) = list_insert x (insert_sort xs)"
-setup {* fold add_rewrite_rule @{thms insert_sort.simps} *}
+setup \<open>fold add_rewrite_rule @{thms insert_sort.simps}\<close>
 
 lemma insert_sort_length [rewrite_arg]:
   "length (insert_sort xs) = length xs"
@@ -233,7 +233,7 @@ lemma os_insert_sort_time_monotonic [backward]:
   "n \<le> m \<Longrightarrow> os_insert_sort_time n \<le> os_insert_sort_time m"
 @proof @have "3 * n \<le> 3 * m" @qed
 
-setup {* del_prfstep_thm @{thm os_insert_sort_time_def} *}
+setup \<open>del_prfstep_thm @{thm os_insert_sort_time_def}\<close>
 
 (* Alternative proof using bigO *)
 
@@ -248,7 +248,7 @@ fun os_insert_sort_aux' :: "'a::{heap,ord} list \<Rightarrow> 'a os_list Heap" w
 fun os_insert_sort_aux_time :: "nat \<Rightarrow> nat" where 
   "os_insert_sort_aux_time 0 = 1"
 | "os_insert_sort_aux_time (Suc n) = os_insert_sort_aux_time n + 3 * n + 2 + 1" 
-setup {* add_rewrite_rule @{thm os_insert_sort_aux_time.simps(1)} *}
+setup \<open>add_rewrite_rule @{thm os_insert_sort_aux_time.simps(1)}\<close>
 
 lemma os_insert_sort_aux_time_simps [rewrite]:
   "os_insert_sort_aux_time (n + 1) = os_insert_sort_aux_time n + 3 * n + 2 + 1" by simp

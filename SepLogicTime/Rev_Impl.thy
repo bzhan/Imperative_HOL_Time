@@ -7,12 +7,12 @@ fun rev'_fun :: "'a list \<Rightarrow> 'a list \<Rightarrow> nat \<Rightarrow> '
 | "rev'_fun xs ys (Suc n) = (let ys' = rev'_fun xs ys n 
                               in 
                                 ys'[n:=(xs!(length xs - Suc n))])"
-setup {* fold add_rewrite_rule @{thms rev'_fun.simps} *}
+setup \<open>fold add_rewrite_rule @{thms rev'_fun.simps}\<close>
 
 lemma length_rev'_fun[rewrite]: "length xs = length ys \<Longrightarrow> n\<le>length xs \<Longrightarrow> length (rev'_fun xs ys n) = length ys"
   by(induct n, auto) 
 
-setup {* add_rewrite_rule @{thm rev_nth} *} 
+setup \<open>add_rewrite_rule @{thm rev_nth}\<close> 
 
 lemma rev'_fun_rev_aux: "length xs = length ys \<Longrightarrow> n \<le> length xs \<Longrightarrow> 
     i < n  \<Longrightarrow> rev'_fun xs ys n ! i = rev xs ! i"
@@ -34,7 +34,7 @@ fun rev_impl' :: "('a::heap) array \<Rightarrow> 'a array \<Rightarrow> nat \<Ri
 fun rev'_time :: "nat \<Rightarrow> nat" where
   "rev'_time 0 = 1"
 | "rev'_time (Suc n) = rev'_time n + 4"
-setup {* fold add_rewrite_rule @{thms rev'_time.simps} *}
+setup \<open>fold add_rewrite_rule @{thms rev'_time.simps}\<close>
 
 lemma rev'_time_closed: "rev'_time n = 1 + n*4" 
   by(induct n, auto)
@@ -77,6 +77,6 @@ lemma rev_impl_rule[hoare_triple]:
           <%r. p \<mapsto>\<^sub>a xs * r \<mapsto>\<^sub>a rev xs>\<^sub>t"
   by auto2
 
-setup {* del_prfstep_thm @{thm rev_time_def} *} 
+setup \<open>del_prfstep_thm @{thm rev_time_def}\<close> 
 
 end

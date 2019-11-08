@@ -11,9 +11,9 @@ definition kna' :: "nat \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> nat li
      0 \<Rightarrow> 0
    | Suc i' \<Rightarrow> 
      (if j < w (Suc i')
-      then (* cant be added *)
+      then \<comment> \<open>cant be added\<close>
         (xs ! i') ! j
-      else (* can be added *)
+      else \<comment> \<open>can be added\<close>
         max ((xs ! i') ! j) (v (Suc i') + ((xs ! i') ! (j - w (Suc i')))))
     )"
 
@@ -43,7 +43,7 @@ lemma fillrow_fun_length_i:
 
 lemma fillrow_fun_correct:
   "i < length xs \<Longrightarrow>
-   \<forall>ii\<le>i. length (xs!ii) = W \<Longrightarrow>  (* rows have correct length *)
+   \<forall>ii\<le>i. length (xs!ii) = W \<Longrightarrow>   \<comment> \<open> rows have correct length \<close>
    \<forall>ii<i. \<forall>jj<W. (xs!ii)!jj = knapsack (ii,jj) \<Longrightarrow>
    j\<le>W \<Longrightarrow> (ii<i\<and>jj<W) \<or> (ii=i\<and>jj<j) \<Longrightarrow> ((fillrow_fun i j W xs) ! ii) ! jj = knapsack (ii,jj)"
 proof (induct j arbitrary: ii jj xs)
@@ -76,7 +76,8 @@ next
     next
       case False 
       with I have t: "jj=j" "ii=i" by auto
-      have rw: "fillrow_fun i j W xs[i := (fillrow_fun i j W xs ! i)[j := ?V]] ! i ! j
+      have rw: "list_update (fillrow_fun i j W xs)
+                 i (list_update (fillrow_fun i j W xs ! i) j ?V) ! i ! j
             = knapsack (i,j)" unfolding V using Suc(6) Suc(2,3,5) using fillrow_fun_length_o 
         using fillrow_fun_length_i[OF Suc(2)] by auto 
       show ?thesis unfolding F t rw by simp
@@ -102,7 +103,7 @@ lemma knapsack''_fun_length_i:
 
 lemma knapsack''_fun_correct:
   "i \<le> length xs \<Longrightarrow>
-   \<forall>ii<i. length (xs!ii) = W \<Longrightarrow>  (* rows have correct length *)
+   \<forall>ii<i. length (xs!ii) = W \<Longrightarrow>  \<comment> \<open>rows have correct length\<close>
    jj<W \<Longrightarrow> ii<i \<Longrightarrow> ((knapsack''_fun i W xs) ! ii) ! jj = knapsack (ii,jj)"
 proof (induct i arbitrary: xs ii jj) 
   case (Suc i) 
@@ -140,9 +141,9 @@ definition kna'_impl :: "nat \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> n
      0 \<Rightarrow> return 0
    | Suc i' \<Rightarrow> 
      (if j < w (Suc i')
-      then (* cant be added *)
+      then \<comment> \<open> cant be added \<close>
         nth_matrix i' j a
-      else do {  (* can be added *)
+      else do {  \<comment> \<open> can be added \<close>
         x \<leftarrow> nth_matrix i' j a;
         y \<leftarrow> nth_matrix i' (j - w (Suc i')) a;
         return (max x (v (Suc i') + y))
@@ -155,7 +156,7 @@ lemma kna'_impl_rule [hoare_triple]:
    <\<lambda>r. matrix_assn n xs p * \<up>(r = kna' i j W xs)>\<^sub>t"
 @proof @cases i @qed
 
-setup {* del_prfstep_thm @{thm kna'_def} *}  
+setup \<open>del_prfstep_thm @{thm kna'_def}\<close>  
 
 fun fillrow_impl :: "nat \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> nat matrix \<Rightarrow> unit Heap" where
   "fillrow_impl i 0 W p = return ()"
@@ -183,7 +184,7 @@ lemma fill_impl_rule [hoare_triple]:
    <\<lambda>_. matrix_assn n (fillrow_fun i j W xs) p>\<^sub>t"
 @proof @induct j @qed
 
-setup {* fold del_prfstep_thm @{thms fill_impl_time.simps} *}
+setup \<open>fold del_prfstep_thm @{thms fill_impl_time.simps}\<close>
 
 fun knapsack''_impl :: "nat \<Rightarrow> nat \<Rightarrow> nat matrix \<Rightarrow> unit Heap" where
   "knapsack''_impl 0 W p = return ()"
@@ -208,7 +209,7 @@ lemma knapsack''_impl_rule [hoare_triple]:
    <\<lambda>_. matrix_assn W (knapsack''_fun i W xs) p >\<^sub>t"
 @proof @induct i @qed
 
-setup {* fold del_prfstep_thm @{thms knapsack''_impl_time.simps} *}
+setup \<open>fold del_prfstep_thm @{thms knapsack''_impl_time.simps}\<close>
 
 definition knapsack_full_impl :: "nat \<Rightarrow> nat \<Rightarrow> nat Heap" where
   "knapsack_full_impl i W = do {

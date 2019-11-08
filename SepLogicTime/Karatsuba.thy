@@ -2,12 +2,12 @@ theory Karatsuba
   imports "Auto2_HOL.Auto2_Main" Berlekamp_Zassenhaus.Karatsuba_Multiplication
 begin
 
-section {* List version of polynomial operations *}
+section \<open>List version of polynomial operations\<close>
 
 fun coeffs_smult :: "'a::comm_ring_1 \<Rightarrow> 'a list \<Rightarrow> 'a list" where
   "coeffs_smult m [] = []"
 | "coeffs_smult m (x # xs) = m * x # coeffs_smult m xs"
-setup {* fold add_rewrite_rule @{thms coeffs_smult.simps} *}
+setup \<open>fold add_rewrite_rule @{thms coeffs_smult.simps}\<close>
 
 lemma coeffs_smult [rewrite]: "Poly (coeffs_smult m xs) = smult m (Poly xs)"
   by (induct xs, auto)
@@ -59,7 +59,7 @@ qed
 
 lemma arith1 [rewrite_back]: "(a::'a::comm_ring_1) - b = a + (-1) * b" by simp
 lemma mult0_right [rewrite]: "(m::('a::comm_ring_1)) * 0 = 0" by auto
-setup {* add_rewrite_rule @{thm nth_default_def} *}
+setup \<open>add_rewrite_rule @{thm nth_default_def}\<close>
 
 lemma coeffs_plus_neg_is_minus [rewrite_back]:
   "xs +\<^sub>l coeffs_smult (-1) ys = xs -\<^sub>l ys"
@@ -107,13 +107,13 @@ lemma length_coeffs_monom_mult [rewrite_arg]:
 lemma coeffs_monom_mult_0 [rewrite]: "coeffs_monom_mult 0 xs = xs"
 @proof @unfold "coeffs_monom_mult 0 xs" @qed
 
-section {* General addition function *}
+section \<open>General addition function\<close>
 
 definition coeffs_shift_plus :: "nat \<Rightarrow> 'a::comm_ring_1 \<Rightarrow> 'a list \<Rightarrow> 'a list \<Rightarrow> 'a list" where [rewrite]:
   "coeffs_shift_plus s m xs ys = list (\<lambda>i.
      if i < s then ys ! i else if i \<ge> s + length xs then ys ! i
      else ys ! i + m * xs ! (i - s)) (length ys)"
-setup {* register_wellform_data ("coeffs_shift_plus s m xs ys", ["s + length xs \<le> length ys"]) *}
+setup \<open>register_wellform_data ("coeffs_shift_plus s m xs ys", ["s + length xs \<le> length ys"])\<close>
 
 lemma coeffs_shift_plus_correct [rewrite]:
   "s + length xs \<le> length ys \<Longrightarrow>
@@ -143,7 +143,7 @@ fun coeffs_shift_add_array :: "nat \<Rightarrow> 'a::comm_ring_1 \<Rightarrow> '
 | "coeffs_shift_add_array s m xs ys (Suc n) =
    (let ys' = coeffs_shift_add_array s m xs ys n in
       list_update ys' (s + n) (m * xs ! n + ys' ! (s + n)))"
-setup {* fold add_rewrite_rule @{thms coeffs_shift_add_array.simps} *}
+setup \<open>fold add_rewrite_rule @{thms coeffs_shift_add_array.simps}\<close>
 
 lemma coeffs_shift_add_array_length [rewrite_arg]:
   "n \<le> length xs \<Longrightarrow> s + length xs \<le> length ys \<Longrightarrow>
@@ -167,11 +167,11 @@ lemma coeffs_shift_add_array [rewrite]:
   "s + length xs \<le> length ys \<Longrightarrow>
    coeffs_shift_add_array s m xs ys (length xs) = coeffs_shift_plus s m xs ys" by auto2
 
-section {* Naive multiplication procedure *}
+section \<open>Naive multiplication procedure\<close>
 
-setup {* add_rewrite_rule @{thm Poly_snoc} *}
-setup {* add_rewrite_rule @{thm Poly.simps(1)} *}
-setup {* add_rewrite_rule @{thm Poly_replicate_0} *}
+setup \<open>add_rewrite_rule @{thm Poly_snoc}\<close>
+setup \<open>add_rewrite_rule @{thm Poly.simps(1)}\<close>
+setup \<open>add_rewrite_rule @{thm Poly_replicate_0}\<close>
 
 lemma ring_norm1 [resolve]: "(a + b) * c = a * c + b * (c::'a::comm_ring_1 poly)"
   by (simp add: comm_semiring_class.distrib)
@@ -182,7 +182,7 @@ fun coeffs_prod_ind :: "'a::comm_ring_1 list \<Rightarrow> 'a list \<Rightarrow>
 | "coeffs_prod_ind xs ys (Suc n) =
    (let zs = coeffs_prod_ind xs ys n in
       coeffs_shift_plus n (xs ! n) ys zs)"
-setup {* fold add_rewrite_rule @{thms coeffs_prod_ind.simps} *}
+setup \<open>fold add_rewrite_rule @{thms coeffs_prod_ind.simps}\<close>
 
 lemma coeffs_prod_ind_length [rewrite_arg]:
   "length (coeffs_prod_ind xs ys n) = length xs + length ys - 1"
@@ -208,7 +208,7 @@ definition coeffs_prod :: "'a::comm_ring_1 list \<Rightarrow> 'a list \<Rightarr
 lemma coeffs_prod_correct [rewrite]:
   "Poly (coeffs_prod xs ys) = Poly xs * Poly ys" by auto2
 
-section {* Functional version of karatsuba *}
+section \<open>Functional version of karatsuba\<close>
 
 fun karatsuba_main_list :: "'a::comm_ring_1 list \<Rightarrow> 'a list \<Rightarrow> nat \<Rightarrow> 'a list" where
   "karatsuba_main_list f g n = (
@@ -230,7 +230,7 @@ lemma Poly_split_at [rewrite]:
   by (metis (no_types, lifting) Lists_Thms.length_take Poly_append Poly_coeffs add.commute
        append_take_drop_id coeffs_0_eq_Nil drop_eq_Nil le_less monom_mult_unfold mult_zero_left not_less)
 
-setup {* add_backward_prfstep @{thm div_le_mono} *}
+setup \<open>add_backward_prfstep @{thm div_le_mono}\<close>
 
 lemma karatsuba_lower_bound_div [rewrite]: "karatsuba_lower_bound div 2 = 3"
   by (simp add: karatsuba_lower_bound_def)
@@ -264,7 +264,7 @@ lemma karatsuba_diff4 [resolve]:
 lemma karatsuba_diff5 [resolve]:
   "n > karatsuba_lower_bound \<Longrightarrow> n div 2 \<le> n - n div 2" by auto
 
-setup {* add_rewrite_rule @{thm karatsuba_main_step} *}
+setup \<open>add_rewrite_rule @{thm karatsuba_main_step}\<close>
 
 lemma karatsuba_main_list_length [rewrite_arg]:
   "length f = n \<Longrightarrow> length g = n \<Longrightarrow>

@@ -6,7 +6,9 @@ Paper at: https://arxiv.org/abs/1802.01336
 The paper corresponds to the initial commit 8d336cd, which uses the version
 of auto2 (https://github.com/bzhan/auto2) at commit 167808b and Isabelle2017.
 
-The current commit corresponds to commit b4b629e in auto2 and Isabelle2018.
+Last version for Isabelle2018 is c0ca7cb, corresponds to commit b4b629e in auto2 (https://github.com/bzhan/auto2) and Isabelle2018.
+
+The latest commit uses Auto2-HOL and Auto2-Imperative-HOL from the AFP as well as Isabelle2019.
 
 ### Abstract:
 
@@ -27,7 +29,7 @@ algorithm, and splay trees.
 
 ### License
 
-Copyright (c) 2018, Bohua Zhan and Maximilian P. L. Haslbeck
+Copyright (c) 2019, Bohua Zhan and Maximilian P. L. Haslbeck
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without

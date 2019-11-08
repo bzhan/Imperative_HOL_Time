@@ -75,8 +75,8 @@ lemma remdups'_impl_time_bound[asym_bound]: "remdups'_impl_time \<in> \<Theta>(\
   by auto
 
 
-setup {* fold add_rewrite_rule @{thms remdups'_impl_time.simps} *}
-setup {* fold add_rewrite_rule @{thms remdups3.simps} *}
+setup \<open>fold add_rewrite_rule @{thms remdups'_impl_time.simps}\<close>
+setup \<open>fold add_rewrite_rule @{thms remdups3.simps}\<close>
 
 
 definition setmap where [rewrite]: "setmap S = Map (%x. if x\<in>S then Some () else None)"
@@ -96,9 +96,9 @@ lemma rbt_search_time_logN_ub[resolve]: "n\<le>length xs \<Longrightarrow> rbt_s
 lemma rbt_insert_logN_ub[resolve]: "n\<le>length xs \<Longrightarrow> rbt_insert_logN (sizeM1 (setmap (snd (remdups3 xs n)))) \<le>  rbt_insert_logN (Suc n) "
   apply(auto simp: sizeofmap_ub  intro!: rbt_insert_logN_mono) by (auto simp: sizeM1_def)
 
-setup {* del_prfstep_thm @{thm rbt_map_def} *}
-setup {* del_prfstep_thm @{thm rbt_in_traverse_fst} *}
-setup {* del_prfstep_thm @{thm rbt_map_assn_def} *}
+setup \<open>del_prfstep_thm @{thm rbt_map_def}\<close>
+setup \<open>del_prfstep_thm @{thm rbt_in_traverse_fst}\<close>
+setup \<open>del_prfstep_thm @{thm rbt_map_assn_def}\<close>
 
 lemma remdups'_impl_rule[hoare_triple]: 
   "n\<le>length xs \<Longrightarrow> <p \<mapsto>\<^sub>a xs * $(remdups'_impl_time n)>

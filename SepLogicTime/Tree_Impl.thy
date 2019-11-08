@@ -2,21 +2,21 @@ theory Tree_Impl
   imports SepAuto "HOL-Library.Tree"
 begin
 
-section {* Abstract tree *}
+section \<open>Abstract tree\<close>
 
-setup {* add_resolve_prfstep @{thm tree.distinct(2)} *}
-setup {* add_forward_prfstep (equiv_forward_th (@{thm tree.simps(1)})) *}
-setup {* fold add_rewrite_rule @{thms tree.sel} *}
-setup {* add_forward_prfstep_cond @{thm tree.collapse} [with_cond "?tree \<noteq> Node ?l ?v ?r"] *}
-setup {* add_var_induct_rule @{thm tree.induct} *}
-setup {* fold add_rewrite_rule @{thms tree.case} *}
+setup \<open>add_resolve_prfstep @{thm tree.distinct(2)}\<close>
+setup \<open>add_forward_prfstep (equiv_forward_th (@{thm tree.simps(1)}))\<close>
+setup \<open>fold add_rewrite_rule @{thms tree.sel}\<close>
+setup \<open>add_forward_prfstep_cond @{thm tree.collapse} [with_cond "?tree \<noteq> Node ?l ?v ?r"]\<close>
+setup \<open>add_var_induct_rule @{thm tree.induct}\<close>
+setup \<open>fold add_rewrite_rule @{thms tree.case}\<close>
 
-section {* Tree nodes *}
+section \<open>Tree nodes\<close>
 
 datatype 'a node =
   Node (lsub: "'a node ref option") (val: 'a) (rsub: "'a node ref option")
-setup {* fold add_rewrite_rule @{thms node.sel} *}
-setup {* add_forward_prfstep (equiv_forward_th @{thm node.simps(1)}) *}
+setup \<open>fold add_rewrite_rule @{thms node.sel}\<close>
+setup \<open>add_forward_prfstep (equiv_forward_th @{thm node.simps(1)})\<close>
 
 fun node_encode :: "'a::heap node \<Rightarrow> nat" where
   "node_encode (Node l v r) = to_nat (l, v, r)"
@@ -31,7 +31,7 @@ fun btree :: "'a::heap tree \<Rightarrow> 'a node ref option \<Rightarrow> assn"
   "btree Leaf p = \<up>(p = None)"
 | "btree \<langle>lt, v, rt\<rangle> (Some p) = (\<exists>\<^sub>Alp rp. p \<mapsto>\<^sub>r Node lp v rp * btree lt lp * btree rt rp)"
 | "btree \<langle>lt, v, rt\<rangle> None = false"
-setup {* fold add_rewrite_ent_rule @{thms btree.simps} *}
+setup \<open>fold add_rewrite_ent_rule @{thms btree.simps}\<close>
 
 lemma btree_Leaf [forward_ent]: "btree Leaf p \<Longrightarrow>\<^sub>A \<up>(p = None)" by auto2
 
@@ -44,12 +44,12 @@ lemma btree_none: "emp \<Longrightarrow>\<^sub>A btree tree.Leaf None" by auto2
 lemma btree_constr_ent:
   "p \<mapsto>\<^sub>r Node lp v rp * btree lt lp * btree rt rp \<Longrightarrow>\<^sub>A btree (tree.Node lt v rt) (Some p)" by auto2
 
-setup {* fold add_entail_matcher [@{thm btree_none}, @{thm btree_constr_ent}] *}
-setup {* fold del_prfstep_thm @{thms btree.simps} *}
+setup \<open>fold add_entail_matcher [@{thm btree_none}, @{thm btree_constr_ent}]\<close>
+setup \<open>fold del_prfstep_thm @{thms btree.simps}\<close>
 
 type_synonym 'a ptree = "'a node ref option"
 
-section {* Basic operations *}
+section \<open>Basic operations\<close>
 
 definition tree_empty :: "'a ptree Heap" where
   "tree_empty = return None"

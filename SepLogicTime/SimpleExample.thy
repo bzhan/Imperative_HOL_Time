@@ -16,7 +16,7 @@ lemma f1_time_bound [asym_bound]:
 lemma f1_rule [hoare_triple]:
   "<$(f1_time)> f1_impl n <\<lambda>r. \<up>(r=2*n)>\<^sub>t" by auto2
 
-setup {* del_prfstep_thm @{thm f1_time_def} *}
+setup \<open>del_prfstep_thm @{thm f1_time_def}\<close>
 
 section \<open>f2 builds two new Arrays\<close>
 
@@ -38,7 +38,7 @@ lemma f2_rule [hoare_triple]:
     f2_impl n
    <\<lambda>r. fst r \<mapsto>\<^sub>a replicate n undefined * snd r \<mapsto>\<^sub>a replicate n undefined>\<^sub>t" by auto2
  
-setup {* del_prfstep_thm @{thm f2_time_def} *}
+setup \<open>del_prfstep_thm @{thm f2_time_def}\<close>
 
 section \<open>f squares the length of a list and generates two arrays of that size\<close>
 
@@ -60,6 +60,6 @@ lemma f_rule [hoare_triple]:
 lemma f_time_bound [asym_bound]: "(\<lambda>n. f_time n) \<in> \<Theta>(\<lambda>n. n)"
   unfolding f_time_def by auto2
 
-setup {* del_prfstep_thm @{thm f_time_def} *}
+setup \<open>del_prfstep_thm @{thm f_time_def}\<close>
 
 end

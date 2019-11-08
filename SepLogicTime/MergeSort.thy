@@ -12,7 +12,7 @@ fun merge_list :: "('a::linorder) list \<Rightarrow> 'a list \<Rightarrow> 'a li
      if xs = [] then ys else if ys = [] then xs
      else if last xs \<ge> last ys then merge_list (butlast xs) ys @ [last xs]
      else merge_list xs (butlast ys) @ [last ys])"
-setup {* add_rewrite_rule @{thm merge_list.simps} *}
+setup \<open>add_rewrite_rule @{thm merge_list.simps}\<close>
 
 lemma merge_list_simps' [rewrite]:
   "merge_list [] ys = ys"
@@ -20,7 +20,7 @@ lemma merge_list_simps' [rewrite]:
   "merge_list (xs @ [x]) (ys @ [y]) =
     (if x \<ge> y then merge_list xs (ys @ [y]) @ [x]
                else merge_list (xs @ [x]) ys @ [y])" by auto2+
-setup {* del_prfstep_thm @{thm merge_list.simps} *}
+setup \<open>del_prfstep_thm @{thm merge_list.simps}\<close>
 
 lemma merge_list_length [rewrite]:
   "length (merge_list xs ys) = length xs + length ys"
@@ -97,7 +97,7 @@ function mergeinto_fun :: "nat \<Rightarrow> nat \<Rightarrow> 'a::linorder list
 by pat_completeness auto
 termination by (relation "Wellfounded.measure (\<lambda>(la, lb, a, b, c). la + lb)") auto
 
-setup {* fold add_rewrite_rule @{thms mergeinto_fun.simps} *}
+setup \<open>fold add_rewrite_rule @{thms mergeinto_fun.simps}\<close>
 
 lemma mergeinto_fun_length [rewrite]:
   "length (mergeinto_fun la lb a b c) = length c"

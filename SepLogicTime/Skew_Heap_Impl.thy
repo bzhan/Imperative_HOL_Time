@@ -2,7 +2,7 @@ theory Skew_Heap_Impl
   imports Tree_Impl Amortized_Complexity.Skew_Heap_Analysis Asymptotics_1D
 begin
 
-section {* Operations *}
+section \<open>Operations\<close>
 
 partial_function (heap) merge_impl :: "'a::{heap,linorder} ptree \<Rightarrow> 'a ptree \<Rightarrow> 'a ptree Heap" where
   "merge_impl a b = (case a of
@@ -21,7 +21,7 @@ partial_function (heap) merge_impl :: "'a::{heap,linorder} ptree \<Rightarrow> '
            q := Node p' (val tb) (lsub tb);
            return (Some q) })}))"
 
-setup {* fold add_rewrite_rule @{thms Skew_Heap.merge.simps} *}
+setup \<open>fold add_rewrite_rule @{thms Skew_Heap.merge.simps}\<close>
 
 definition merge_time :: "'a::linorder tree \<Rightarrow> 'a tree \<Rightarrow> nat" where
   "merge_time t1 t2 = 4 * t_merge t1 t2"
@@ -52,7 +52,7 @@ definition insert_impl :: "'a::{heap,linorder} \<Rightarrow> 'a ptree \<Rightarr
      merge_impl s t
    }"
 
-setup {* add_rewrite_rule @{thm Skew_Heap.insert_def} *}
+setup \<open>add_rewrite_rule @{thm Skew_Heap.insert_def}\<close>
 
 partial_function (heap) del_min_impl :: "'a::{heap,linorder} ptree \<Rightarrow> 'a ptree Heap" where
   "del_min_impl a = (case a of
@@ -62,12 +62,12 @@ partial_function (heap) del_min_impl :: "'a::{heap,linorder} ptree \<Rightarrow>
       merge_impl (lsub t) (rsub t)
     })"
 
-setup {* fold add_rewrite_rule @{thms Skew_Heap.del_min.simps} *}
+setup \<open>fold add_rewrite_rule @{thms Skew_Heap.del_min.simps}\<close>
 
 fun del_min_time :: "'a::linorder tree \<Rightarrow> nat" where
   "del_min_time Leaf = 4"
 | "del_min_time (tree.Node l v r) = merge_time l r + 4"
-setup {* fold add_rewrite_rule @{thms del_min_time.simps} *}
+setup \<open>fold add_rewrite_rule @{thms del_min_time.simps}\<close>
 
 lemma skew_heap_del_min_correct [hoare_triple]:
   "<btree t a * $(del_min_time t)>
@@ -75,7 +75,7 @@ lemma skew_heap_del_min_correct [hoare_triple]:
    <btree (del_min t)>\<^sub>t"
 @proof @case "t = Leaf" @qed
 
-section {* Amortized analysis *}
+section \<open>Amortized analysis\<close>
 
 definition skew_heap_P :: "'a tree \<Rightarrow> nat" where [rewrite]:
   "skew_heap_P t = 4 * nat (\<Phi> t)"
@@ -191,7 +191,7 @@ lemma del_min_atime_asym [asym_bound]:
   unfolding del_min_atime_alt 
   using abcd_lnx[of 8 4 3 2] by auto
 
-setup {* del_prfstep_thm @{thm skew_heap_def} *}
+setup \<open>del_prfstep_thm @{thm skew_heap_def}\<close>
 
 definition insert_atime :: "nat \<Rightarrow> nat" where [rewrite]:
   "insert_atime n = merge_atime 2 n + 2"
@@ -214,31 +214,31 @@ lemma insert_atime_asym [asym_bound]:
   "(\<lambda>n. insert_atime n) \<in> \<Theta>(\<lambda>x. ln (real x))"  (is "?f \<in> \<Theta>(?g)")
   unfolding insert_atime_alt by (rule abcd_lnx) auto
 
-section {* Abstract assertion *}
+section \<open>Abstract assertion\<close>
 
 definition skew_heap_mset :: "'a::{heap,linorder} multiset \<Rightarrow> 'a ptree \<Rightarrow> assn" where [rewrite_ent]:
   "skew_heap_mset S a = (\<exists>\<^sub>At. skew_heap t a * \<up>(heap t) * \<up>(mset_tree t = S))"
 
-setup {* add_resolve_prfstep @{thm skew_heap.invar_empty} *}
-setup {* fold add_rewrite_rule @{thms mset_tree.simps} *}
+setup \<open>add_resolve_prfstep @{thm skew_heap.invar_empty}\<close>
+setup \<open>fold add_rewrite_rule @{thms mset_tree.simps}\<close>
 
 lemma size1_mset_tree [rewrite]:
-  "size (mset_tree t) + 1 = size1 t" by (simp add: size1_def)
+  "size (mset_tree t) + 1 = size1 t" by (simp add: size1_size)
 
 lemma skew_heap_empty_rule'' [hoare_triple]:
   "<$1> skew_heap_empty <skew_heap_mset {#}>\<^sub>t" by auto2
 
-setup {* add_forward_prfstep @{thm Skew_Heap.heap_merge} *}
-setup {* add_rewrite_rule @{thm Skew_Heap.mset_merge} *}
-setup {* add_forward_prfstep @{thm Skew_Heap.heap_insert} *}
-setup {* add_rewrite_rule @{thm Skew_Heap.mset_insert} *}
-setup {* add_forward_prfstep @{thm Skew_Heap.heap_del_min} *}
-setup {* add_rewrite_rule @{thm Skew_Heap.mset_del_min} *}
+setup \<open>add_forward_prfstep @{thm Skew_Heap.heap_merge}\<close>
+setup \<open>add_rewrite_rule @{thm Skew_Heap.mset_merge}\<close>
+setup \<open>add_forward_prfstep @{thm Skew_Heap.heap_insert}\<close>
+setup \<open>add_rewrite_rule @{thm Skew_Heap.mset_insert}\<close>
+setup \<open>add_forward_prfstep @{thm Skew_Heap.heap_del_min}\<close>
+setup \<open>add_rewrite_rule @{thm Skew_Heap.mset_del_min}\<close>
 
-setup {* register_wellform_data ("get_min h", ["h \<noteq> Leaf"]) *}
-setup {* add_prfstep_check_req ("get_min h", "h \<noteq> Leaf") *}
+setup \<open>register_wellform_data ("get_min h", ["h \<noteq> Leaf"])\<close>
+setup \<open>add_prfstep_check_req ("get_min h", "h \<noteq> Leaf")\<close>
 
-setup {* add_rewrite_rule @{thm Skew_Heap.get_min} *}
+setup \<open>add_rewrite_rule @{thm Skew_Heap.get_min}\<close>
 
 lemma skew_heap_merge_rule [hoare_triple]:
   "<skew_heap_mset S a * skew_heap_mset T b * $(merge_atime (size S + 1) (size T + 1))>

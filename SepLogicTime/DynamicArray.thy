@@ -3,13 +3,13 @@ theory DynamicArray
 begin
 
 datatype 'a dynamic_array = Dyn_Array (alen: nat) (aref: "'a array")
-setup {* add_simple_datatype "dynamic_array" *}
+setup \<open>add_simple_datatype "dynamic_array"\<close>
 
-section {* Raw assertion and basic operations *}
+section \<open>Raw assertion and basic operations\<close>
 
 fun dyn_array_raw :: "'a::heap list \<times> nat \<Rightarrow> 'a dynamic_array \<Rightarrow> assn" where
   "dyn_array_raw (xs, n) (Dyn_Array m a) = (a \<mapsto>\<^sub>a xs * \<up>(m = n))"
-setup {* add_rewrite_ent_rule @{thm dyn_array_raw.simps} *}
+setup \<open>add_rewrite_ent_rule @{thm dyn_array_raw.simps}\<close>
 
 definition dyn_array_new :: "'a::heap dynamic_array Heap" where
   "dyn_array_new = do {
@@ -33,7 +33,7 @@ definition double_length :: "'a::heap dynamic_array \<Rightarrow> 'a dynamic_arr
 fun double_length_fun :: "'a::heap list \<times> nat \<Rightarrow> 'a list \<times> nat" where
   "double_length_fun (xs, n) =
     (Arrays_Ex.array_copy xs (replicate (2 * n + 1) undefined) n, n)"
-setup {* add_rewrite_rule @{thm double_length_fun.simps} *}
+setup \<open>add_rewrite_rule @{thm double_length_fun.simps}\<close>
 
 lemma double_length_raw_rule [hoare_triple]:
   "length xs = n \<Longrightarrow>
@@ -49,7 +49,7 @@ definition push_array_basic :: "'a \<Rightarrow> 'a::heap dynamic_array \<Righta
 
 fun push_array_basic_fun :: "'a \<Rightarrow> 'a::heap list \<times> nat \<Rightarrow> 'a list \<times> nat" where
   "push_array_basic_fun x (xs, n) = (list_update xs n x, n + 1)"
-setup {* add_rewrite_rule @{thm push_array_basic_fun.simps} *}
+setup \<open>add_rewrite_rule @{thm push_array_basic_fun.simps}\<close>
 
 lemma push_array_basic_raw_rule [hoare_triple]:
   "n < length xs \<Longrightarrow>
@@ -57,7 +57,7 @@ lemma push_array_basic_raw_rule [hoare_triple]:
     push_array_basic x p
    <dyn_array_raw (push_array_basic_fun x (xs, n))>" by auto2
 
-section {* Potential function *}
+section \<open>Potential function\<close>
 
 lemma arith1 [rewrite]: "10*(n::nat) - 5*(2*n+1) = 0" by simp
 lemma arith2 [backward]: "a \<le> b \<Longrightarrow> c > 0 \<Longrightarrow> a + c - b \<le> (c::nat)" by auto
@@ -75,7 +75,7 @@ lemma arith2' [resolve]: "10*(a::nat) - 5*b + 12 \<ge> 10*(a+1) - 5*b + 2"
 
 fun dyn_array_P :: "'a::heap list \<times> nat \<Rightarrow> nat" where
   "dyn_array_P (xs, n) = 10 * n - 5 * length xs"
-setup {* add_rewrite_rule @{thm dyn_array_P.simps} *}
+setup \<open>add_rewrite_rule @{thm dyn_array_P.simps}\<close>
 
 lemma dyn_array_new_P [rewrite]:
   "dyn_array_P (replicate 5 undefined, 0) = 0" by auto2
@@ -91,9 +91,9 @@ lemma push_array_fun_P [resolve]:
 lemma update_P [rewrite]:
   "i < n \<Longrightarrow> dyn_array_P (list_update xs i x, n) = dyn_array_P (xs, n)" by auto2
 
-setup {* del_prfstep_thm @{thm dyn_array_P.simps} *}
+setup \<open>del_prfstep_thm @{thm dyn_array_P.simps}\<close>
 
-section {* Refined assertion *}
+section \<open>Refined assertion\<close>
 
 definition dyn_array' :: "'a::heap list \<times> nat \<Rightarrow> 'a dynamic_array \<Rightarrow> assn" where [rewrite_ent]:
   "dyn_array' p r = dyn_array_raw p r * $(dyn_array_P p)"
@@ -157,7 +157,7 @@ lemma destroy_rule' [hoare_triple]:
    destroy d
    <\<lambda>r. r \<mapsto>\<^sub>a take n xs>\<^sub>t" by auto2
 
-setup {* del_prfstep_thm @{thm dyn_array_raw.simps} *}
+setup \<open>del_prfstep_thm @{thm dyn_array_raw.simps}\<close>
 
 lemma dyn_array_new_rule' [hoare_triple]:
   "<$7>
@@ -200,8 +200,8 @@ fun push_array_fun :: "'a \<Rightarrow> 'a::heap list \<times> nat \<Rightarrow>
   "push_array_fun x (xs, n) = (
      if n < length xs then push_array_basic_fun x (xs, n)
      else push_array_basic_fun x (double_length_fun (xs, n)))"
-setup {* add_rewrite_rule @{thm push_array_fun.simps} *}
+setup \<open>add_rewrite_rule @{thm push_array_fun.simps}\<close>
 
-setup {* del_prfstep_thm @{thm dyn_array'_def} *}
+setup \<open>del_prfstep_thm @{thm dyn_array'_def}\<close>
 
 end

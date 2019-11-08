@@ -1,14 +1,14 @@
 (* Verification of imperative red-black trees. *)
 
 theory RBTree_Impl
-  imports Auto2_HOL.RBTree SepAuto Asymptotics_2D
+  imports Auto2_Imperative_HOL.RBTree SepAuto Asymptotics_2D
 begin
 
-section {* Tree nodes *}
+section \<open>Tree nodes\<close>
 
 datatype ('a, 'b) rbt_node =
   Node (lsub: "('a, 'b) rbt_node ref option") (cl: color) (key: 'a) (val: 'b) (rsub: "('a, 'b) rbt_node ref option")
-setup {* fold add_rewrite_rule @{thms rbt_node.sel} *}
+setup \<open>fold add_rewrite_rule @{thms rbt_node.sel}\<close>
 
 fun color_encode :: "color \<Rightarrow> nat" where
   "color_encode B = 0"
@@ -33,7 +33,7 @@ fun btree :: "('a::heap, 'b::heap) rbt \<Rightarrow> ('a, 'b) rbt_node ref optio
   "btree Leaf p = \<up>(p = None)"
 | "btree (rbt.Node lt c k v rt) (Some p) = (\<exists>\<^sub>Alp rp. p \<mapsto>\<^sub>r Node lp c k v rp * btree lt lp * btree rt rp)"
 | "btree (rbt.Node lt c k v rt) None = false"
-setup {* fold add_rewrite_ent_rule @{thms btree.simps} *}
+setup \<open>fold add_rewrite_ent_rule @{thms btree.simps}\<close>
 
 lemma btree_Leaf [forward_ent]: "btree Leaf p \<Longrightarrow>\<^sub>A \<up>(p = None)" by auto2
 
@@ -46,14 +46,14 @@ lemma btree_none: "emp \<Longrightarrow>\<^sub>A btree Leaf None" by auto2
 lemma btree_constr_ent:
   "p \<mapsto>\<^sub>r Node lp c k v rp * btree lt lp * btree rt rp \<Longrightarrow>\<^sub>A btree (rbt.Node lt c k v rt) (Some p)" by auto2
 
-setup {* fold add_entail_matcher [@{thm btree_none}, @{thm btree_constr_ent}] *}
-setup {* fold del_prfstep_thm @{thms btree.simps} *}
+setup \<open>fold add_entail_matcher [@{thm btree_none}, @{thm btree_constr_ent}]\<close>
+setup \<open>fold del_prfstep_thm @{thms btree.simps}\<close>
 
 type_synonym ('a, 'b) btree = "('a, 'b) rbt_node ref option"
 
-section {* Operations *}
+section \<open>Operations\<close>
 
-subsection {* Basic operations *}
+subsection \<open>Basic operations\<close>
 
 definition tree_empty :: "('a, 'b) btree Heap" where
   "tree_empty = return None"
@@ -115,7 +115,7 @@ lemma paint_rule [hoare_triple]:
    <\<lambda>_. btree (RBTree.paint c t) p>\<^sub>t"
 @proof @case "t = Leaf" @qed
 
-subsection {* Rotation *}
+subsection \<open>Rotation\<close>
 
 definition btree_rotate_l :: "('a::heap, 'b::heap) btree \<Rightarrow> ('a, 'b) btree Heap" where
   "btree_rotate_l p = (case p of
@@ -159,7 +159,7 @@ lemma btree_rotate_r_time_bound [asym_bound]:
   "(\<lambda>n::nat. btree_rotate_r_time) \<in> \<Theta>(\<lambda>n. 1)"
   apply (simp only: btree_rotate_r_time_def) by auto2
 
-subsection {* Balance *}
+subsection \<open>Balance\<close>
 
 definition btree_balanceR :: "('a::heap, 'b::heap) btree \<Rightarrow> ('a, 'b) btree Heap" where
   "btree_balanceR p = (case p of None \<Rightarrow> return None | Some pp \<Rightarrow> do {
@@ -225,7 +225,7 @@ lemma balance_to_fun [hoare_triple]:
    <btree (balance l k v r)>\<^sub>t"
 @proof @unfold "balance l k v r" @qed
 
-subsection {* Insertion *}
+subsection \<open>Insertion\<close>
 
 partial_function (heap) rbt_ins ::
   "'a::{heap,ord} \<Rightarrow> 'b::heap \<Rightarrow> ('a, 'b) btree \<Rightarrow> ('a, 'b) btree Heap" where
@@ -267,7 +267,7 @@ fun rbt_ins_time' :: "('a, 'b) rbt \<Rightarrow> 'a::ord \<Rightarrow> nat" wher
        (if k=ka then 4 else (if k<ka then 50 + rbt_ins_time' l k else 100 + rbt_ins_time' r k)) 
         else
        (if k=ka then 4 else (if k<ka then 100 + rbt_ins_time' l k else 100 + rbt_ins_time' r k)) ) "
-setup {* fold add_rewrite_rule @{thms rbt_ins_time'.simps} *}
+setup \<open>fold add_rewrite_rule @{thms rbt_ins_time'.simps}\<close>
 
 
 lemma rbt_ins_to_fun'[hoare_triple]: 
@@ -307,7 +307,7 @@ lemma rbt_insert_to_fun [hoare_triple]:
    rbt_insert k v p
    <btree (RBTree.rbt_insert k v t)>\<^sub>t" by auto2
 
-subsection {* Search *}
+subsection \<open>Search\<close>
  
 partial_function (heap) rbt_search ::
   "'a::{heap,linorder} \<Rightarrow> ('a, 'b::heap) btree \<Rightarrow> 'b option Heap" where
@@ -324,7 +324,7 @@ fun rbt_search_time' :: "('a, 'b) rbt \<Rightarrow> 'a::ord \<Rightarrow> nat" w
     "rbt_search_time' Leaf k = 1"
   | "rbt_search_time' (rbt.Node l c ka va r) k =  
        (if k=ka then 2 else (if k<ka then 1 + rbt_search_time' l k else 1 + rbt_search_time' r k))   "
-setup {* fold add_rewrite_rule @{thms rbt_search_time'.simps} *}
+setup \<open>fold add_rewrite_rule @{thms rbt_search_time'.simps}\<close>
 
 lemma btree_search_correct' [hoare_triple]: (* order of \<up> and $ is important *)
   "<btree t b  * $(rbt_search_time' t x) * \<up>(rbt_sorted t)>
@@ -345,10 +345,10 @@ lemma btree_search_correct [hoare_triple]:
    <\<lambda>r. btree t b * \<up>(r = RBTree.rbt_search t x)>\<^sub>t"
 @proof @have "rbt_search_time (max_depth t) \<ge>\<^sub>t rbt_search_time' t x" @qed 
 
-setup {* del_prfstep_thm @{thm rbt_search_time_def} *}
+setup \<open>del_prfstep_thm @{thm rbt_search_time_def}\<close>
 
 
-subsection {* Delete *}
+subsection \<open>Delete\<close>
   
 definition btree_balL :: "('a::heap, 'b::heap) btree \<Rightarrow> ('a, 'b) btree Heap" where
   "btree_balL p = (case p of
@@ -357,22 +357,22 @@ definition btree_balL :: "('a::heap, 'b::heap) btree \<Rightarrow> ('a, 'b) btre
       t \<leftarrow> !pp;
       cl_l \<leftarrow> get_color (lsub t);
       if cl_l = R then do {
-        set_color B (lsub t);  (* case 1 *)
+        set_color B (lsub t);   \<comment> \<open> case 1 \<close>
         return p}
       else case rsub t of
-        None \<Rightarrow> return p  (* case 2 *)
+        None \<Rightarrow> return p  \<comment> \<open> case 2\<close>
       | Some rp \<Rightarrow> do {  
          rt \<leftarrow> !rp;
          if cl rt = B then do {
-           set_color R (rsub t);  (* case 3 *)
+           set_color R (rsub t);  \<comment> \<open> case 3\<close>
            set_color B p;
            btree_balance p}
          else case lsub rt of
-           None \<Rightarrow> return p  (* case 4 *)
+           None \<Rightarrow> return p  \<comment> \<open> case 4 \<close>
          | Some lrp \<Rightarrow> do {
             lrt \<leftarrow> !lrp;
             if cl lrt = B then do {
-              set_color R (lsub rt);  (* case 5 *)
+              set_color R (lsub rt); \<comment> \<open> case 5 \<close>
               paint R (rsub rt);
               set_color B (rsub t); 
               rp' \<leftarrow> btree_rotate_r (rsub t);
@@ -398,22 +398,22 @@ definition btree_balR :: "('a::heap, 'b::heap) btree \<Rightarrow> ('a, 'b) btre
       t \<leftarrow> !pp;
       cl_r \<leftarrow> get_color (rsub t);
       if cl_r = R then do {
-        set_color B (rsub t);  (* case 1 *)
+        set_color B (rsub t);  \<comment>\<open>case 1 \<close>
         return p}
       else case lsub t of
-        None \<Rightarrow> return p  (* case 2 *)
+        None \<Rightarrow> return p   \<comment>\<open>case 2\<close>
       | Some lp \<Rightarrow> do {  
          lt \<leftarrow> !lp;
          if cl lt = B then do {
-           set_color R (lsub t);  (* case 3 *)
+           set_color R (lsub t);   \<comment>\<open>case 3\<close>
            set_color B p;
            btree_balance p}
          else case rsub lt of
-           None \<Rightarrow> return p  (* case 4 *)
+           None \<Rightarrow> return p   \<comment>\<open>case 4\<close>
          | Some rlp \<Rightarrow> do {
             rlt \<leftarrow> !rlp;
             if cl rlt = B then do {
-              set_color R (rsub lt);  (* case 5 *)
+              set_color R (rsub lt);   \<comment>\<open>case 5\<close>
               paint R (lsub lt);
               set_color B (lsub t); 
               lp' \<leftarrow> btree_rotate_l (lsub t);
@@ -487,7 +487,7 @@ fun rbt_combine_time' :: "('a, 'b) rbt \<Rightarrow> ('a, 'b) rbt \<Rightarrow> 
           (if c2=B then 80 +  rbt_combine_time' r1 l2
               else 20 + rbt_combine_time' (rbt.Node l1 c1 k1 v1 r1) l2)
            )   "
-setup {* fold add_rewrite_rule @{thms rbt_combine_time'.simps} *}
+setup \<open>fold add_rewrite_rule @{thms rbt_combine_time'.simps}\<close>
 
 
 
@@ -565,7 +565,7 @@ fun rbt_del_time' :: "('a, 'b) rbt \<Rightarrow> 'a::ord \<Rightarrow> nat" wher
             else 80 + rbt_del_time' r k)
         ))
          "
-setup {* fold add_rewrite_rule @{thms rbt_del_time'.simps} *}
+setup \<open>fold add_rewrite_rule @{thms rbt_del_time'.simps}\<close>
 
 lemma rbt_del_to_fun' [hoare_triple]:
   "<btree t p * $(rbt_del_time' t x)>
@@ -671,7 +671,7 @@ lemma size1_rbt_insert[resolve]: "size1 (RBTree.rbt_insert k v t) \<le> size1 t 
 
 
 
-section {* size of map *}
+section \<open>size of map\<close>
 
 lemma [simp]: "g = Map (meval g)" apply(cases g) by auto
 
@@ -844,12 +844,12 @@ lemma rbt_delete_rule' [hoare_triple]:
 @qed 
 
 
-section {* Outer interface *}
+section \<open>Outer interface\<close>
  
 
 definition rbt_map_assn :: "('a, 'b) map \<Rightarrow> ('a::{heap,linorder}, 'b::heap) rbt_node ref option \<Rightarrow> assn" where
   "rbt_map_assn M p = (\<exists>\<^sub>At. btree t p * \<up>(is_rbt t) * \<up>(rbt_sorted t) * \<up>(M = rbt_map t))"
-setup {* add_rewrite_ent_rule @{thm rbt_map_assn_def} *}
+setup \<open>add_rewrite_ent_rule @{thm rbt_map_assn_def}\<close>
 
 subsection \<open>tree empty\<close>
 

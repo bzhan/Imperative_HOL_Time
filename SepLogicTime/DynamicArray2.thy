@@ -4,7 +4,7 @@ begin
 
 fun dyn_array_P' :: "'a::heap list \<times> nat \<Rightarrow> nat" where
   "dyn_array_P' (xs, n) = 4 * n"
-setup {* add_rewrite_rule @{thm dyn_array_P'.simps} *}
+setup \<open>add_rewrite_rule @{thm dyn_array_P'.simps}\<close>
 
 lemma dyn_array_new_P' [rewrite]:
   "dyn_array_P' (replicate 5 undefined, 0) = 0" by auto2
@@ -22,11 +22,11 @@ lemma update_P' [rewrite]:
 lemma dyn_array_destroy_P' [resolve]:
   "dyn_array_P' (xs, n) + 3 \<ge>\<^sub>t 4 * n + 3" by auto2
 
-setup {* del_prfstep_thm @{thm dyn_array_P'.simps} *}
+setup \<open>del_prfstep_thm @{thm dyn_array_P'.simps}\<close>
 
 fun dyn_array'' :: "'a::heap list \<times> nat \<Rightarrow> 'a dynamic_array \<Rightarrow> assn" where
   "dyn_array'' (xs, n) r = dyn_array' (xs, n) r * $(dyn_array_P' (xs, n))"
-setup {* add_rewrite_ent_rule @{thm dyn_array''.simps} *}
+setup \<open>add_rewrite_ent_rule @{thm dyn_array''.simps}\<close>
 
 lemma dyn_array_new_rule'' [hoare_triple]:
   "<$7>
@@ -85,9 +85,9 @@ lemma destroy_rule'' [hoare_triple]:
   @have "dyn_array_P' (xs, n) + 3 \<ge>\<^sub>t 4 * n + 3"
 @qed
 
-setup {* del_prfstep_thm @{thm dyn_array''.simps} *}
+setup \<open>del_prfstep_thm @{thm dyn_array''.simps}\<close>
 
-section {* Derived operations *}
+section \<open>Derived operations\<close>
 
 lemma push_array_rule'' [hoare_triple]:
   "n \<le> length xs \<Longrightarrow>
@@ -95,11 +95,11 @@ lemma push_array_rule'' [hoare_triple]:
    push_array x p
    <dyn_array'' (push_array_fun x (xs, n))>\<^sub>t" by auto2
 
-section {* Abstract assertion *}
+section \<open>Abstract assertion\<close>
 
 fun abs_array :: "'a::heap list \<times> nat \<Rightarrow> 'a list" where
   "abs_array (xs, n) = take n xs"
-setup {* add_rewrite_rule @{thm abs_array.simps} *}
+setup \<open>add_rewrite_rule @{thm abs_array.simps}\<close>
 
 lemma double_length_abs [rewrite]:
   "length xs = n \<Longrightarrow> abs_array (double_length_fun (xs, n)) = abs_array (xs, n)" by auto2
@@ -146,10 +146,10 @@ lemma destroy_rule [hoare_triple]:
     destroy p
    <\<lambda>r. r \<mapsto>\<^sub>a xs>\<^sub>t" by auto2
 
-setup {* del_simple_datatype "dynamic_array" *}
-setup {* del_prfstep_thm @{thm dyn_array_def} *}
+setup \<open>del_simple_datatype "dynamic_array"\<close>
+setup \<open>del_prfstep_thm @{thm dyn_array_def}\<close>
 
-section {* More operations *}
+section \<open>More operations\<close>
 
 definition array_swap :: "'a::heap dynamic_array \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> unit Heap" where
   "array_swap d i j = do {
@@ -166,7 +166,7 @@ lemma array_swap_rule [hoare_triple]:
    array_swap p i j
    <\<lambda>_. dyn_array (list_swap xs i j) p>" by auto2
 
-text {* Filter with dynamic array *}
+text \<open>Filter with dynamic array\<close>
 
 fun dfilter_aux_fun :: "'a list \<Rightarrow> nat \<Rightarrow> ('a \<Rightarrow> bool) \<Rightarrow> 'a list" where
   "dfilter_aux_fun xs 0 P = []"
@@ -174,7 +174,7 @@ fun dfilter_aux_fun :: "'a list \<Rightarrow> nat \<Rightarrow> ('a \<Rightarrow
      if P (xs ! n)
      then dfilter_aux_fun xs n P @ [xs ! n]
      else dfilter_aux_fun xs n P)"
-setup {* fold add_rewrite_rule @{thms dfilter_aux_fun.simps} *}
+setup \<open>fold add_rewrite_rule @{thms dfilter_aux_fun.simps}\<close>
 
 lemma dfilter_aux_fun_ind [rewrite]:
   "i \<le> length xs \<Longrightarrow> dfilter_aux_fun xs i P = filter P (take i xs)"        
@@ -218,6 +218,6 @@ lemma dfilter_impl_rule[hoare_triple]:
 lemma dfilter_impl_time_bound [asym_bound]: "(\<lambda>n. dfilter_impl_time n) \<in> \<Theta>(\<lambda>n. n)"
   unfolding dfilter_impl_time_def by auto2
 
-setup {* del_prfstep_thm @{thm dfilter_impl_time_def} *}
+setup \<open>del_prfstep_thm @{thm dfilter_impl_time_def}\<close>
 
 end
