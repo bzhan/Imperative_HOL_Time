@@ -1,5 +1,5 @@
 theory Rev_Impl
-imports SepAuto Asymptotics_Recurrences
+imports SepAuto_Time Asymptotics_Recurrences
 begin
 
 fun rev'_fun :: "'a list \<Rightarrow> 'a list \<Rightarrow> nat \<Rightarrow> 'a list" where

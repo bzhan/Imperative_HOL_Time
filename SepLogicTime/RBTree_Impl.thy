@@ -1,7 +1,7 @@
 (* Verification of imperative red-black trees. *)
 
 theory RBTree_Impl
-  imports Auto2_Imperative_HOL.RBTree SepAuto Asymptotics_2D
+  imports Auto2_Imperative_HOL.RBTree SepAuto_Time Asymptotics_2D
 begin
 
 section \<open>Tree nodes\<close>

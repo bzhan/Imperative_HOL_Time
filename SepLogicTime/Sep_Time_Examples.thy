@@ -57,6 +57,11 @@ imports
 
   Knapsack_Impl
 
+
+(* Further examples *)
+
+  Remdups_Impl
+
 begin
 
 end
