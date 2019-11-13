@@ -4,8 +4,8 @@ begin
 
 definition acopy :: "'a::heap array \<Rightarrow> 'a array Heap" where
   "acopy a = do {
-     as \<leftarrow> Array.freeze a;
-     Array.of_list as
+     as \<leftarrow> Array_Time.freeze a;
+     Array_Time.of_list as
    }"
 
 definition acopy_time :: "nat \<Rightarrow> nat" where [rewrite]:
@@ -26,8 +26,8 @@ fun array_copy :: "'a::heap array \<Rightarrow> 'a array \<Rightarrow> nat \<Rig
   "array_copy a b 0 = (return ())"
 | "array_copy a b (Suc n) = do {
       array_copy a b n;
-      x \<leftarrow> Array.nth a n;
-      Array.upd n x b;
+      x \<leftarrow> Array_Time.nth a n;
+      Array_Time.upd n x b;
       return () }"
 
 lemma array_copy_rule [hoare_triple]:
@@ -39,8 +39,8 @@ lemma array_copy_rule [hoare_triple]:
 
 definition atake :: "nat \<Rightarrow> 'a::heap array \<Rightarrow> 'a array Heap" where
   "atake n xs = do {
-     XS \<leftarrow> Array.freeze xs;
-     Array.of_list (take n XS)
+     XS \<leftarrow> Array_Time.freeze xs;
+     Array_Time.of_list (take n XS)
    }"
 
 definition atake_time :: "nat \<Rightarrow> nat" where [rewrite]:
@@ -64,8 +64,8 @@ setup \<open>del_prfstep_thm @{thm atake_time_def}\<close>
 
 definition adrop :: "nat \<Rightarrow> 'a::heap array \<Rightarrow> 'a array Heap" where
   "adrop n xs = do {
-     XS \<leftarrow> Array.freeze xs;
-     Array.of_list (drop n XS)
+     XS \<leftarrow> Array_Time.freeze xs;
+     Array_Time.of_list (drop n XS)
    }"
 
 definition adrop_time :: "nat \<Rightarrow> nat" where [rewrite]:

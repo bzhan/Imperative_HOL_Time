@@ -189,7 +189,7 @@ fun dfilter_aux :: "('a::heap) array \<Rightarrow> 'a dynamic_array \<Rightarrow
   "dfilter_aux a d 0 P = return d"
 | "dfilter_aux a d (Suc i) P = do {
      d' \<leftarrow> dfilter_aux a d i P;
-     x \<leftarrow> Array.nth a i;
+     x \<leftarrow> Array_Time.nth a i;
      if P x then push_array x d' else return d'
    }"
 
@@ -203,7 +203,7 @@ lemma dfilter_aux_rule [hoare_triple]:
 definition dfilter_impl :: "'a::heap array \<Rightarrow> ('a \<Rightarrow> bool) \<Rightarrow> 'a dynamic_array Heap" where
   "dfilter_impl a P = do {
      d \<leftarrow> dyn_array_new;
-     alen \<leftarrow> Array.len a;
+     alen \<leftarrow> Array_Time.len a;
      dfilter_aux a d alen P
    }" 
 

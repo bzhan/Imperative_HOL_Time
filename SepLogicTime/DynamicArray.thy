@@ -13,7 +13,7 @@ setup \<open>add_rewrite_ent_rule @{thm dyn_array_raw.simps}\<close>
 
 definition dyn_array_new :: "'a::heap dynamic_array Heap" where
   "dyn_array_new = do {
-     p \<leftarrow> Array.new 5 undefined;
+     p \<leftarrow> Array_Time.new 5 undefined;
      return (Dyn_Array 0 p)
    }"
 
@@ -24,8 +24,8 @@ lemma dyn_array_new_raw_rule [hoare_triple]:
 
 definition double_length :: "'a::heap dynamic_array \<Rightarrow> 'a dynamic_array Heap" where
   "double_length d = (case d of Dyn_Array al ar \<Rightarrow> do {
-      am \<leftarrow> Array.len ar;
-      p \<leftarrow> Array.new (2 * am + 1) undefined;
+      am \<leftarrow> Array_Time.len ar;
+      p \<leftarrow> Array_Time.new (2 * am + 1) undefined;
       array_copy ar p am;
       return (Dyn_Array am p)
     })"
@@ -43,7 +43,7 @@ lemma double_length_raw_rule [hoare_triple]:
 
 definition push_array_basic :: "'a \<Rightarrow> 'a::heap dynamic_array \<Rightarrow> 'a dynamic_array Heap" where
   "push_array_basic x p = do {
-    Array.upd (alen p) x (aref p);
+    Array_Time.upd (alen p) x (aref p);
     return (Dyn_Array (alen p + 1) (aref p))
    }"
 
@@ -107,7 +107,7 @@ lemma array_length_rule' [hoare_triple]:
    <\<lambda>r. dyn_array' (xs, n) p * \<up>(r = n)>" by auto2
 
 definition array_max :: "'a::heap dynamic_array \<Rightarrow> nat Heap" where
-  "array_max d = Array.len (aref d)"
+  "array_max d = Array_Time.len (aref d)"
 
 lemma array_max_rule' [hoare_triple]:
   "<dyn_array' (xs, n) p * $1>
@@ -115,7 +115,7 @@ lemma array_max_rule' [hoare_triple]:
    <\<lambda>r. dyn_array' (xs, n) p * \<up>(r = length xs)>" by auto2
 
 definition array_nth :: "'a::heap dynamic_array \<Rightarrow> nat \<Rightarrow> 'a Heap" where
-  "array_nth d i = Array.nth (aref d) i"
+  "array_nth d i = Array_Time.nth (aref d) i"
 
 lemma array_nth_rule' [hoare_triple]:
   "i < n \<Longrightarrow> n \<le> length xs \<Longrightarrow>
@@ -124,7 +124,7 @@ lemma array_nth_rule' [hoare_triple]:
    <\<lambda>r. dyn_array' (xs, n) p * \<up>(r = xs ! i)>" by auto2
 
 definition array_upd :: "nat \<Rightarrow> 'a \<Rightarrow> 'a::heap dynamic_array \<Rightarrow> unit Heap" where
-  "array_upd i x d = do { Array.upd i x (aref d); return () }"
+  "array_upd i x d = do { Array_Time.upd i x (aref d); return () }"
 
 lemma array_upd_rule' [hoare_triple]:
   "i < n \<Longrightarrow> n \<le> length xs \<Longrightarrow>
@@ -134,7 +134,7 @@ lemma array_upd_rule' [hoare_triple]:
 
 definition destroy :: "'a::heap dynamic_array \<Rightarrow> 'a array Heap" where
   "destroy d = (case d of Dyn_Array al ar \<Rightarrow> do {
-      p \<leftarrow> Array.new al undefined;
+      p \<leftarrow> Array_Time.new al undefined;
       array_copy ar p al;
       return p
    })"

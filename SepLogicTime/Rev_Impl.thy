@@ -25,9 +25,9 @@ fun rev_impl' :: "('a::heap) array \<Rightarrow> 'a array \<Rightarrow> nat \<Ri
   "rev_impl' p q 0 = return ()"
 | "rev_impl' p q (Suc n) = do {
         rev_impl' p q n;
-        len \<leftarrow> Array.len p;
-        e \<leftarrow> Array.nth p (len - Suc n);
-        Array.upd n e q;
+        len \<leftarrow> Array_Time.len p;
+        e \<leftarrow> Array_Time.nth p (len - Suc n);
+        Array_Time.upd n e q;
         return ()
       }"
 
@@ -55,8 +55,8 @@ lemma rev'_rule[hoare_triple]:
 
 definition rev_impl where
   "rev_impl p = do {
-      len \<leftarrow> Array.len p;
-      q \<leftarrow> Array.new len undefined;
+      len \<leftarrow> Array_Time.len p;
+      q \<leftarrow> Array_Time.new len undefined;
       rev_impl' p q len; 
       return q
     }"

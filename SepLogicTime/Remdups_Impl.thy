@@ -1,5 +1,6 @@
 theory Remdups_Impl 
-imports RBTree_Impl DynamicArray2 Asymptotics_Recurrences Rev_Impl
+  imports RBTree_Impl DynamicArray2 Asymptotics_Recurrences Rev_Impl
+    "HOL-Library.Code_Target_Numeral"
 begin
 
 fun remdups2 :: "'a list \<Rightarrow> ('a list * 'a set)" where
@@ -54,8 +55,8 @@ fun remdups'_impl :: "('a::{heap,linorder}) array \<Rightarrow> nat \<Rightarrow
       X \<leftarrow> remdups'_impl p n;
       M \<leftarrow> return (fst X);
       A \<leftarrow> return (snd X);
-      l \<leftarrow> Array.len p;
-      x \<leftarrow> Array.nth p (l - Suc n);
+      l \<leftarrow> Array_Time.len p;
+      x \<leftarrow> Array_Time.nth p (l - Suc n);
       b \<leftarrow> rbt_search x M;
       (if b = None then do {
               M' \<leftarrow> rbt_insert x () M  ; A' \<leftarrow> push_array x A; return (M',A') }
@@ -121,7 +122,7 @@ lemma remdups'_impl_rule[hoare_triple]:
 
 definition remdups_impl :: "('a::{heap,linorder}) array \<Rightarrow> 'a array Heap"  where [rewrite]:
     "remdups_impl p = do {
-        len \<leftarrow> Array.len p;
+        len \<leftarrow> Array_Time.len p;
         (_,A) \<leftarrow> remdups'_impl p len;
         r \<leftarrow> destroy A;
         rev_impl r
@@ -148,5 +149,12 @@ lemma remdups_impl_rule[hoare_triple]: "<p \<mapsto>\<^sub>a xs * $(remdups_impl
 @qed
 
 
+declare rbt_ins.simps[code]
+declare RBTree_Impl.rbt_search.simps[code]
+
+definition "remdups_int_impl \<equiv> remdups_impl :: int array \<Rightarrow> _"
+
+export_code integer_of_int int_of_integer remdups_int_impl
+  in "SML_imp"  module_name REMDUPS (* does not work properly! *)
 
 end

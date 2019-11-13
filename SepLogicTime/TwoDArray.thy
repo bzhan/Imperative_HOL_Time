@@ -31,19 +31,19 @@ setup \<open>add_simple_datatype "matrix"\<close>
 (* m is number of rows, n is number of columns *)
 definition init_matrix :: "nat \<Rightarrow> nat \<Rightarrow> 'a \<Rightarrow> 'a::heap matrix Heap" where
   "init_matrix m n x = do {
-     a \<leftarrow> Array.new (m * n) x;
+     a \<leftarrow> Array_Time.new (m * n) x;
      return (Matrix m n a)
    }"
 
 (* i is row index, j is column index *)
 fun nth_matrix :: "nat \<Rightarrow> nat \<Rightarrow> 'a::heap matrix \<Rightarrow> 'a Heap" where
   "nth_matrix i j p = (case p of (Matrix m n a) \<Rightarrow>
-     Array.nth a (i * n + j))"
+     Array_Time.nth a (i * n + j))"
 
 (* i is row index, j is column index, x is new value *)
 fun upd_matrix :: "nat \<Rightarrow> nat \<Rightarrow> 'a \<Rightarrow> 'a::heap matrix \<Rightarrow> unit Heap" where
   "upd_matrix i j x p = (case p of (Matrix m n a) \<Rightarrow>
-     do {Array.upd (i * n + j) x a; return ()})"
+     do {Array_Time.upd (i * n + j) x a; return ()})"
 
 definition matrix_rel :: "'a list list \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> 'a list \<Rightarrow> bool" where [rewrite]:
   "matrix_rel xs m n as \<longleftrightarrow> (length as = m * n \<and> length xs = m \<and> (\<forall>i<m. length (xs ! i) = n) \<and> (\<forall>i<m. \<forall>j<n. (xs ! i) ! j = as ! (i * n + j)))"

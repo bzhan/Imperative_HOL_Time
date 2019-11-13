@@ -8,9 +8,9 @@ fun coeffs_shift_plus_ind_impl :: "nat \<Rightarrow> 'a::{heap,comm_ring_1} \<Ri
   "coeffs_shift_plus_ind_impl s m a b 0 = (return ())"
 | "coeffs_shift_plus_ind_impl s m a b (Suc n) = do {
      coeffs_shift_plus_ind_impl s m a b n;
-     va \<leftarrow> Array.nth a n;
-     vb \<leftarrow> Array.nth b (s + n);
-     Array.upd (s + n) (m * va + vb) b;
+     va \<leftarrow> Array_Time.nth a n;
+     vb \<leftarrow> Array_Time.nth b (s + n);
+     Array_Time.upd (s + n) (m * va + vb) b;
      return ()
    }"
 
@@ -28,7 +28,7 @@ lemma coeffs_shift_plus_ind_impl_correct [hoare_triple]:
 
 definition coeffs_shift_plus_impl :: "nat \<Rightarrow> 'a::{heap,comm_ring_1} \<Rightarrow> 'a array \<Rightarrow> 'a array \<Rightarrow> unit Heap" where
   "coeffs_shift_plus_impl s m a b = do {
-     la \<leftarrow> Array.len a;
+     la \<leftarrow> Array_Time.len a;
      coeffs_shift_plus_ind_impl s m a b la
    }"
 
@@ -98,14 +98,14 @@ section \<open>Imperative version of coeffs_prod_ind\<close>
 
 fun coeffs_prod_ind_impl :: "'a::{heap,comm_ring_1} array \<Rightarrow> 'a array \<Rightarrow> nat \<Rightarrow> 'a array Heap" where
   "coeffs_prod_ind_impl a b 0 = do {
-     la \<leftarrow> Array.len a;
-     lb \<leftarrow> Array.len b;
-     c \<leftarrow> Array.new (la + lb - 1) 0;
+     la \<leftarrow> Array_Time.len a;
+     lb \<leftarrow> Array_Time.len b;
+     c \<leftarrow> Array_Time.new (la + lb - 1) 0;
      return c
    }"
 | "coeffs_prod_ind_impl a b (Suc n) = do {
      c \<leftarrow> coeffs_prod_ind_impl a b n;
-     y \<leftarrow> Array.nth a n;
+     y \<leftarrow> Array_Time.nth a n;
      coeffs_shift_plus_impl n y b c;
      return c
    }"
@@ -128,7 +128,7 @@ lemma coeffs_prod_ind_impl_correct [hoare_triple]:
 
 definition coeffs_prod_impl :: "'a::{heap,comm_ring_1} array \<Rightarrow> 'a array \<Rightarrow> 'a array Heap" where
   "coeffs_prod_impl a b = do {
-     la \<leftarrow> Array.len a;
+     la \<leftarrow> Array_Time.len a;
      coeffs_prod_ind_impl a b la
    }"
 
@@ -146,8 +146,8 @@ section \<open>Implementation of shifting\<close>
 
 definition coeffs_monom_mult_impl :: "nat \<Rightarrow> 'a::{heap,comm_ring_1} array \<Rightarrow> 'a array Heap" where
   "coeffs_monom_mult_impl n a = do {
-     xs \<leftarrow> Array.freeze a;
-     Array.of_list (replicate n 0 @ xs)
+     xs \<leftarrow> Array_Time.freeze a;
+     Array_Time.of_list (replicate n 0 @ xs)
    }"
 
 definition coeffs_monom_mult_time :: "nat \<Rightarrow> nat" where [rewrite]:

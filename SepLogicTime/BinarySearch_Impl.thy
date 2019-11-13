@@ -6,15 +6,15 @@ partial_function (heap) binarysearch :: "nat \<Rightarrow> nat \<Rightarrow> 'a:
   "binarysearch l r x a = (
     if l \<ge> r then return False
     else if l + 1 \<ge> r then do {
-      v \<leftarrow> Array.nth a l;
+      v \<leftarrow> Array_Time.nth a l;
       return (v = x) }
     else let m = avg l r in do {
-      v \<leftarrow> Array.nth a m;
+      v \<leftarrow> Array_Time.nth a m;
       (if v = x then return True
        else if v < x then binarysearch (m + 1) r x a
        else binarysearch l m x a)
     })"
-
+print_theorems
 function binarysearch_time :: "nat \<Rightarrow> nat" where
   "n < 2 \<Longrightarrow> binarysearch_time n = 2"
 | "n \<ge> 2 \<Longrightarrow> binarysearch_time n = 2 + binarysearch_time (n div 2)"

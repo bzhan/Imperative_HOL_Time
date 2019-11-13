@@ -8,27 +8,27 @@ function mergeinto :: "nat \<Rightarrow> nat \<Rightarrow> 'a::{heap,linorder} a
   "mergeinto 0 0 a b c = return ()"
 | "mergeinto (Suc la) 0 a b c = do {
      mergeinto la 0 a b c;
-     e \<leftarrow> Array.nth a la;
-     Array.upd la e c;
+     e \<leftarrow> Array_Time.nth a la;
+     Array_Time.upd la e c;
      return ()
    }"
 | "mergeinto 0 (Suc lb) a b c = do {
      mergeinto 0 lb a b c;
-     e \<leftarrow> Array.nth b lb;
-     Array.upd lb e c;
+     e \<leftarrow> Array_Time.nth b lb;
+     Array_Time.upd lb e c;
      return ()
    }"
 | "mergeinto (Suc la) (Suc lb) a b c = do {
-     ha \<leftarrow> Array.nth a la;
-     hb \<leftarrow> Array.nth b lb;
+     ha \<leftarrow> Array_Time.nth a la;
+     hb \<leftarrow> Array_Time.nth b lb;
      if ha \<ge> hb then do {
        mergeinto la (Suc lb) a b c;
-       Array.upd (Suc (la+lb)) ha c;
+       Array_Time.upd (Suc (la+lb)) ha c;
        return ()
      }
      else do {
        mergeinto (Suc la) lb a b c;
-       Array.upd (Suc (la+lb)) hb c;
+       Array_Time.upd (Suc (la+lb)) hb c;
        return ()
      }
    }"
@@ -63,7 +63,7 @@ setup \<open>del_prfstep_thm @{thm mergeinto_time_def}\<close>
 
 partial_function (heap) merge_sort_impl :: "'a::{heap,linorder} array \<Rightarrow> unit Heap" where
   "merge_sort_impl X = do {
-    n \<leftarrow> Array.len X;
+    n \<leftarrow> Array_Time.len X;
     if n \<le> 1 then return ()
     else do { 
       A \<leftarrow> atake (n div 2) X;

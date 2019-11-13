@@ -22,8 +22,8 @@ section \<open>f2 builds two new Arrays\<close>
 
 definition f2_impl :: "nat \<Rightarrow> ('a::heap array \<times> 'a array) Heap" where
   "f2_impl (n::nat) = do {
-     r1 \<leftarrow> Array.new n undefined;
-     r2 \<leftarrow> Array.new n undefined;
+     r1 \<leftarrow> Array_Time.new n undefined;
+     r2 \<leftarrow> Array_Time.new n undefined;
      return (r1,r2)
    }"
 

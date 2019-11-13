@@ -31,7 +31,7 @@ subsection \<open>Extract sublist from l to r\<close>
 function extract_sublist :: "'a::heap array \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> 'a list Heap" where
   "extract_sublist a l r = (if r \<le> l then return [] else do {
      xs \<leftarrow> extract_sublist a (l+1) r;
-     x \<leftarrow> Array.nth a l;
+     x \<leftarrow> Array_Time.nth a l;
      return (x#xs)
    })"
 by auto
@@ -114,7 +114,7 @@ subsection \<open>Imperative version of chopmed5\<close>
 
 definition medchop :: "'a::{linorder,heap} array \<Rightarrow> nat \<Rightarrow> 'a Heap" where
   "medchop a n = do {
-     l \<leftarrow> Array.len a;
+     l \<leftarrow> Array_Time.len a;
      ls \<leftarrow> extract_sublist a (5*n) (5*n+(min 5 (l-5*n)));
      select_small ls (((min 5 (l-5*n))-1) div 2)
    }"
@@ -153,7 +153,7 @@ fun chopmed5_aux :: "'a::{linorder,heap} array \<Rightarrow> 'a array \<Rightarr
 | "chopmed5_aux a b (Suc n) = do {
      x \<leftarrow> medchop a n;
      b' \<leftarrow> chopmed5_aux a b n;
-     Array.upd n x b'
+     Array_Time.upd n x b'
    }"
 
 lemma chopmed5_aux_ind [hoare_triple]:
@@ -196,8 +196,8 @@ setup \<open>del_prfstep_thm @{thm chopmed5_aux_time_def}\<close>
  
 definition chopmed5 :: "'a::{linorder,heap} array \<Rightarrow> 'a array Heap" where
   "chopmed5 a = do {
-     len \<leftarrow> Array.len a;
-     b \<leftarrow> Array.new ((len + 4) div 5) undefined;
+     len \<leftarrow> Array_Time.len a;
+     b \<leftarrow> Array_Time.new ((len + 4) div 5) undefined;
      chopmed5_aux a b ((len + 4) div 5)
    }"
 
@@ -326,18 +326,18 @@ qed
 
 partial_function (heap) select :: "nat \<Rightarrow> ('a::{heap,linorder}) array \<Rightarrow> 'a Heap" where
   "select k a = do {
-     len \<leftarrow> Array.len a;
+     len \<leftarrow> Array_Time.len a;
      if len \<le> 23 then do {
-       alist \<leftarrow> Array.freeze a;
+       alist \<leftarrow> Array_Time.freeze a;
        select_small alist k
      }
      else do {
        medlist \<leftarrow> chopmed5 a;
        med \<leftarrow> select (((len + 4) div 5 - 1) div 2) medlist;
        (ls, es, gs) \<leftarrow> threeway_partition_impl med a;
-       ls_len \<leftarrow> Array.len ls;
-       es_len \<leftarrow> Array.len es;
-       gs_len \<leftarrow> Array.len gs;
+       ls_len \<leftarrow> Array_Time.len ls;
+       es_len \<leftarrow> Array_Time.len es;
+       gs_len \<leftarrow> Array_Time.len gs;
        if k < ls_len then
          select k ls
        else if k < ls_len + es_len then
