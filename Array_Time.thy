@@ -1,11 +1,11 @@
-(*  Title:      HOL/Imperative_HOL/Array.thy
+(*  Title:      HOL/Imperative_HOL/Array_Time.thy
     Author:     John Matthews, Galois Connections; Alexander Krauss, Lukas Bulwahn & Florian Haftmann, TU Muenchen
 *)
 
 section \<open>Monadic arrays\<close>
 
-theory Array
-imports Heap_Monad
+theory Array_Time
+imports Heap_Time_Monad
 begin
 
 subsection \<open>Primitives\<close>
@@ -39,35 +39,35 @@ definition noteq :: "'a::heap array \<Rightarrow> 'b::heap array \<Rightarrow> b
 subsection \<open>Monad operations\<close>
 
 definition new :: "nat \<Rightarrow> 'a::heap \<Rightarrow> 'a array Heap" where
-  [code del]: "new n x = Heap_Monad.heap (%h. let (r,h') = alloc (replicate n x) h in (r,h',n+1))"
+  [code del]: "new n x = Heap_Time_Monad.heap (%h. let (r,h') = alloc (replicate n x) h in (r,h',n+1))"
 
 definition of_list :: "'a::heap list \<Rightarrow> 'a array Heap" where
-  [code del]: "of_list xs = Heap_Monad.heap (%h. let (r,h') = alloc xs h in (r,h',1+List.length xs))"
+  [code del]: "of_list xs = Heap_Time_Monad.heap (%h. let (r,h') = alloc xs h in (r,h',1+List.length xs))"
 
 definition make :: "nat \<Rightarrow> (nat \<Rightarrow> 'a::heap) \<Rightarrow> 'a array Heap" where
-  [code del]: "make n f = Heap_Monad.heap (%h. let (r,h') = alloc (map f [0 ..< n]) h in (r,h',n+1))"
+  [code del]: "make n f = Heap_Time_Monad.heap (%h. let (r,h') = alloc (map f [0 ..< n]) h in (r,h',n+1))"
 
 definition len :: "'a::heap array \<Rightarrow> nat Heap" where
-  [code del]: "len a = Heap_Monad.tap (\<lambda>h. length h a)"
+  [code del]: "len a = Heap_Time_Monad.tap (\<lambda>h. length h a)"
 
 definition nth :: "'a::heap array \<Rightarrow> nat \<Rightarrow> 'a Heap" where
-  [code del]: "nth a i = Heap_Monad.guard (\<lambda>h. i < length h a)
+  [code del]: "nth a i = Heap_Time_Monad.guard (\<lambda>h. i < length h a)
     (\<lambda>h. (get h a ! i, h, 1))"
 
 definition upd :: "nat \<Rightarrow> 'a \<Rightarrow> 'a::heap array \<Rightarrow> 'a::heap array Heap" where
-  [code del]: "upd i x a = Heap_Monad.guard (\<lambda>h. i < length h a)
+  [code del]: "upd i x a = Heap_Time_Monad.guard (\<lambda>h. i < length h a)
     (\<lambda>h. (a, update a i x h, 1))"
 
 definition map_entry :: "nat \<Rightarrow> ('a::heap \<Rightarrow> 'a) \<Rightarrow> 'a array \<Rightarrow> 'a array Heap" where
-  [code del]: "map_entry i f a = Heap_Monad.guard (\<lambda>h. i < length h a)
-    (\<lambda>h. (a, update a i (f (get h a ! i)) h, 1))"
+  [code del]: "map_entry i f a = Heap_Time_Monad.guard (\<lambda>h. i < length h a)
+    (\<lambda>h. (a, update a i (f (get h a ! i)) h, 2))"
 
 definition swap :: "nat \<Rightarrow> 'a \<Rightarrow> 'a::heap array \<Rightarrow> 'a Heap" where
-  [code del]: "swap i x a = Heap_Monad.guard (\<lambda>h. i < length h a)
-    (\<lambda>h. (get h a ! i, update a i x h, 1 ))"  (* questionable *)
+  [code del]: "swap i x a = Heap_Time_Monad.guard (\<lambda>h. i < length h a)
+    (\<lambda>h. (get h a ! i, update a i x h, 2 ))"  (* questionable *)
 
 definition freeze :: "'a::heap array \<Rightarrow> 'a list Heap" where
-  [code del]: "freeze a = Heap_Monad.heap (\<lambda>h. (get h a, h, 1+length h a)) "
+  [code del]: "freeze a = Heap_Time_Monad.heap (\<lambda>h. (get h a, h, 1+length h a)) "
 
 
 subsection \<open>Properties\<close>
@@ -139,7 +139,7 @@ lemma get_alloc:
 
 lemma length_alloc:
   "length (snd (alloc (xs :: 'a::heap list) h)) (fst (alloc (ys :: 'a list) h)) = List.length xs"
-  by (simp add: Array.length_def get_alloc)
+  by (simp add: Array_Time.length_def get_alloc)
 
 lemma set:
   "set (fst (alloc ls h))
@@ -287,7 +287,7 @@ lemma effect_updE [effect_elims]:
 lemma execute_map_entry [execute_simps]:
   "i < length h a \<Longrightarrow>
    execute (map_entry i f a) h =
-      Some (a, update a i (f (get h a ! i)) h, 1)"
+      Some (a, update a i (f (get h a ! i)) h, 2)"
   "i \<ge> length h a \<Longrightarrow> execute (map_entry i f a) h = None"
   by (simp_all add: map_entry_def execute_simps)
 
@@ -296,19 +296,19 @@ lemma success_map_entryI [success_intros]:
   by (auto intro: success_intros simp add: map_entry_def)
 
 lemma effect_map_entryI [effect_intros]:
-  assumes "i < length h a" "h' = update a i (f (get h a ! i)) h" "r = a" "n=1"
+  assumes "i < length h a" "h' = update a i (f (get h a ! i)) h" "r = a" "n=2"
   shows "effect (map_entry i f a) h h' r n"
   by (rule effectI) (insert assms, simp add: execute_simps)
 
 lemma effect_map_entryE [effect_elims]:
   assumes "effect (map_entry i f a) h h' r n"
-  obtains "r = a" "h' = update a i (f (get h a ! i)) h" "i < length h a" "n=1"
+  obtains "r = a" "h' = update a i (f (get h a ! i)) h" "i < length h a" "n=2"
   using assms by (rule effectE) (cases "i < length h a", auto simp: execute_simps elim: successE)
 
 lemma execute_swap [execute_simps]:
   "i < length h a \<Longrightarrow>
    execute (swap i x a) h =
-      Some (get h a ! i, update a i x h, 1)"
+      Some (get h a ! i, update a i x h, 2)"
   "i \<ge> length h a \<Longrightarrow> execute (swap i x a) h = None"
   by (simp_all add: swap_def execute_simps)
 
@@ -317,13 +317,13 @@ lemma success_swapI [success_intros]:
   by (auto intro: success_intros simp add: swap_def)
 
 lemma effect_swapI [effect_intros]:
-  assumes "i < length h a" "h' = update a i x h" "r = get h a ! i" "n=1"
+  assumes "i < length h a" "h' = update a i x h" "r = get h a ! i" "n=2"
   shows "effect (swap i x a) h h' r n"
   by (rule effectI) (insert assms, simp add: execute_simps)
 
 lemma effect_swapE [effect_elims]:
   assumes "effect (swap i x a) h h' r n"
-  obtains "r = get h a ! i" "h' = update a i x h" "i < length h a" "n=1"
+  obtains "r = get h a ! i" "h' = update a i x h" "i < length h a" "n=2"
   using assms by (rule effectE) (cases "i < length h a", auto simp: execute_simps elim: successE)
 
 lemma execute_freeze [execute_simps]:
@@ -344,8 +344,8 @@ lemma effect_freezeE [effect_elims]:
   obtains "h' = h" "r = get h a" "n=length h a+1"
   using assms by (rule effectE) (simp add: execute_simps)
 
-lemma upd_return:
-  "upd i x a \<then> return a = wait 1 \<bind> (\<lambda>_. upd i x a)"
+lemma upd_ureturn:
+  "upd i x a \<then> ureturn a =   upd i x a "
   by (rule Heap_eqI) (simp add: bind_def guard_def upd_def execute_simps)
 
 lemma array_make:
@@ -358,91 +358,91 @@ lemma array_of_list_make [code]:
 
 hide_const (open) present get set alloc length update noteq new of_list make len nth upd map_entry swap freeze
 
-(*
+
 subsection \<open>Code generator setup\<close>
 
 subsubsection \<open>Logical intermediate layer\<close>
 
 definition new' where
-  [code del]: "new' = Array.new o nat_of_integer"
+  [code del]: "new' = Array_Time.new o nat_of_integer"
 
 lemma [code]:
-  "Array.new = new' o of_nat"
+  "Array_Time.new = new' o of_nat"
   by (simp add: new'_def o_def)
 
 definition make' where
-  [code del]: "make' i f = Array.make (nat_of_integer i) (f o of_nat)"
+  [code del]: "make' i f = Array_Time.make (nat_of_integer i) (f o of_nat)"
 
 lemma [code]:
-  "Array.make n f = make' (of_nat n) (f o nat_of_integer)"
+  "Array_Time.make n f = make' (of_nat n) (f o nat_of_integer)"
   by (simp add: make'_def o_def)
 
 definition len' where
-  [code del]: "len' a = Array.len a \<bind> (\<lambda>n. return (of_nat n))"
+  [code del]: "len' a = Array_Time.len a \<bind> (\<lambda>n. ureturn (of_nat n))"
 
 lemma [code]:
-  "Array.len a = len' a \<bind> (\<lambda>i. return (nat_of_integer i))"
-  by (simp add: len'_def)
+  "Array_Time.len a = len' a \<bind> (\<lambda>i. ureturn (nat_of_integer i))"
+  by (simp add: len'_def execute_simps)    
 
 definition nth' where
-  [code del]: "nth' a = Array.nth a o nat_of_integer"
+  [code del]: "nth' a = Array_Time.nth a o nat_of_integer"
 
 lemma [code]:
-  "Array.nth a n = nth' a (of_nat n)"
+  "Array_Time.nth a n = nth' a (of_nat n)"
   by (simp add: nth'_def)
 
 definition upd' where
-  [code del]: "upd' a i x = Array.upd (nat_of_integer i) x a \<then> return ()"
+  [code del]: "upd' a i x = Array_Time.upd (nat_of_integer i) x a \<then> ureturn ()"
 
 lemma [code]:
-  "Array.upd i x a = upd' a (of_nat i) x \<then> return a"
-  by (simp add: upd'_def upd_return)
+  "Array_Time.upd i x a = upd' a (of_nat i) x \<then> ureturn a"
+  by (simp add: upd'_def upd_ureturn execute_simps)  
 
 lemma [code]:
-  "Array.map_entry i f a = do {
-     x \<leftarrow> Array.nth a i;
-     Array.upd i (f x) a
-   }"
+  "Array_Time.map_entry i f a = do {
+     x \<leftarrow> Array_Time.nth a i;
+     Array_Time.upd i (f x) a
+   }"                                                                
   by (rule Heap_eqI) (simp add: bind_def guard_def map_entry_def execute_simps)
 
 lemma [code]:
-  "Array.swap i x a = do {
-     y \<leftarrow> Array.nth a i;
-     Array.upd i x a;
-     return y
+  "Array_Time.swap i x a = do {
+     y \<leftarrow> Array_Time.nth a i;
+     Array_Time.upd i x a;
+     ureturn y
    }"
   by (rule Heap_eqI) (simp add: bind_def guard_def swap_def execute_simps)
-
+(*
 lemma [code]:
-  "Array.freeze a = do {
-     n \<leftarrow> Array.len a;
-     Heap_Monad.fold_map (\<lambda>i. Array.nth a i) [0..<n]
+  "Array_Time.freeze a = do {
+     n \<leftarrow> Array_Time.len a;
+     Heap_Monad.fold_map (\<lambda>i. Array_Time.nth a i) [0..<n]
    }"
 proof (rule Heap_eqI)
   fix h
   have *: "List.map
-     (\<lambda>x. fst (the (if x < Array.length h a
-                    then Some (Array.get h a ! x, h) else None)))
-     [0..<Array.length h a] =
-       List.map (List.nth (Array.get h a)) [0..<Array.length h a]"
+     (\<lambda>x. fst (the (if x < Array_Time.length h a
+                    then Some (Array_Time.get h a ! x, h) else None)))
+     [0..<Array_Time.length h a] =
+       List.map (List.nth (Array_Time.get h a)) [0..<Array_Time.length h a]"
     by simp
-  have "execute (Heap_Monad.fold_map (Array.nth a) [0..<Array.length h a]) h =
-    Some (Array.get h a, h)"
+  have "execute (Heap_Monad.fold_map (Array_Time.nth a) [0..<Array_Time.length h a]) h =
+    Some (Array_Time.get h a, h)"
     apply (subst execute_fold_map_unchanged_heap)
     apply (simp_all add: nth_def guard_def * )
     apply (simp add: length_def map_nth)
     done
   then have "execute (do {
-      n \<leftarrow> Array.len a;
-      Heap_Monad.fold_map (Array.nth a) [0..<n]
-    }) h = Some (Array.get h a, h)"
+      n \<leftarrow> Array_Time.len a;
+      Heap_Monad.fold_map (Array_Time.nth a) [0..<n]
+    }) h = Some (Array_Time.get h a, h)"
     by (auto intro: execute_bind_eq_SomeI simp add: execute_simps)
-  then show "execute (Array.freeze a) h = execute (do {
-      n \<leftarrow> Array.len a;
-      Heap_Monad.fold_map (Array.nth a) [0..<n]
+  then show "execute (Array_Time.freeze a) h = execute (do {
+      n \<leftarrow> Array_Time.len a;
+      Heap_Monad.fold_map (Array_Time.nth a) [0..<n]
     }) h" by (simp add: execute_simps)
 qed
-
+*)
 hide_const (open) new' make' len' nth' upd'
 
 
@@ -451,12 +451,12 @@ text \<open>SML\<close>
 
 code_printing type_constructor array \<rightharpoonup> (SML) "_/ array"
 code_printing constant Array \<rightharpoonup> (SML) "raise/ (Fail/ \"bare Array\")"
-code_printing constant Array.new' \<rightharpoonup> (SML) "(fn/ ()/ =>/ Array.array/ ((_),/ (_)))"
-code_printing constant Array.of_list \<rightharpoonup> (SML) "(fn/ ()/ =>/ Array.fromList/ _)"
-code_printing constant Array.make' \<rightharpoonup> (SML) "(fn/ ()/ =>/ Array.tabulate/ ((_),/ (_)))"
-code_printing constant Array.len' \<rightharpoonup> (SML) "(fn/ ()/ =>/ Array.length/ _)"
-code_printing constant Array.nth' \<rightharpoonup> (SML) "(fn/ ()/ =>/ Array.sub/ ((_),/ (_)))"
-code_printing constant Array.upd' \<rightharpoonup> (SML) "(fn/ ()/ =>/ Array.update/ ((_),/ (_),/ (_)))"
+code_printing constant Array_Time.new' \<rightharpoonup> (SML) "(fn/ ()/ =>/ Array.array/ ((_),/ (_)))"
+code_printing constant Array_Time.of_list \<rightharpoonup> (SML) "(fn/ ()/ =>/ Array.fromList/ _)"
+code_printing constant Array_Time.make' \<rightharpoonup> (SML) "(fn/ ()/ =>/ Array.tabulate/ ((_),/ (_)))"
+code_printing constant Array_Time.len' \<rightharpoonup> (SML) "(fn/ ()/ =>/ Array.length/ _)"
+code_printing constant Array_Time.nth' \<rightharpoonup> (SML) "(fn/ ()/ =>/ Array.sub/ ((_),/ (_)))"
+code_printing constant Array_Time.upd' \<rightharpoonup> (SML) "(fn/ ()/ =>/ Array.update/ ((_),/ (_),/ (_)))"
 code_printing constant "HOL.equal :: 'a array \<Rightarrow> 'a array \<Rightarrow> bool" \<rightharpoonup> (SML) infixl 6 "="
 
 code_reserved SML Array
@@ -466,13 +466,13 @@ text \<open>OCaml\<close>
 
 code_printing type_constructor array \<rightharpoonup> (OCaml) "_/ array"
 code_printing constant Array \<rightharpoonup> (OCaml) "failwith/ \"bare Array\""
-code_printing constant Array.new' \<rightharpoonup> (OCaml) "(fun/ ()/ ->/ Array.make/ (Big'_int.int'_of'_big'_int/ _)/ _)"
-code_printing constant Array.of_list \<rightharpoonup> (OCaml) "(fun/ ()/ ->/ Array.of'_list/ _)"
-code_printing constant Array.make' \<rightharpoonup> (OCaml)
+code_printing constant Array_Time.new' \<rightharpoonup> (OCaml) "(fun/ ()/ ->/ Array.make/ (Big'_int.int'_of'_big'_int/ _)/ _)"
+code_printing constant Array_Time.of_list \<rightharpoonup> (OCaml) "(fun/ ()/ ->/ Array.of'_list/ _)"
+code_printing constant Array_Time.make' \<rightharpoonup> (OCaml)
   "(fun/ ()/ ->/ Array.init/ (Big'_int.int'_of'_big'_int/ _)/ (fun k'_ ->/ _/ (Big'_int.big'_int'_of'_int/ k'_)))"
-code_printing constant Array.len' \<rightharpoonup> (OCaml) "(fun/ ()/ ->/ Big'_int.big'_int'_of'_int/ (Array.length/ _))"
-code_printing constant Array.nth' \<rightharpoonup> (OCaml) "(fun/ ()/ ->/ Array.get/ _/ (Big'_int.int'_of'_big'_int/ _))"
-code_printing constant Array.upd' \<rightharpoonup> (OCaml) "(fun/ ()/ ->/ Array.set/ _/ (Big'_int.int'_of'_big'_int/ _)/ _)"
+code_printing constant Array_Time.len' \<rightharpoonup> (OCaml) "(fun/ ()/ ->/ Big'_int.big'_int'_of'_int/ (Array.length/ _))"
+code_printing constant Array_Time.nth' \<rightharpoonup> (OCaml) "(fun/ ()/ ->/ Array.get/ _/ (Big'_int.int'_of'_big'_int/ _))"
+code_printing constant Array_Time.upd' \<rightharpoonup> (OCaml) "(fun/ ()/ ->/ Array.set/ _/ (Big'_int.int'_of'_big'_int/ _)/ _)"
 code_printing constant "HOL.equal :: 'a array \<Rightarrow> 'a array \<Rightarrow> bool" \<rightharpoonup> (OCaml) infixl 4 "="
 
 code_reserved OCaml Array
@@ -482,12 +482,12 @@ text \<open>Haskell\<close>
 
 code_printing type_constructor array \<rightharpoonup> (Haskell) "Heap.STArray/ Heap.RealWorld/ _"
 code_printing constant Array \<rightharpoonup> (Haskell) "error/ \"bare Array\""
-code_printing constant Array.new' \<rightharpoonup> (Haskell) "Heap.newArray"
-code_printing constant Array.of_list \<rightharpoonup> (Haskell) "Heap.newListArray"
-code_printing constant Array.make' \<rightharpoonup> (Haskell) "Heap.newFunArray"
-code_printing constant Array.len' \<rightharpoonup> (Haskell) "Heap.lengthArray"
-code_printing constant Array.nth' \<rightharpoonup> (Haskell) "Heap.readArray"
-code_printing constant Array.upd' \<rightharpoonup> (Haskell) "Heap.writeArray"
+code_printing constant Array_Time.new' \<rightharpoonup> (Haskell) "Heap.newArray"
+code_printing constant Array_Time.of_list \<rightharpoonup> (Haskell) "Heap.newListArray"
+code_printing constant Array_Time.make' \<rightharpoonup> (Haskell) "Heap.newFunArray"
+code_printing constant Array_Time.len' \<rightharpoonup> (Haskell) "Heap.lengthArray"
+code_printing constant Array_Time.nth' \<rightharpoonup> (Haskell) "Heap.readArray"
+code_printing constant Array_Time.upd' \<rightharpoonup> (Haskell) "Heap.writeArray"
 code_printing constant "HOL.equal :: 'a array \<Rightarrow> 'a array \<Rightarrow> bool" \<rightharpoonup> (Haskell) infix 4 "=="
 code_printing class_instance array :: HOL.equal \<rightharpoonup> (Haskell) -
 
@@ -496,15 +496,14 @@ text \<open>Scala\<close>
 
 code_printing type_constructor array \<rightharpoonup> (Scala) "!collection.mutable.ArraySeq[_]"
 code_printing constant Array \<rightharpoonup> (Scala) "!sys.error(\"bare Array\")"
-code_printing constant Array.new' \<rightharpoonup> (Scala) "('_: Unit)/ => / Array.alloc((_))((_))"
-code_printing constant Array.make' \<rightharpoonup> (Scala) "('_: Unit)/ =>/ Array.make((_))((_))"
-code_printing constant Array.len' \<rightharpoonup> (Scala) "('_: Unit)/ =>/ Array.len((_))"
-code_printing constant Array.nth' \<rightharpoonup> (Scala) "('_: Unit)/ =>/ Array.nth((_), (_))"
-code_printing constant Array.upd' \<rightharpoonup> (Scala) "('_: Unit)/ =>/ Array.upd((_), (_), (_))"
-code_printing constant Array.freeze \<rightharpoonup> (Scala) "('_: Unit)/ =>/ Array.freeze((_))"
+code_printing constant Array_Time.new' \<rightharpoonup> (Scala) "('_: Unit)/ => / Array.alloc((_))((_))"
+code_printing constant Array_Time.make' \<rightharpoonup> (Scala) "('_: Unit)/ =>/ Array.make((_))((_))"
+code_printing constant Array_Time.len' \<rightharpoonup> (Scala) "('_: Unit)/ =>/ Array.len((_))"
+code_printing constant Array_Time.nth' \<rightharpoonup> (Scala) "('_: Unit)/ =>/ Array.nth((_), (_))"
+code_printing constant Array_Time.upd' \<rightharpoonup> (Scala) "('_: Unit)/ =>/ Array.upd((_), (_), (_))"
+code_printing constant Array_Time.freeze \<rightharpoonup> (Scala) "('_: Unit)/ =>/ Array.freeze((_))"
 code_printing constant "HOL.equal :: 'a array \<Rightarrow> 'a array \<Rightarrow> bool" \<rightharpoonup> (Scala) infixl 5 "=="
 
 
-*)
 
 end

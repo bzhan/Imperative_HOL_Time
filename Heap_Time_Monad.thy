@@ -1,12 +1,12 @@
-(*  Title:      HOL/Imperative_HOL/Heap_Monad.thy
+(*  Title:      HOL/Imperative_HOL/Heap_Time_Monad.thy
     Author:     John Matthews, Galois Connections; Alexander Krauss, Lukas Bulwahn & Florian Haftmann, TU Muenchen
 *)
 
 section \<open>A monad with a polymorphic heap and primitive reasoning infrastructure\<close>
 
-theory Heap_Monad
+theory Heap_Time_Monad
 imports
-  Heap
+  "HOL-Imperative_HOL.Heap"
   "HOL-Library.Monad_Syntax"
 begin
 
@@ -235,6 +235,26 @@ lemma effect_returnE [effect_elims]:
   obtains "r = x" "h' = h" "n=1"
   using assms by (rule effectE) (simp add: execute_simps)
 
+definition ureturn :: "'a \<Rightarrow> 'a Heap" where
+  [code del]: "ureturn x = heap (\<lambda>h. (x,h,0))"
+
+lemma execute_ureturn [execute_simps]:
+  "execute (ureturn x) = Some \<circ> (\<lambda>h. (x,h,0))"
+  by (simp add: ureturn_def execute_simps)
+
+lemma success_ureturnI [success_intros]:
+  "success (ureturn x) h"
+  by (rule successI) (simp add: execute_simps)
+
+lemma effect_ureturnI [effect_intros]:
+  "h = h' \<Longrightarrow> effect (ureturn x) h h' x 0"
+  by (rule effectI) (simp add: execute_simps)
+
+lemma effect_ureturnE [effect_elims]:
+  assumes "effect (ureturn x) h h' r n"
+  obtains "r = x" "h' = h" "n=0"
+  using assms by (rule effectE) (simp add: execute_simps)
+
 definition raise :: "string \<Rightarrow> 'a Heap" where \<comment> \<open>the string is just decoration\<close>
   [code del]: "raise s = Heap (\<lambda>_. None)"
 
@@ -251,7 +271,9 @@ lemma effect_raiseE [effect_elims]:
 fun timeFrame :: "nat \<Rightarrow> ('a \<times> heap \<times> nat) option \<Rightarrow>  ('a \<times> heap \<times> nat) option"  where
   "timeFrame n (Some (r,h,n')) = Some (r, h, n+n')"
 | "timeFrame n None = None"
-  
+
+lemma timeFrame_zero[simp]: "timeFrame 0 h = h" apply(cases h) by auto
+
 
 lemma timeFrame_assoc[simp]: "timeFrame n (timeFrame n' f) = timeFrame (n+n') f"
   by (metis (no_types, lifting) ab_semigroup_add_class.add_ac(1) timeFrame.elims timeFrame.simps(1)) (* refactor proof *)
@@ -266,7 +288,7 @@ definition bind :: "'a Heap \<Rightarrow> ('a \<Rightarrow> 'b Heap) \<Rightarro
   
   
 adhoc_overloading
-  Monad_Syntax.bind Heap_Monad.bind
+  Monad_Syntax.bind Heap_Time_Monad.bind
 
 lemma execute_bind [execute_simps]:
   "execute f h = Some (x, h',n) \<Longrightarrow> execute (f \<bind> g) h = timeFrame n (execute (g x) h')"
@@ -325,10 +347,16 @@ lemma [simp]: "wait n \<bind> (%_. wait m) = wait (n+m)"
 term "wait 1 \<bind> (%_. f x)"   
 term "return x \<bind> f"
   
+lemma ureturn_bind [execute_simps]: "ureturn x \<bind> f = f x"
+  apply (rule Heap_eqI) by (simp add: execute_simps)
+
 lemma return_bind [execute_simps]: "return x \<bind> f = (wait 1) \<then> f x"
-  by (rule Heap_eqI) (simp add: execute_simps)
+  apply (rule Heap_eqI) by (simp add: execute_simps)
 
 lemma bind_return [execute_simps]: "f \<bind> return = wait 1 \<then> f"
+  by (rule Heap_eqI) (simp add: bind_def execute_simps split: option.splits)
+
+lemma bind_ureturn [execute_simps]: "f \<bind> ureturn = f"
   by (rule Heap_eqI) (simp add: bind_def execute_simps split: option.splits)
 
 lemma bind_bind [simp]: "(f \<bind> g) \<bind> k = (f :: 'a Heap) \<bind> (\<lambda>x. g x \<bind> k)"
@@ -556,12 +584,12 @@ subsubsection \<open>SML and OCaml\<close>
 code_printing type_constructor Heap \<rightharpoonup> (SML) "(unit/ ->/ _)"
 code_printing constant bind \<rightharpoonup> (SML) "!(fn/ f'_/ =>/ fn/ ()/ =>/ f'_/ (_/ ())/ ())"
 code_printing constant return \<rightharpoonup> (SML) "!(fn/ ()/ =>/ _)"
-code_printing constant Heap_Monad.raise \<rightharpoonup> (SML) "!(raise/ Fail/ _)"
+code_printing constant Heap_Time_Monad.raise \<rightharpoonup> (SML) "!(raise/ Fail/ _)"
 
 code_printing type_constructor Heap \<rightharpoonup> (OCaml) "(unit/ ->/ _)"
 code_printing constant bind \<rightharpoonup> (OCaml) "!(fun/ f'_/ ()/ ->/ f'_/ (_/ ())/ ())"
 code_printing constant return \<rightharpoonup> (OCaml) "!(fun/ ()/ ->/ _)"
-code_printing constant Heap_Monad.raise \<rightharpoonup> (OCaml) "failwith"
+code_printing constant Heap_Time_Monad.raise \<rightharpoonup> (OCaml) "failwith"
 
 
 subsubsection \<open>Haskell\<close>
@@ -608,7 +636,7 @@ text \<open>Monad\<close>
 code_printing type_constructor Heap \<rightharpoonup> (Haskell) "Heap.ST/ Heap.RealWorld/ _"
 code_monad bind Haskell
 code_printing constant return \<rightharpoonup> (Haskell) "return"
-code_printing constant Heap_Monad.raise \<rightharpoonup> (Haskell) "error"
+code_printing constant Heap_Time_Monad.raise \<rightharpoonup> (Haskell) "error"
 
 
 subsubsection \<open>Scala\<close>
@@ -653,7 +681,7 @@ code_reserved Scala Heap Ref Array
 code_printing type_constructor Heap \<rightharpoonup> (Scala) "(Unit/ =>/ _)"
 code_printing constant bind \<rightharpoonup> (Scala) "Heap.bind"
 code_printing constant return \<rightharpoonup> (Scala) "('_: Unit)/ =>/ _"
-code_printing constant Heap_Monad.raise \<rightharpoonup> (Scala) "!sys.error((_))"
+code_printing constant Heap_Time_Monad.raise \<rightharpoonup> (Scala) "!sys.error((_))"
 
 
 subsubsection \<open>Target variants with less units\<close>

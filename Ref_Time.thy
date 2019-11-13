@@ -4,8 +4,8 @@
 
 section \<open>Monadic references\<close>
 
-theory Ref
-imports Array
+theory Ref_Time
+imports Array_Time
 begin
 
 text \<open>
@@ -39,13 +39,13 @@ definition noteq :: "'a::heap ref \<Rightarrow> 'b::heap ref \<Rightarrow> bool"
 subsection \<open>Monad operations\<close>
 
 definition ref :: "'a::heap \<Rightarrow> 'a ref Heap" where
-  [code del]: "ref v = Heap_Monad.heap (%h. let (r,h') = alloc v h in (r,h',1))"
+  [code del]: "ref v = Heap_Time_Monad.heap (%h. let (r,h') = alloc v h in (r,h',1))"
 
 definition lookup :: "'a::heap ref \<Rightarrow> 'a Heap" ("!_" 61) where
-  [code del]: "lookup r = Heap_Monad.tap (\<lambda>h. get h r)"
+  [code del]: "lookup r = Heap_Time_Monad.tap (\<lambda>h. get h r)"
 
 definition update :: "'a ref \<Rightarrow> 'a::heap \<Rightarrow> unit Heap" ("_ := _" 62) where
-  [code del]: "update r v = Heap_Monad.heap (\<lambda>h. ((), set r v h, 1))"
+  [code del]: "update r v = Heap_Time_Monad.heap (\<lambda>h. ((), set r v h, 1))"
 
 definition change :: "('a::heap \<Rightarrow> 'a) \<Rightarrow> 'a ref \<Rightarrow> 'a Heap" where
   "change f r = do {
@@ -153,10 +153,10 @@ lemma effect_refE [effect_elims]:
   assumes "effect (ref v) h h' r n" 
   obtains "get h' r = v" and "present h' r" and "\<not> present h r" and "n=1"
   using assms apply (rule effectE) apply (simp add: execute_simps)
-  by (metis (no_types, lifting) Ref.alloc_def Ref.get_set_eq fst_conv next_fresh next_present prod.case_eq_if snd_conv)
+  by (metis (no_types, lifting) Ref_Time.alloc_def Ref_Time.get_set_eq fst_conv next_fresh next_present prod.case_eq_if snd_conv)
 
 lemma execute_lookup [execute_simps]:
-  "Heap_Monad.execute (lookup r) h = Some (get h r, h, 1)"
+  "Heap_Time_Monad.execute (lookup r) h = Some (get h r, h, 1)"
   by (simp add: lookup_def execute_simps)
 
 lemma success_lookupI [success_intros]:
@@ -174,7 +174,7 @@ lemma effect_lookupE [effect_elims]:
   using assms by (rule effectE) (simp add: execute_simps)
 
 lemma execute_update [execute_simps]:
-  "Heap_Monad.execute (update r v) h = Some ((), set r v h, 1)"
+  "Heap_Time_Monad.execute (update r v) h = Some ((), set r v h, 1)"
   by (simp add: update_def execute_simps)
 
 lemma success_updateI [success_intros]:
@@ -192,7 +192,7 @@ lemma effect_updateE [effect_elims]:
   using assms by (rule effectE) (simp add: execute_simps)
 
 lemma execute_change [execute_simps]:
-  "Heap_Monad.execute (change f r) h = Some (f (get h r), set r (f (get h r)) h, 3)"
+  "Heap_Time_Monad.execute (change f r) h = Some (f (get h r), set r (f (get h r)) h, 3)"
   by (simp add: change_def bind_def Let_def execute_simps)
 
 lemma success_changeI [success_intros]:
@@ -222,44 +222,44 @@ lemma update_change [code]:
 text \<open>Non-interaction between imperative arrays and imperative references\<close>
 
 lemma array_get_set [simp]:
-  "Array.get (set r v h) = Array.get h"
-  by (simp add: Array.get_def set_def fun_eq_iff)
+  "Array_Time.get (set r v h) = Array_Time.get h"
+  by (simp add: Array_Time.get_def set_def fun_eq_iff)
 
 lemma get_update [simp]:
-  "get (Array.update a i v h) r = get h r"
-  by (simp add: get_def Array.update_def Array.set_def)
+  "get (Array_Time.update a i v h) r = get h r"
+  by (simp add: get_def Array_Time.update_def Array_Time.set_def)
 
 lemma alloc_update:
-  "fst (alloc v (Array.update a i v' h)) = fst (alloc v h)"
-  by (simp add: Array.update_def Array.get_def Array.set_def alloc_def Let_def)
+  "fst (alloc v (Array_Time.update a i v' h)) = fst (alloc v h)"
+  by (simp add: Array_Time.update_def Array_Time.get_def Array_Time.set_def alloc_def Let_def)
 
 lemma update_set_swap:
-  "Array.update a i v (set r v' h) = set r v' (Array.update a i v h)"
-  by (simp add: Array.update_def Array.get_def Array.set_def set_def)
+  "Array_Time.update a i v (set r v' h) = set r v' (Array_Time.update a i v h)"
+  by (simp add: Array_Time.update_def Array_Time.get_def Array_Time.set_def set_def)
 
 lemma length_alloc [simp]: 
-  "Array.length (snd (alloc v h)) a = Array.length h a"
-  by (simp add: Array.length_def Array.get_def alloc_def set_def Let_def)
+  "Array_Time.length (snd (alloc v h)) a = Array_Time.length h a"
+  by (simp add: Array_Time.length_def Array_Time.get_def alloc_def set_def Let_def)
 
 lemma array_get_alloc [simp]: 
-  "Array.get (snd (alloc v h)) = Array.get h"
-  by (simp add: Array.get_def alloc_def set_def Let_def fun_eq_iff)
+  "Array_Time.get (snd (alloc v h)) = Array_Time.get h"
+  by (simp add: Array_Time.get_def alloc_def set_def Let_def fun_eq_iff)
 
 lemma present_update [simp]: 
-  "present (Array.update a i v h) = present h"
-  by (simp add: Array.update_def Array.set_def fun_eq_iff present_def)
+  "present (Array_Time.update a i v h) = present h"
+  by (simp add: Array_Time.update_def Array_Time.set_def fun_eq_iff present_def)
 
 lemma array_present_set [simp]:
-  "Array.present (set r v h) = Array.present h"
-  by (simp add: Array.present_def set_def fun_eq_iff)
+  "Array_Time.present (set r v h) = Array_Time.present h"
+  by (simp add: Array_Time.present_def set_def fun_eq_iff)
 
 lemma array_present_alloc [simp]:
-  "Array.present h a \<Longrightarrow> Array.present (snd (alloc v h)) a"
-  by (simp add: Array.present_def alloc_def Let_def)
+  "Array_Time.present h a \<Longrightarrow> Array_Time.present (snd (alloc v h)) a"
+  by (simp add: Array_Time.present_def alloc_def Let_def)
 
 lemma set_array_set_swap:
-  "Array.set a xs (set r x' h) = set r x' (Array.set a xs h)"
-  by (simp add: Array.set_def set_def)
+  "Array_Time.set a xs (set r x' h) = set r x' (Array_Time.set a xs h)"
+  by (simp add: Array_Time.set_def set_def)
 
 hide_const (open) present get set alloc noteq lookup update change
 
@@ -283,8 +283,8 @@ code_printing type_constructor ref \<rightharpoonup> (Eval) "_/ Unsynchronized.r
 code_printing constant Ref \<rightharpoonup> (SML) "raise/ (Fail/ \"bare Ref\")"
 code_printing constant ref' \<rightharpoonup> (SML) "(fn/ ()/ =>/ ref/ _)"
 code_printing constant ref' \<rightharpoonup> (Eval) "(fn/ ()/ =>/ Unsynchronized.ref/ _)"
-code_printing constant Ref.lookup \<rightharpoonup> (SML) "(fn/ ()/ =>/ !/ _)"
-code_printing constant Ref.update \<rightharpoonup> (SML) "(fn/ ()/ =>/ _/ :=/ _)"
+code_printing constant Ref_Time.lookup \<rightharpoonup> (SML) "(fn/ ()/ =>/ !/ _)"
+code_printing constant Ref_Time.update \<rightharpoonup> (SML) "(fn/ ()/ =>/ _/ :=/ _)"
 code_printing constant "HOL.equal :: 'a ref \<Rightarrow> 'a ref \<Rightarrow> bool" \<rightharpoonup> (SML) infixl 6 "="
 
 code_reserved Eval Unsynchronized
@@ -295,8 +295,8 @@ text \<open>OCaml\<close>
 code_printing type_constructor ref \<rightharpoonup> (OCaml) "_/ ref"
 code_printing constant Ref \<rightharpoonup> (OCaml) "failwith/ \"bare Ref\""
 code_printing constant ref' \<rightharpoonup> (OCaml) "(fun/ ()/ ->/ ref/ _)"
-code_printing constant Ref.lookup \<rightharpoonup> (OCaml) "(fun/ ()/ ->/ !/ _)"
-code_printing constant Ref.update \<rightharpoonup> (OCaml) "(fun/ ()/ ->/ _/ :=/ _)"
+code_printing constant Ref_Time.lookup \<rightharpoonup> (OCaml) "(fun/ ()/ ->/ !/ _)"
+code_printing constant Ref_Time.update \<rightharpoonup> (OCaml) "(fun/ ()/ ->/ _/ :=/ _)"
 code_printing constant "HOL.equal :: 'a ref \<Rightarrow> 'a ref \<Rightarrow> bool" \<rightharpoonup> (OCaml) infixl 4 "="
 
 code_reserved OCaml ref
@@ -307,8 +307,8 @@ text \<open>Haskell\<close>
 code_printing type_constructor ref \<rightharpoonup> (Haskell) "Heap.STRef/ Heap.RealWorld/ _"
 code_printing constant Ref \<rightharpoonup> (Haskell) "error/ \"bare Ref\""
 code_printing constant ref' \<rightharpoonup> (Haskell) "Heap.newSTRef"
-code_printing constant Ref.lookup \<rightharpoonup> (Haskell) "Heap.readSTRef"
-code_printing constant Ref.update \<rightharpoonup> (Haskell) "Heap.writeSTRef"
+code_printing constant Ref_Time.lookup \<rightharpoonup> (Haskell) "Heap.readSTRef"
+code_printing constant Ref_Time.update \<rightharpoonup> (Haskell) "Heap.writeSTRef"
 code_printing constant "HOL.equal :: 'a ref \<Rightarrow> 'a ref \<Rightarrow> bool" \<rightharpoonup> (Haskell) infix 4 "=="
 code_printing class_instance ref :: HOL.equal \<rightharpoonup> (Haskell) -
 
@@ -318,8 +318,8 @@ text \<open>Scala\<close>
 code_printing type_constructor ref \<rightharpoonup> (Scala) "!Ref[_]"
 code_printing constant Ref \<rightharpoonup> (Scala) "!sys.error(\"bare Ref\")"
 code_printing constant ref' \<rightharpoonup> (Scala) "('_: Unit)/ =>/ Ref((_))"
-code_printing constant Ref.lookup \<rightharpoonup> (Scala) "('_: Unit)/ =>/ Ref.lookup((_))"
-code_printing constant Ref.update \<rightharpoonup> (Scala) "('_: Unit)/ =>/ Ref.update((_), (_))"
+code_printing constant Ref_Time.lookup \<rightharpoonup> (Scala) "('_: Unit)/ =>/ Ref.lookup((_))"
+code_printing constant Ref_Time.update \<rightharpoonup> (Scala) "('_: Unit)/ =>/ Ref.update((_), (_))"
 code_printing constant "HOL.equal :: 'a ref \<Rightarrow> 'a ref \<Rightarrow> bool" \<rightharpoonup> (Scala) infixl 5 "=="
 
 end

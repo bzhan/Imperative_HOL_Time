@@ -2,7 +2,7 @@
    (by Lammich and Meis) in the AFP *)
 
 theory SepAuto
-  imports Auto2_Imperative_HOL.SepLogic_Base "../Imperative_HOL"
+  imports Auto2_Imperative_HOL.SepLogic_Base "../Imperative_HOL_Time"
 begin                         
 
 section \<open>Partial Heaps\<close>
@@ -31,20 +31,20 @@ lemma relH_dist_union [forward]:
   "relH (as \<union> as') h h' \<Longrightarrow> relH as h h' \<and> relH as' h h'" by auto2
 
 lemma relH_ref [rewrite]:
-  "relH as h h' \<Longrightarrow> addr_of_ref r \<in> as \<Longrightarrow> Ref.get h r = Ref.get h' r"
-  by (simp add: Ref.get_def relH_def)
+  "relH as h h' \<Longrightarrow> addr_of_ref r \<in> as \<Longrightarrow> Ref_Time.get h r = Ref_Time.get h' r"
+  by (simp add: Ref_Time.get_def relH_def)
 
 lemma relH_array [rewrite]:
-  "relH as h h' \<Longrightarrow> addr_of_array r \<in> as \<Longrightarrow> Array.get h r = Array.get h' r"
-  by (simp add: Array.get_def relH_def)
+  "relH as h h' \<Longrightarrow> addr_of_array r \<in> as \<Longrightarrow> Array_Time.get h r = Array_Time.get h' r"
+  by (simp add: Array_Time.get_def relH_def)
 
 lemma relH_set_ref [resolve]:
-  "relH {a. a < lim h \<and> a \<notin> {addr_of_ref r}} h (Ref.set r x h)"
-  by (simp add: Ref.set_def relH_def)
+  "relH {a. a < lim h \<and> a \<notin> {addr_of_ref r}} h (Ref_Time.set r x h)"
+  by (simp add: Ref_Time.set_def relH_def)
 
 lemma relH_set_array [resolve]:
-  "relH {a. a < lim h \<and> a \<notin> {addr_of_array r}} h (Array.set r x h)"
-  by (simp add: Array.set_def relH_def)
+  "relH {a. a < lim h \<and> a \<notin> {addr_of_array r}} h (Array_Time.set r x h)"
+  by (simp add: Array_Time.set_def relH_def)
 
 section \<open>Assertions\<close>
 
@@ -225,20 +225,20 @@ subsection \<open>Pointers\<close>
 
 definition sngr_assn :: "'a::heap ref \<Rightarrow> 'a \<Rightarrow> assn" (infix "\<mapsto>\<^sub>r" 82) where [rewrite]:
   "r \<mapsto>\<^sub>r x = Abs_assn (Assn (
-    \<lambda>h. timeOf h = 0 \<and> Ref.get (heapOf h) r = x \<and> addrOf h = {addr_of_ref r} \<and> addr_of_ref r < lim (heapOf h)))"
+    \<lambda>h. timeOf h = 0 \<and> Ref_Time.get (heapOf h) r = x \<and> addrOf h = {addr_of_ref r} \<and> addr_of_ref r < lim (heapOf h)))"
 
 lemma sngr_assn_rule [rewrite]:
   "pHeap h as n \<Turnstile> r \<mapsto>\<^sub>r x \<longleftrightarrow>
-      n = 0 \<and> Ref.get h r = x \<and> as = {addr_of_ref r} \<and> addr_of_ref r < lim h" by auto2
+      n = 0 \<and> Ref_Time.get h r = x \<and> as = {addr_of_ref r} \<and> addr_of_ref r < lim h" by auto2
 setup \<open>del_prfstep_thm @{thm sngr_assn_def}\<close>
 
 definition snga_assn :: "'a::heap array \<Rightarrow> 'a list \<Rightarrow> assn" (infix "\<mapsto>\<^sub>a" 82) where [rewrite]:
   "r \<mapsto>\<^sub>a x = Abs_assn (Assn (
-    \<lambda>h. timeOf h = 0 \<and> Array.get (heapOf h) r = x \<and> addrOf h = {addr_of_array r} \<and> addr_of_array r < lim (heapOf h)))"
+    \<lambda>h. timeOf h = 0 \<and> Array_Time.get (heapOf h) r = x \<and> addrOf h = {addr_of_array r} \<and> addr_of_array r < lim (heapOf h)))"
 
 lemma snga_assn_rule [rewrite]:
   "pHeap h as n \<Turnstile> r \<mapsto>\<^sub>a x \<longleftrightarrow>
-      (n = 0 \<and> Array.get h r = x \<and> as = {addr_of_array r} \<and> addr_of_array r < lim h)" by auto2
+      (n = 0 \<and> Array_Time.get h r = x \<and> as = {addr_of_array r} \<and> addr_of_array r < lim h)" by auto2
 setup \<open>del_prfstep_thm @{thm snga_assn_def}\<close>
 
 subsection \<open>Pure Assertions\<close>
@@ -371,9 +371,9 @@ setup \<open>add_rewrite_rule @{thm execute_bind(1)}\<close>
 lemma runE [forward]:
   "run f (Some h) (Some h') r' t1 \<Longrightarrow> run (f \<bind> g) (Some h) \<sigma> r t \<Longrightarrow> run (g r') (Some h') \<sigma> r (t-t1)" by auto2
 
-setup \<open>add_rewrite_rule @{thm Array.get_alloc}\<close>
-setup \<open>add_rewrite_rule @{thm Ref.get_alloc}\<close>
-setup \<open>add_rewrite_rule_bidir @{thm Array.length_def}\<close>
+setup \<open>add_rewrite_rule @{thm Array_Time.get_alloc}\<close>
+setup \<open>add_rewrite_rule @{thm Ref_Time.get_alloc}\<close>
+setup \<open>add_rewrite_rule_bidir @{thm Array_Time.length_def}\<close>
 
 section \<open>Definition of hoare triple, and the frame rule.\<close>
 
@@ -492,11 +492,11 @@ lemma return_rule:
 
 setup \<open>add_rewrite_rule @{thm execute_nth(1)}\<close>
 lemma nth_rule:
-  "<a \<mapsto>\<^sub>a xs * $1 * \<up>(i < length xs)> Array.nth a i <\<lambda>r. a \<mapsto>\<^sub>a xs * \<up>(r = xs ! i)>" by auto2
+  "<a \<mapsto>\<^sub>a xs * $1 * \<up>(i < length xs)> Array_Time.nth a i <\<lambda>r. a \<mapsto>\<^sub>a xs * \<up>(r = xs ! i)>" by auto2
 
 setup \<open>add_rewrite_rule @{thm execute_len}\<close>
 lemma length_rule:
-  "<a \<mapsto>\<^sub>a xs * $1> Array.len a <\<lambda>r. a \<mapsto>\<^sub>a xs * \<up>(r = length xs)>" by auto2
+  "<a \<mapsto>\<^sub>a xs * $1> Array_Time.len a <\<lambda>r. a \<mapsto>\<^sub>a xs * \<up>(r = length xs)>" by auto2
 
 setup \<open>add_rewrite_rule @{thm execute_lookup}\<close>
 lemma lookup_rule:
@@ -504,18 +504,18 @@ lemma lookup_rule:
     
 setup \<open>add_rewrite_rule @{thm execute_freeze}\<close>
 lemma freeze_rule:
-  "<a \<mapsto>\<^sub>a xs * $(1 + length xs)> Array.freeze a <\<lambda>r. a \<mapsto>\<^sub>a xs * \<up>(r = xs)>" by auto2
+  "<a \<mapsto>\<^sub>a xs * $(1 + length xs)> Array_Time.freeze a <\<lambda>r. a \<mapsto>\<^sub>a xs * \<up>(r = xs)>" by auto2
 
 (* Next, the update rules. *)
-setup \<open>add_rewrite_rule @{thm Ref.lim_set}\<close>
-lemma Array_lim_set [rewrite]: "lim (Array.set p xs h) = lim h" by (simp add: Array.set_def)
+setup \<open>add_rewrite_rule @{thm Ref_Time.lim_set}\<close>
+lemma Array_lim_set [rewrite]: "lim (Array_Time.set p xs h) = lim h" by (simp add: Array_Time.set_def)
 
-setup \<open>fold add_rewrite_rule [@{thm Ref.get_set_eq}, @{thm Array.get_set_eq}]\<close>
-setup \<open>add_rewrite_rule @{thm Array.update_def}\<close>
+setup \<open>fold add_rewrite_rule [@{thm Ref_Time.get_set_eq}, @{thm Array_Time.get_set_eq}]\<close>
+setup \<open>add_rewrite_rule @{thm Array_Time.update_def}\<close>
 
 setup \<open>add_rewrite_rule @{thm execute_upd(1)}\<close>
 lemma upd_rule:
-  "<a \<mapsto>\<^sub>a xs * $1 * \<up>(i < length xs)> Array.upd i x a <\<lambda>r. a \<mapsto>\<^sub>a list_update xs i x * \<up>(r = a)>" by auto2
+  "<a \<mapsto>\<^sub>a xs * $1 * \<up>(i < length xs)> Array_Time.upd i x a <\<lambda>r. a \<mapsto>\<^sub>a list_update xs i x * \<up>(r = a)>" by auto2
 
 setup \<open>add_rewrite_rule @{thm execute_update}\<close>
 lemma update_rule:
@@ -525,44 +525,44 @@ lemma update_rule:
 lemma lim_set_gen [rewrite]: "lim (h\<lparr>lim := l\<rparr>) = l" by simp
 
 lemma Array_alloc_def' [rewrite]: 
-  "Array.alloc xs h = (let l = lim h; r = Array l in (r, (Array.set r xs (h\<lparr>lim := l + 1\<rparr>))))"
-  by (simp add: Array.alloc_def)
+  "Array_Time.alloc xs h = (let l = lim h; r = Array l in (r, (Array_Time.set r xs (h\<lparr>lim := l + 1\<rparr>))))"
+  by (simp add: Array_Time.alloc_def)
 
 setup \<open>fold add_rewrite_rule [
-  @{thm addr_of_array.simps}, @{thm addr_of_ref.simps}, @{thm Ref.alloc_def}]\<close>
+  @{thm addr_of_array.simps}, @{thm addr_of_ref.simps}, @{thm Ref_Time.alloc_def}]\<close>
 
-lemma refs_on_Array_set [rewrite]: "refs (Array.set p xs h) t i = refs h t i"
-  by (simp add: Array.set_def)
+lemma refs_on_Array_set [rewrite]: "refs (Array_Time.set p xs h) t i = refs h t i"
+  by (simp add: Array_Time.set_def)
 
-lemma arrays_on_Ref_set [rewrite]: "arrays (Ref.set p x h) t i = arrays h t i"
-  by (simp add: Ref.set_def)
+lemma arrays_on_Ref_set [rewrite]: "arrays (Ref_Time.set p x h) t i = arrays h t i"
+  by (simp add: Ref_Time.set_def)
 
-lemma refs_on_Array_alloc [rewrite]: "refs (snd (Array.alloc xs h)) t i = refs h t i"
-  by (metis (no_types, lifting) Array.alloc_def refs_on_Array_set select_convs(2) snd_conv surjective update_convs(3))
+lemma refs_on_Array_alloc [rewrite]: "refs (snd (Array_Time.alloc xs h)) t i = refs h t i"
+  by (metis (no_types, lifting) Array_Time.alloc_def refs_on_Array_set select_convs(2) snd_conv surjective update_convs(3))
 
-lemma arrays_on_Ref_alloc [rewrite]: "arrays (snd (Ref.alloc x h)) t i = arrays h t i"
-  by (metis (no_types, lifting) Ref.alloc_def arrays_on_Ref_set select_convs(1) sndI surjective update_convs(3))
+lemma arrays_on_Ref_alloc [rewrite]: "arrays (snd (Ref_Time.alloc x h)) t i = arrays h t i"
+  by (metis (no_types, lifting) Ref_Time.alloc_def arrays_on_Ref_set select_convs(1) sndI surjective update_convs(3))
 
-lemma arrays_on_Array_alloc [rewrite]: "i < lim h \<Longrightarrow> arrays (snd (Array.alloc xs h)) t i = arrays h t i"
-  by (smt Array.alloc_def Array.set_def addr_of_array.simps fun_upd_apply less_or_eq_imp_le
+lemma arrays_on_Array_alloc [rewrite]: "i < lim h \<Longrightarrow> arrays (snd (Array_Time.alloc xs h)) t i = arrays h t i"
+  by (smt Array_Time.alloc_def Array_Time.set_def addr_of_array.simps fun_upd_apply less_or_eq_imp_le
           linorder_not_less simps(1) snd_conv surjective update_convs(1) update_convs(3))
 
-lemma refs_on_Ref_alloc [rewrite]: "i < lim h \<Longrightarrow> refs (snd (Ref.alloc x h)) t i = refs h t i"
-  by (smt Ref.alloc_def Ref.set_def addr_of_ref.simps fun_upd_apply less_or_eq_imp_le
+lemma refs_on_Ref_alloc [rewrite]: "i < lim h \<Longrightarrow> refs (snd (Ref_Time.alloc x h)) t i = refs h t i"
+  by (smt Ref_Time.alloc_def Ref_Time.set_def addr_of_ref.simps fun_upd_apply less_or_eq_imp_le
           linorder_not_less select_convs(2) simps(6) snd_conv surjective update_convs(3))
 
 setup \<open>add_rewrite_rule @{thm execute_new}\<close>
 lemma new_rule:
-  "<$(n+1)> Array.new n x <\<lambda>r. r \<mapsto>\<^sub>a replicate n x>" by auto2
+  "<$(n+1)> Array_Time.new n x <\<lambda>r. r \<mapsto>\<^sub>a replicate n x>" by auto2
 
 
 setup \<open>add_rewrite_rule @{thm execute_make}\<close>
 lemma make_rule:
-  "<$(n+1)> Array.make n f <\<lambda>r. r \<mapsto>\<^sub>a map f [0 ..< n]>" by auto2
+  "<$(n+1)> Array_Time.make n f <\<lambda>r. r \<mapsto>\<^sub>a map f [0 ..< n]>" by auto2
 
 setup \<open>add_rewrite_rule @{thm execute_of_list}\<close>
 lemma of_list_rule:
-  "<$ (1+length xs)> Array.of_list xs <\<lambda>r. r \<mapsto>\<^sub>a xs>" by auto2
+  "<$ (1+length xs)> Array_Time.of_list xs <\<lambda>r. r \<mapsto>\<^sub>a xs>" by auto2
 
 setup \<open>add_rewrite_rule @{thm execute_ref}\<close>
 lemma ref_rule:

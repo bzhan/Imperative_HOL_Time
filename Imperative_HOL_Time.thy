@@ -4,8 +4,8 @@
 
 section \<open>Entry point into monadic imperative HOL\<close>
 
-theory Imperative_HOL
-imports Array Ref
+theory Imperative_HOL_Time
+imports Array_Time Ref_Time
 begin
 
 end
