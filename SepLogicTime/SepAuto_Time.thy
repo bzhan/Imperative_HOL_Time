@@ -1,7 +1,7 @@
 (* The development here follows Separation_Logic_Imperative_HOL
    (by Lammich and Meis) in the AFP *)
 
-theory SepAuto
+theory SepAuto_Time
   imports Auto2_Imperative_HOL.SepLogic_Base "../Imperative_HOL_Time"
 begin                         
 

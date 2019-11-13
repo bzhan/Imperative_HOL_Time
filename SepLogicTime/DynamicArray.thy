@@ -1,5 +1,5 @@
 theory DynamicArray
-  imports SepAuto Arrays_Impl
+  imports SepAuto_Time Arrays_Impl
 begin
 
 datatype 'a dynamic_array = Dyn_Array (alen: nat) (aref: "'a array")

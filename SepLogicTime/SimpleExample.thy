@@ -1,5 +1,5 @@
 theory SimpleExample
-  imports SepAuto Asymptotics_1D
+  imports SepAuto_Time Asymptotics_1D
 begin
 
 section \<open>f1 doubles\<close>

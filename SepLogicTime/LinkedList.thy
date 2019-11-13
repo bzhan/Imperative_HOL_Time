@@ -1,7 +1,7 @@
 (* Example in linked lists *)
 
 theory LinkedList
-imports SepAuto Asymptotics_Recurrences
+imports SepAuto_Time Asymptotics_Recurrences
 begin
 
 section \<open>List assertion\<close>
