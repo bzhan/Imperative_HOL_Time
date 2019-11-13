@@ -1,5 +1,5 @@
 theory DynamicArray2
-imports DynamicArray Asymptotics_1D
+imports DynamicArray "../Asymptotics/Asymptotics_1D"
 begin
 
 fun dyn_array_P' :: "'a::heap list \<times> nat \<Rightarrow> nat" where

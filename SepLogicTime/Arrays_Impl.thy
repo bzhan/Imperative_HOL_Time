@@ -1,5 +1,5 @@
 theory Arrays_Impl
-  imports SepAuto_Time Asymptotics_1D Auto2_Imperative_HOL.Arrays_Ex
+  imports SepAuto_Time "../Asymptotics/Asymptotics_1D" Auto2_Imperative_HOL.Arrays_Ex
 begin
 
 definition acopy :: "'a::heap array \<Rightarrow> 'a array Heap" where

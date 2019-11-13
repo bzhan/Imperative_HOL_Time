@@ -1,5 +1,5 @@
 theory Splay_Tree_Impl
-  imports Tree_Impl Amortized_Complexity.Splay_Tree_Analysis Asymptotics_1D
+  imports Tree_Impl Amortized_Complexity.Splay_Tree_Analysis "../Asymptotics/Asymptotics_1D"
 begin
 
 definition rotate_rr :: "'a::heap ptree \<Rightarrow> 'a ptree Heap" where

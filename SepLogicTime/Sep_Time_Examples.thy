@@ -4,7 +4,7 @@ imports
 
 (* Tests and simple examples *)
 
-  Asymptotics_Test
+  "../Asymptotics/Asymptotics_Test"
   
   SimpleExample
 

@@ -1,5 +1,5 @@
 theory MergeSort_Impl
-  imports MergeSort Arrays_Impl
+  imports "../Functional/MergeSort" Arrays_Impl
 begin
 
 section \<open>Imperative version\<close>

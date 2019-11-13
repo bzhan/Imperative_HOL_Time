@@ -1,5 +1,5 @@
 theory BinarySearch_Impl
-  imports BinarySearch SepAuto_Time Asymptotics_1D
+  imports BinarySearch SepAuto_Time "../Asymptotics/Asymptotics_1D"
 begin
 
 partial_function (heap) binarysearch :: "nat \<Rightarrow> nat \<Rightarrow> 'a::{heap,linorder} \<Rightarrow> 'a array \<Rightarrow> bool Heap" where

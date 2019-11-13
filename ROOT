@@ -41,6 +41,6 @@ session SepLogicTime_RBTreeBasic = SepLogicTime_Base +
     "SepLogicTime/RBTree_Impl"
     "SepLogicTime/LinkedList"
     "SepLogicTime/DynamicArray2"
-    "SepLogicTime/Asymptotics_2D"
+    "Asymptotics/Asymptotics_2D"
     "SepLogicTime/MergeSort_Impl"
                       

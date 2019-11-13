@@ -1,5 +1,5 @@
 theory TwoDArray
-  imports SepAuto_Time Asymptotics_2D
+  imports SepAuto_Time "../Asymptotics/Asymptotics_2D"
 begin
 
 section \<open>Some lemmas about indexing\<close>

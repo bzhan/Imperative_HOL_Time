@@ -1,5 +1,5 @@
 theory Karatsuba_Impl
-  imports Karatsuba Arrays_Impl
+  imports "../Functional/Karatsuba" Arrays_Impl
 begin
 
 section \<open>Imperative version of shift_plus\<close>

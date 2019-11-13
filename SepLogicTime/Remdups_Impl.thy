@@ -1,5 +1,5 @@
 theory Remdups_Impl 
-  imports RBTree_Impl DynamicArray2 Asymptotics_Recurrences Rev_Impl
+  imports RBTree_Impl DynamicArray2 "../Asymptotics/Asymptotics_Recurrences" Rev_Impl
     "HOL-Library.Code_Target_Numeral"
 begin
 
