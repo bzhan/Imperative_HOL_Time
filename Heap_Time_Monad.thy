@@ -515,7 +515,7 @@ lemma fixp_induct_heap:
   unfolding effect_def execute.simps
   by blast
 
-declaration \<open>Partial_Function.init "heap" @{term heap.fixp_fun}
+declaration \<open>Partial_Function.init "heap_time" @{term heap.fixp_fun}
   @{term heap.mono_body} @{thm heap.fixp_rule_uc} @{thm heap.fixp_induct_uc}
   (SOME @{thm fixp_induct_heap})\<close>
 

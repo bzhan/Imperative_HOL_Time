@@ -1,8 +1,8 @@
 theory BinarySearch_Impl
-  imports BinarySearch SepAuto_Time "../Asymptotics/Asymptotics_1D"
+  imports "../Functional/BinarySearch" SepAuto_Time "../Asymptotics/Asymptotics_1D"
 begin
 
-partial_function (heap) binarysearch :: "nat \<Rightarrow> nat \<Rightarrow> 'a::{heap,linorder} \<Rightarrow> 'a array \<Rightarrow> bool Heap" where
+partial_function (heap_time)  binarysearch :: "nat \<Rightarrow> nat \<Rightarrow> 'a::{heap,linorder} \<Rightarrow> 'a array \<Rightarrow> bool Heap" where
   "binarysearch l r x a = (
     if l \<ge> r then return False
     else if l + 1 \<ge> r then do {
@@ -13,8 +13,11 @@ partial_function (heap) binarysearch :: "nat \<Rightarrow> nat \<Rightarrow> 'a:
       (if v = x then return True
        else if v < x then binarysearch (m + 1) r x a
        else binarysearch l m x a)
-    })"
-print_theorems
+    })" (* apply pat_completeness by auto
+termination by (relation "Wellfounded.measure (\<lambda>(l,r,a,f). r-l)") auto
+*)
+  print_theorems
+
 function binarysearch_time :: "nat \<Rightarrow> nat" where
   "n < 2 \<Longrightarrow> binarysearch_time n = 2"
 | "n \<ge> 2 \<Longrightarrow> binarysearch_time n = 2 + binarysearch_time (n div 2)"

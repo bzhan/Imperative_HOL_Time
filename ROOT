@@ -19,11 +19,11 @@ session SepLogicTime_Fun = SepLogicTime_Base +
   sessions
     Auto2_HOL
   theories
-    "SepLogicTime/BinarySearch"
-    "SepLogicTime/MergeSort"
-    "SepLogicTime/Select"
-    "SepLogicTime/Karatsuba"
-    "SepLogicTime/Knapsack"
+    "Functional/BinarySearch"
+    "Functional/MergeSort"
+    "Functional/Select"
+    "Functional/Karatsuba"
+    "Functional/Knapsack"
 
 session SepLogicTime_Impl = SepLogicTime_Fun +
   description \<open>
