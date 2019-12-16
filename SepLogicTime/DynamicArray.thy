@@ -11,28 +11,28 @@ fun dyn_array_raw :: "'a::heap list \<times> nat \<Rightarrow> 'a dynamic_array 
   "dyn_array_raw (xs, n) (Dyn_Array m a) = (a \<mapsto>\<^sub>a xs * \<up>(m = n))"
 setup \<open>add_rewrite_ent_rule @{thm dyn_array_raw.simps}\<close>
 
-definition dyn_array_new :: "'a::heap dynamic_array Heap" where
+definition dyn_array_new :: "'a::{zero,heap} dynamic_array Heap" where
   "dyn_array_new = do {
-     p \<leftarrow> Array_Time.new 5 undefined;
+     p \<leftarrow> Array_Time.new 5 0;
      return (Dyn_Array 0 p)
    }"
 
 lemma dyn_array_new_raw_rule [hoare_triple]:
   "<$7>
    dyn_array_new
-   <dyn_array_raw (replicate 5 undefined, 0)>" by auto2
+   <dyn_array_raw (replicate 5 0, 0)>" by auto2
 
-definition double_length :: "'a::heap dynamic_array \<Rightarrow> 'a dynamic_array Heap" where
+definition double_length :: "'a::{heap,zero} dynamic_array \<Rightarrow> 'a dynamic_array Heap" where
   "double_length d = (case d of Dyn_Array al ar \<Rightarrow> do {
       am \<leftarrow> Array_Time.len ar;
-      p \<leftarrow> Array_Time.new (2 * am + 1) undefined;
+      p \<leftarrow> Array_Time.new (2 * am + 1) 0;
       array_copy ar p am;
       return (Dyn_Array am p)
     })"
 
-fun double_length_fun :: "'a::heap list \<times> nat \<Rightarrow> 'a list \<times> nat" where
+fun double_length_fun :: "'a::{heap,zero} list \<times> nat \<Rightarrow> 'a list \<times> nat" where
   "double_length_fun (xs, n) =
-    (Arrays_Ex.array_copy xs (replicate (2 * n + 1) undefined) n, n)"
+    (Arrays_Ex.array_copy xs (replicate (2 * n + 1) 0) n, n)"
 setup \<open>add_rewrite_rule @{thm double_length_fun.simps}\<close>
 
 lemma double_length_raw_rule [hoare_triple]:
@@ -78,7 +78,7 @@ fun dyn_array_P :: "'a::heap list \<times> nat \<Rightarrow> nat" where
 setup \<open>add_rewrite_rule @{thm dyn_array_P.simps}\<close>
 
 lemma dyn_array_new_P [rewrite]:
-  "dyn_array_P (replicate 5 undefined, 0) = 0" by auto2
+  "dyn_array_P (replicate 5 0, 0) = 0" by auto2
 
 lemma double_length_fun_P [resolve]:
   "length xs = n \<Longrightarrow>
@@ -132,19 +132,19 @@ lemma array_upd_rule' [hoare_triple]:
    array_upd i x p
    <\<lambda>_. dyn_array' (list_update xs i x, n) p>" by auto2
 
-definition destroy :: "'a::heap dynamic_array \<Rightarrow> 'a array Heap" where
+definition destroy :: "'a::{zero,heap} dynamic_array \<Rightarrow> 'a array Heap" where
   "destroy d = (case d of Dyn_Array al ar \<Rightarrow> do {
-      p \<leftarrow> Array_Time.new al undefined;
+      p \<leftarrow> Array_Time.new al 0;
       array_copy ar p al;
       return p
    })"
 
 lemma destroy_fun_correct [rewrite]:
-  "n \<le> length xs \<Longrightarrow> Arrays_Ex.array_copy xs (replicate n undefined) n = take n xs"
+  "n \<le> length xs \<Longrightarrow> Arrays_Ex.array_copy xs (replicate n 0) n = take n xs"
 proof -
   assume inbound: "n \<le> length xs"
-  have "Arrays_Ex.array_copy xs (replicate n undefined) n
-      = take n (Arrays_Ex.array_copy xs (replicate n undefined) n)"
+  have "Arrays_Ex.array_copy xs (replicate n 0) n
+      = take n (Arrays_Ex.array_copy xs (replicate n 0) n)"
     by (simp add: array_copy_length inbound)     
   also have "\<dots> = take n xs" 
     apply(rule array_copy_correct) apply auto by fact
@@ -162,9 +162,9 @@ setup \<open>del_prfstep_thm @{thm dyn_array_raw.simps}\<close>
 lemma dyn_array_new_rule' [hoare_triple]:
   "<$7>
    dyn_array_new
-   <dyn_array' (replicate 5 undefined, 0)>\<^sub>t"
+   <dyn_array' (replicate 5 0, 0)>\<^sub>t"
 @proof
-  @have "7 \<ge>\<^sub>t 7 + dyn_array_P (replicate 5 undefined, 0)"
+  @have "7 \<ge>\<^sub>t 7 + dyn_array_P (replicate 5 0, 0)"
 @qed
 
 lemma double_length_rule' [hoare_triple]:
@@ -185,7 +185,7 @@ lemma push_array_basic_rule' [hoare_triple]:
   @have "dyn_array_P (xs, n) + 12 \<ge>\<^sub>t dyn_array_P (push_array_basic_fun x (xs, n)) + 2"
 @qed
 
-definition push_array :: "'a \<Rightarrow> 'a::heap dynamic_array \<Rightarrow> 'a dynamic_array Heap" where
+definition push_array :: "'a \<Rightarrow> 'a::{zero,heap} dynamic_array \<Rightarrow> 'a dynamic_array Heap" where
   "push_array x p = do {
     m \<leftarrow> array_max p;
     l \<leftarrow> array_length p;
@@ -196,7 +196,7 @@ definition push_array :: "'a \<Rightarrow> 'a::heap dynamic_array \<Rightarrow> 
     }
   }"
 
-fun push_array_fun :: "'a \<Rightarrow> 'a::heap list \<times> nat \<Rightarrow> 'a list \<times> nat" where
+fun push_array_fun :: "'a \<Rightarrow> 'a::{zero,heap} list \<times> nat \<Rightarrow> 'a list \<times> nat" where
   "push_array_fun x (xs, n) = (
      if n < length xs then push_array_basic_fun x (xs, n)
      else push_array_basic_fun x (double_length_fun (xs, n)))"

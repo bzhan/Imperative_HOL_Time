@@ -61,7 +61,7 @@ lemma mergeinto_time_bound [asym_bound]: "(\<lambda>n. mergeinto_time n) \<in> \
 
 setup \<open>del_prfstep_thm @{thm mergeinto_time_def}\<close>
 
-partial_function (heap) merge_sort_impl :: "'a::{heap,linorder} array \<Rightarrow> unit Heap" where
+partial_function (heap_time) merge_sort_impl :: "'a::{heap,linorder} array \<Rightarrow> unit Heap" where
   "merge_sort_impl X = do {
     n \<leftarrow> Array_Time.len X;
     if n \<le> 1 then return ()

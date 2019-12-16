@@ -227,7 +227,7 @@ lemma balance_to_fun [hoare_triple]:
 
 subsection \<open>Insertion\<close>
 
-partial_function (heap) rbt_ins ::
+partial_function (heap_time) rbt_ins ::
   "'a::{heap,ord} \<Rightarrow> 'b::heap \<Rightarrow> ('a, 'b) btree \<Rightarrow> ('a, 'b) btree Heap" where
   "rbt_ins k v p = (case p of
      None \<Rightarrow> btree_constr None R k v None
@@ -309,7 +309,7 @@ lemma rbt_insert_to_fun [hoare_triple]:
 
 subsection \<open>Search\<close>
  
-partial_function (heap) rbt_search ::
+partial_function (heap_time) rbt_search ::
   "'a::{heap,linorder} \<Rightarrow> ('a, 'b::heap) btree \<Rightarrow> 'b option Heap" where
   "rbt_search x b = (case b of
      None \<Rightarrow> return None
@@ -432,7 +432,7 @@ lemma balR_to_fun [hoare_triple]:
    <btree (balR l k v r)>\<^sub>t"
 @proof @unfold "balR l k v r" @qed
 
-partial_function (heap) btree_combine ::
+partial_function (heap_time) btree_combine ::
   "('a::heap, 'b::heap) btree \<Rightarrow> ('a, 'b) btree \<Rightarrow> ('a, 'b) btree Heap" where
   "btree_combine lp rp =
    (if lp = None then return rp
@@ -515,7 +515,7 @@ lemma combine_to_fun [hoare_triple]:
 @proof @have "btree_combine_time (max_depth lt) (max_depth rt) \<ge>\<^sub>t rbt_combine_time' lt rt" @qed
   
 
-partial_function (heap) rbt_del ::
+partial_function (heap_time) rbt_del ::
   "'a::{heap,linorder} \<Rightarrow> ('a, 'b::heap) btree \<Rightarrow> ('a, 'b) btree Heap" where
   "rbt_del x p = (case p of
      None \<Rightarrow> return None

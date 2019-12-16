@@ -7,7 +7,7 @@ fun dyn_array_P' :: "'a::heap list \<times> nat \<Rightarrow> nat" where
 setup \<open>add_rewrite_rule @{thm dyn_array_P'.simps}\<close>
 
 lemma dyn_array_new_P' [rewrite]:
-  "dyn_array_P' (replicate 5 undefined, 0) = 0" by auto2
+  "dyn_array_P' (replicate 5 0, 0) = 0" by auto2
 
 lemma dyn_array_double_length_P' [rewrite]:
   "dyn_array_P' (double_length_fun (xs, n)) = dyn_array_P' (xs, n)" by auto2
@@ -31,9 +31,9 @@ setup \<open>add_rewrite_ent_rule @{thm dyn_array''.simps}\<close>
 lemma dyn_array_new_rule'' [hoare_triple]:
   "<$7>
    dyn_array_new
-   <dyn_array'' (replicate 5 undefined, 0)>\<^sub>t"
+   <dyn_array'' (replicate 5 0, 0)>\<^sub>t"
 @proof
-  @have "7 \<ge>\<^sub>t 7 + dyn_array_P' (replicate 5 undefined, 0)"
+  @have "7 \<ge>\<^sub>t 7 + dyn_array_P' (replicate 5 0, 0)"
 @qed
 
 lemma double_length_rule'' [hoare_triple]:
@@ -185,7 +185,7 @@ lemma filtertake_Suc [rewrite]:
   "i < length xs \<Longrightarrow> ~ P (xs !i) \<Longrightarrow> filter P (take (Suc i) xs) = filter P (take i xs)"
   by (auto simp add: take_Suc_conv_app_nth) 
 
-fun dfilter_aux :: "('a::heap) array \<Rightarrow> 'a dynamic_array \<Rightarrow> nat \<Rightarrow> ('a \<Rightarrow> bool) \<Rightarrow> 'a dynamic_array Heap" where
+fun dfilter_aux :: "('a::{zero,heap}) array \<Rightarrow> 'a dynamic_array \<Rightarrow> nat \<Rightarrow> ('a \<Rightarrow> bool) \<Rightarrow> 'a dynamic_array Heap" where
   "dfilter_aux a d 0 P = return d"
 | "dfilter_aux a d (Suc i) P = do {
      d' \<leftarrow> dfilter_aux a d i P;
@@ -200,7 +200,7 @@ lemma dfilter_aux_rule [hoare_triple]:
    <\<lambda>r. a \<mapsto>\<^sub>a xs * dyn_array (filter P (take i xs)) r>\<^sub>t"
 @proof @induct i @qed
 
-definition dfilter_impl :: "'a::heap array \<Rightarrow> ('a \<Rightarrow> bool) \<Rightarrow> 'a dynamic_array Heap" where
+definition dfilter_impl :: "'a::{zero,heap} array \<Rightarrow> ('a \<Rightarrow> bool) \<Rightarrow> 'a dynamic_array Heap" where
   "dfilter_impl a P = do {
      d \<leftarrow> dyn_array_new;
      alen \<leftarrow> Array_Time.len a;

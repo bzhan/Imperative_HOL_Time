@@ -4,7 +4,7 @@ begin
 
 section \<open>Operations\<close>
 
-partial_function (heap) merge_impl :: "'a::{heap,linorder} ptree \<Rightarrow> 'a ptree \<Rightarrow> 'a ptree Heap" where
+partial_function (heap_time) merge_impl :: "'a::{heap,linorder} ptree \<Rightarrow> 'a ptree \<Rightarrow> 'a ptree Heap" where
   "merge_impl a b = (case a of
     None \<Rightarrow> return b
   | Some p \<Rightarrow> (case b of
@@ -54,7 +54,7 @@ definition insert_impl :: "'a::{heap,linorder} \<Rightarrow> 'a ptree \<Rightarr
 
 setup \<open>add_rewrite_rule @{thm Skew_Heap.insert_def}\<close>
 
-partial_function (heap) del_min_impl :: "'a::{heap,linorder} ptree \<Rightarrow> 'a ptree Heap" where
+partial_function (heap_time) del_min_impl :: "'a::{heap,linorder} ptree \<Rightarrow> 'a ptree Heap" where
   "del_min_impl a = (case a of
      None \<Rightarrow> return None
    | Some a \<Rightarrow> do {
