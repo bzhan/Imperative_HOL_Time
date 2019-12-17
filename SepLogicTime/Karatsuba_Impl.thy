@@ -169,7 +169,7 @@ setup \<open>del_prfstep_thm @{thm coeffs_monom_mult_time_def}\<close>
 
 section \<open>Implementation of Karatsuba\<close>
 
-partial_function (heap) karatsuba_main_impl ::
+partial_function (heap_time) karatsuba_main_impl ::
   "'a::{heap,comm_ring_1} array \<Rightarrow> 'a array \<Rightarrow> nat \<Rightarrow> 'a array Heap" where
  "karatsuba_main_impl a b n =
   (if n \<le> karatsuba_lower_bound then

@@ -76,7 +76,7 @@ lemma os_pop_rule [hoare_triple]:
 
 section \<open>Reverse\<close>
 
-partial_function (heap) os_reverse_aux :: "'a::heap os_list \<Rightarrow> 'a os_list \<Rightarrow> 'a os_list Heap" where
+partial_function (heap_time) os_reverse_aux :: "'a::heap os_list \<Rightarrow> 'a os_list \<Rightarrow> 'a os_list Heap" where
   "os_reverse_aux q p = (case p of
     None \<Rightarrow> return q |
     Some r \<Rightarrow> do {
@@ -102,7 +102,7 @@ section \<open>Remove\<close>
 
 setup \<open>fold add_rewrite_rule @{thms removeAll.simps}\<close>
 
-partial_function (heap) os_rem :: "'a::heap \<Rightarrow> 'a node ref option \<Rightarrow> 'a node ref option Heap" where
+partial_function (heap_time) os_rem :: "'a::heap \<Rightarrow> 'a node ref option \<Rightarrow> 'a node ref option Heap" where
   "os_rem x b = (case b of 
      None \<Rightarrow> return None |
      Some p \<Rightarrow> do { 
@@ -122,7 +122,7 @@ lemma os_rem_rule [hoare_triple]:
 
 section \<open>Extract list\<close>
 
-partial_function (heap) extract_list :: "'a::heap os_list \<Rightarrow> 'a list Heap" where
+partial_function (heap_time) extract_list :: "'a::heap os_list \<Rightarrow> 'a list Heap" where
   "extract_list p = (case p of
     None \<Rightarrow> return []
   | Some pp \<Rightarrow> do {
@@ -161,7 +161,7 @@ lemma list_insert_sorted [forward]:
   "sorted xs \<Longrightarrow> sorted (list_insert x xs)"
 @proof @induct xs @qed
 
-partial_function (heap) os_insert :: "'a::{ord,heap} \<Rightarrow> 'a os_list \<Rightarrow> 'a os_list Heap" where
+partial_function (heap_time) os_insert :: "'a::{ord,heap} \<Rightarrow> 'a os_list \<Rightarrow> 'a os_list Heap" where
   "os_insert x b = (case b of
       None \<Rightarrow> os_prepend x None
     | Some p \<Rightarrow> do {
