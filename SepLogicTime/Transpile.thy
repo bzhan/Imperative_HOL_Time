@@ -576,7 +576,15 @@ lemma refines_nth:
   unfolding refines_def Heap_Time_Monad.effect_def Heap_Monad.effect_def
           Array_Time.nth_def  Array.nth_def 
           Heap_Time_Monad.guard_def  Heap_Monad.guard_def
-    by (auto simp: Array_length_conv Array_get_conv)
+  by (auto simp: Array_length_conv Array_get_conv)
+
+
+lemma refines_make:
+    "refines (Array.make n f) (Array_Time.make n f)"
+  unfolding refines_def Heap_Time_Monad.effect_def Heap_Monad.effect_def
+          Array_Time.make_def  Array.make_def 
+        Heap_Time_Monad.heap_def Heap_Monad.heap_def
+  by (auto simp: Array_length_conv Array_get_conv Array_alloc_conv split: prod.splits) 
 
 
 lemma refines_freeze:
@@ -626,7 +634,7 @@ lemma refines_len:
 
 lemmas [transpile_rules] = refines_combinators
   refines_nth refines_len refines_array_upd refines_array_new
-  refines_freeze refines_of_list
+  refines_freeze refines_of_list refines_make
 
 
 section \<open>Automating Transpilation\<close>
@@ -634,6 +642,9 @@ section \<open>Automating Transpilation\<close>
 
 ML \<open>                      
 
+
+  datatype tp_source =
+    TPS_Par | TPS_Fun of Function_Common.info  | TPS_Def
 
     fun myprint_tac' ctxt  st = 
       let val _ = tracing ("..>");
@@ -709,7 +720,12 @@ fun defined_by_partial_function ctxt t =
                handle error => false
       | _ => false)
 
-
+  fun getsource ctxt t = let
+      val old_info = Function_Common.import_function_data t ctxt  
+      val pf = defined_by_partial_function ctxt t
+    in case old_info of SOME info => TPS_Fun info
+          | NONE => (if pf then TPS_Par else TPS_Def )
+      end
 
 fun mono_side_tac ctxt = Subgoal.FOCUS_PARAMS (fn {context = ctxt, ...} => ALLGOALS (
       SUBGOAL (fn (t, _) => case Logic.strip_imp_concl t of
@@ -730,6 +746,14 @@ fun mkk binding def_thms termination ctxt =
 
     val eqns = map Thm.concl_of  def_thms
     val (eqns, _) = Variable.import_terms true eqns ctxt
+
+
+    fun dest_hol_refines_prop' t = case t of
+       Const ("Pure.all", _) $ t2 => dest_hol_refines_prop' t2
+     | Abs (_,_,t) => dest_hol_refines_prop' t
+     | Const ("HOL.Trueprop", _) $ t => dest_hol_refines_prop' t
+     | (Const ("Transpile.refines", _) $ a $ b) => SOME (Term.head_of a,Term.head_of b)
+     | _ => NONE
 
     fun dest_hol_refines_prop t =
       let
@@ -754,18 +778,33 @@ fun mkk binding def_thms termination ctxt =
   val _ = tracing "here"
 
 
-    val (old_info, part_f)  = let
+    val src  = let
           val (lhs, rhs) = dest_hol_eq_prop (hd eqns)
-          val (f, args) = Term.strip_comb lhs
-          val old_info = Function_Common.import_function_data f ctxt  
-          val flag = defined_by_partial_function ctxt f
+          val (f, args) = Term.strip_comb lhs 
       in
-          (old_info, flag)
+          getsource ctxt f
       end
 
-    val _ = (case old_info of NONE => tracing ("not defined via the function package!")
-                | SOME old_info => tracing "defined via the function package!")
+    val _ = (case src of TPS_Par => tracing ("defined via the partial function package!")
+                | TPS_Fun _ => tracing "defined via the function package!"
+                | TPS_Def => tracing "defined via the definition package!")
 
+        fun convert t = 
+          (case t of
+             Type("fun",[S,T]) => let
+                                     val S' = convert S
+                                     val T' = convert T
+                                  in Type("fun",[S',T']) end
+            | Type("Heap_Time_Monad.Heap",xs) => Type("Heap_Monad.Heap",xs) 
+            | _ => let val _ = tracing "rest" in t end
+          )
+        fun convert_term' f t  = 
+          (case t of 
+              t1 $ t2 => (convert_term' f t1) $ (convert_term' f t2)
+            | (Free (f_n, f_ty)) => (if f then (Free (f_n, convert f_ty))
+                                        else  (Var ((f_n,0), convert f_ty)) )
+            | _ => t)
+        val convert_term = convert_term' true
 
       (* for a defining equation synthesize a flattened equation theorem *)                            
       fun synthesize2 ctxt def_thm =
@@ -780,19 +819,54 @@ fun mkk binding def_thms termination ctxt =
  
           val t = @{mk_term "?lhs"} 
           val t_goal = @{mk_term "flatten ?lhs"} 
-
+   
    
           val ([t,t_goal,eqn], ctxt) = (Variable.import_terms true) [t,t_goal,eqn] ctxt 
           val ty = Term.type_of t 
           val t_goaly = Term.type_of t_goal
           val  _ = tracing ("bra")
 
+          val (th, tvars) = strip_comb t
+          fun faa tc tt = let
+              val _ = tracing "faa"  
+              val (vc, p) = close_fun_schem tc ctxt   
+              val pt = fold (fn v => fn f => f $ v) vc tt
+              val (_, ctxt) = yield_singleton (Variable.import_terms true) p ctxt 
+              val _ = tracing ("AA "  ^ (Syntax.string_of_term ctxt p))
+              val refa = @{mk_term "Trueprop (refines ?p ?pt)"}
+              fun purall t = @{mk_term "Pure.all ?t"}
+              val tea = fold_rev (purall oo lambda) (  vc   ) refa 
+            val _ = tracing ("YE"^ Syntax.string_of_term ctxt tea) 
+            val _ = tracing ("YE"^ Syntax.string_of_term ctxt tea) 
+           
+              in  tea
+              end
+
+          fun fa t = let val t_c = convert_term' false t
+                  val t_c_ty = Term.type_of t_c
+                  val t_ty = Term.type_of t
+                  val b = (t_c_ty = t_ty) in (if b then [] else [faa t_c t]) end
+
+
+        val _ = tracing "====Y"
+          val tvars = (map fa tvars)
+          val ff =  fold (fn x => fn y => x @ y) tvars []
+          val _ = map (fn t => tracing (Syntax.string_of_term ctxt t)) ff
+
+          val (ff, ctxt) = (Variable.import_terms true) ff ctxt 
 
           val v = Var (("result",0), t_goaly)
+
+          val goalhead = @{mk_term "Trueprop (refines ?v ?t)"}
+          val g = fold (fn t => fn g => @{mk_term "Pure.imp ?t ?g"}) ff goalhead
+          val  _ = tracing ("goalAA " ^ Syntax.string_of_term ctxt g)
+    
+   
+
           val  _ = tracing ("ff")
           val  _ = tracing ("t " ^ Syntax.string_of_term ctxt t)
           val  _ = tracing ("ty " ^ Syntax.string_of_typ ctxt ty)
-          val goal = @{mk_term "Trueprop (refines ?v ?t)"} |> Thm.cterm_of ctxt
+          val goal = g |> Thm.cterm_of ctxt
           val  _ = tracing ("goal " ^ Syntax.string_of_term ctxt @{mk_term "Trueprop (refines ?v ?t)"})
     
 
@@ -801,12 +875,14 @@ fun mkk binding def_thms termination ctxt =
 
 
 
-          val flatten_rules =  ( transpile_rules @ [@{thm refines_flatten}] ) |> Tactic.build_net
+          val flatten_rules =  ( transpile_rules   ) |> Tactic.build_net
+          val last_resort =  (   [@{thm refines_flatten}] ) |> Tactic.build_net
           val _ = EqSubst.eqsubst_tac
           fun tac ctxt =  (ALLGOALS ((EqSubst.eqsubst_tac ctxt [0] [fun_def]  )
                   THEN' (TRY_SOLVED' (REPEAT_DETERM' (CHANGED o 
                       FIRST' [ resolve_from_net_tac ctxt flatten_rules,
                                 Method.assm_tac ctxt,
+                               resolve_from_net_tac ctxt last_resort, 
                                 mono_side_tac ctxt ])))))
 
           (* synthesize by using flatten rules *)
@@ -819,7 +895,8 @@ fun mkk binding def_thms termination ctxt =
         end  
 
     val flat_thms = map (synthesize2 ctxt) def_thms
-
+    val _ = map (fn thm => tracing (Thm.string_of_thm ctxt thm)) flat_thms
+  
   val _ = tracing "here2"
     (* give the theorem a name *)
     val (_, ctxt) = Local_Theory.note (
@@ -836,20 +913,46 @@ fun mkk binding def_thms termination ctxt =
       let 
         val ctxt_orig = ctxt
         val  _ = tracing ("prepare_equation")
-        val (f_name, f_ty) = let
+        val (f_name, f_ty, args) = let
             val eqn = Thm.concl_of def_thm
-            val (eqn, ctxt1) = yield_singleton (Variable.import_terms true) eqn ctxt
+            val (eqn , ctxt1) = yield_singleton (Variable.import_terms true) (eqn ) ctxt
             val (lhs, rhs) = dest_hol_eq_prop eqn
-            val (f, _) = Term.strip_comb lhs
+            val (f, args) = Term.strip_comb lhs
             val Const (f_name, f_ty) = f
           in 
-            (f_name, f_ty)
+            (f_name, f_ty, args)
           end
         val orig_head = Const (f_name, f_ty)
+      
+
+        val _ = tracing "convert"
+        val _ =        tracing (Syntax.string_of_typ ctxt f_ty)
+        val f_ty' =        convert f_ty
+        val _ =        tracing (Syntax.string_of_typ ctxt f_ty')
+
+        
 
         val fl_eqn = Thm.concl_of flat_thm
+        val prems = Thm.prems_of flat_thm
         val  _ = tracing ("before " ^ Syntax.string_of_term ctxt fl_eqn)
-        val (fl_eqn, ctxt1) = yield_singleton (Variable.import_terms true) fl_eqn ctxt
+        val (fl_eqn::prems, ctxt1) = (Variable.import_terms true) (fl_eqn::prems) ctxt
+
+
+        val _ = map (fn prem => tracing (Syntax.string_of_term ctxt prem)) prems
+        val substs = map (dest_hol_refines_prop') prems
+        val _ = map (fn prem => case prem of NONE => tracing "NONE"
+                |  SOME (a,b) =>  tracing (Syntax.string_of_term ctxt a)) substs
+        fun sw (x,y) = (y,x)
+        val substs = map (sw o the) substs    
+        val _ = tracing ("len: " ^ ( Int.toString (length substs)))
+        val _ = map (fn (x,y) => tracing (Syntax.string_of_term ctxt x ^","^Syntax.string_of_term ctxt y)) substs
+
+        val _ = (case src of TPS_Def => ()
+                   | _ => if (length substs > 0)
+                            then error "Recursive higher-order functions are not supported!"
+                            else ())
+        
+
         val _ = tracing ("after " ^ Syntax.string_of_term ctxt1 fl_eqn)
         val _ = Specification.read_multi_specs
         fun my_replace t v = let
@@ -865,7 +968,10 @@ fun mkk binding def_thms termination ctxt =
                              let val (f,fs) = strip_comb t2
                                      in 
                               (if f <> orig_head then error ("Missing flatten rule for " ^ Syntax.string_of_term ctxt f) else
-                           SOME (list_comb (v,fs))   ) end
+                           SOME (list_comb (v, map (Term.subst_free substs) fs))   ) end
+                            | (Free (f_name, f_ty)) => let
+                                  val (f,fs) = strip_comb t2 in SOME (list_comb ( Term.subst_free substs hot2 ,
+                                                        map (Term.subst_free substs) fs)) end
                            | _ => NONE)
                      end
                   | _ =>   NONE)
@@ -884,12 +990,13 @@ fun mkk binding def_thms termination ctxt =
         val lhs = @{mk_term "flatten ?lhs"}
         val (es,e) = split_off_typ f_ty
         val ee = comb_typ (es, Term.type_of lhs)
+        val ee = convert ee
         val vv =   Free (s, ee) 
 
         val R = my_replace lhs vv  
+        val _ = tracing (Syntax.string_of_term ctxt R)
         val RR = my_replace rhs vv   
         
-        val _ = tracing (Syntax.string_of_term ctxt R)
         val _ = tracing (Syntax.string_of_term ctxt RR)
         val feq = @{mk_term "Trueprop (?R = ?RR)"} 
      (*   val feq = singleton  (Variable.export_terms ctxt1 ctxt_orig) feq *)
@@ -905,29 +1012,28 @@ fun mkk binding def_thms termination ctxt =
 
 
 
-    val ctxt = (case old_info of NONE =>
-            let
-              val _ =  tracing ("not defined via the function package!")
-              val [feq2] = feq2
-              val ctxt = (if part_f
-                  then let 
-                    val ((t, _), ctxt) = add_partial_function binding feq2 ctxt
-                  in ctxt end
-                  else let
+    val ctxt = (case src of
+               TPS_Par =>
+                let
+                  val _ =  tracing ("defined via the partial function package!")
+                  val [feq2] = feq2
+                  val ((t, _), ctxt) = add_partial_function binding feq2 ctxt
+                in ctxt end
+              | TPS_Def => 
+                  let
+                  val [feq2] = feq2
                     val _ = tracing "normal definition, not recursive!" 
                     
                     val ((_,(_,def_thm)),ctxt) =
                            Specification.definition 
                                     (SOME (binding,NONE,Mixfix.NoSyn)) [] []
                                      ((Binding.empty,@{attributes [code]}),feq2) ctxt
-                    in ctxt end )
-          in ctxt end
-                | SOME old_info =>
+                    in ctxt end 
+              | TPS_Fun _ =>
             let
-            val _ =  tracing "defined via the function package!"
-            val (new_info, ctxt) = add_function binding feq2 ctxt
-            in ctxt
-            end )
+              val _ =  tracing "defined via the function package!"
+              val (new_info, ctxt) = add_function binding feq2 ctxt
+            in ctxt  end )
  
 
    val _ = tracing "oha"

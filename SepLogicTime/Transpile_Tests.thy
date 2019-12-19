@@ -1,6 +1,11 @@
 theory Transpile_Tests
-  imports Transpile BinarySearch_Impl RBTree_Impl Skew_Heap_Impl DynamicArray2 
+  imports
+  "SeprefTime.EdmondsKarp_Time"
+  Transpile BinarySearch_Impl
+ RBTree_Impl Skew_Heap_Impl DynamicArray2
       "SeprefTime.Remdups" "SeprefTime.Kruskal_Time"
+  
+ "SeprefTime.FW_Code"
   MergeSort_Impl
 
    "HOL-Library.Code_Target_Numeral"
@@ -40,6 +45,10 @@ proof safe
 qed
 
 
+
+  
+
+
 thm refines_HT'[OF _ refines_binarysearch]
 
 
@@ -57,6 +66,49 @@ lemma flatten_correct: "sorted xs \<Longrightarrow> r \<le> length xs \<Longrigh
   done
 
 
+
+subsection  \<open>Higher Order functions\<close>
+
+
+partial_function (heap) imp_for'' :: "nat \<Rightarrow> nat \<Rightarrow> (nat \<Rightarrow> 'a \<Rightarrow> 'a Heap) \<Rightarrow> 'a \<Rightarrow> 'a Heap" where
+  "imp_for'' i u f s = (if i \<ge> u then return s else f i s \<bind> imp_for'' (i + 1) u f)"
+
+lemma 
+    refines_imp_for[transpile_rules]: 
+  assumes "(\<And>x y. refines (f' x y) (f x y))"
+  shows "refines (imp_for'' i u f' s) (imp_for' i u f s)"
+  unfolding refines_def
+proof safe
+  fix h h' ra n
+  assume *: "Heap_Time_Monad.effect (imp_for' i u f s) h h' ra n"
+  
+  note f =  imp_for'.raw_induct[where P="\<lambda>i u ff s h h' ra n. ff=f \<longrightarrow>  Heap_Monad.effect (imp_for'' i u f' s) h h' ra"]
+
+  have  "f = f \<longrightarrow> Heap_Monad.effect (imp_for'' i u f' s) h h' ra" 
+  proof (rule f[OF _ *], goal_cases) 
+    case (1 rec i u ff a la ra xa aa)
+    from 1(1) have IH: "\<And>i u ff s. ff=f \<Longrightarrow> refines (imp_for'' i u f' s) (rec i u ff s) " unfolding refines_def by auto 
+    show ?case apply safe apply(rule refinesD1[OF _ 1(2)])
+      apply(subst imp_for''.simps)
+      apply (simp only:) (* propagate the ff=f *)
+      apply(rule transpile_rules IH assms | simp)+ 
+      done
+  qed
+  then show " Heap_Monad.effect (imp_for'' i u f' s) h h' ra" by simp
+qed
+ 
+
+definition comb :: "nat \<Rightarrow> (nat \<Rightarrow> nat \<Rightarrow>  'a Heap_Time_Monad.Heap) \<Rightarrow> (nat \<Rightarrow>  'b Heap_Time_Monad.Heap) \<Rightarrow> ('a*'b) Heap_Time_Monad.Heap"
+    where "comb n f g = do { fx \<leftarrow> f n n; gx \<leftarrow> g n; Heap_Time_Monad.return (fx,gx) } "
+term Pure.imp
+term "refines v t"
+transpile_define comb': comb_def
+print_theorems
+transpile_prove comb' comb
+print_theorems
+ 
+transpile_define imp_for'2: imp_for'.simps 
+ 
 section "Example -- MergeSort"
 
 
@@ -163,8 +215,8 @@ lemma binarysearch'_HT: "sorted xs \<Longrightarrow> r \<le> length xs \<Longrig
 section "Example -- Red Black Tree"
 
 fun rbt_btree :: "('a::heap, 'b::heap) rbt \<Rightarrow> ('a, 'b) rbt_node ref option \<Rightarrow> Assertions.assn" where
-  "rbt_btree Leaf p = \<up>(p = None)"
-| "rbt_btree (rbt.Node lt c k v rt) (Some p) = (\<exists>\<^sub>Alp rp. p \<mapsto>\<^sub>r Node lp c k v rp * rbt_btree lt lp * rbt_btree rt rp)"
+  "rbt_btree RBTree.Leaf p = \<up>(p = None)"
+| "rbt_btree (rbt.Node lt c k v rt) (Some p) = (\<exists>\<^sub>Alp rp. p \<mapsto>\<^sub>r RBTree_Impl.Node lp c k v rp * rbt_btree lt lp * rbt_btree rt rp)"
 | "rbt_btree (rbt.Node lt c k v rt) None = false"
 
 lemma forget_rbt_btree[forget_it]: "forget (RBTree_Impl.btree t p) = rbt_btree t p"
@@ -284,7 +336,6 @@ export_code integer_of_int int_of_integer
   rbt_empty_int_set rbt_insert_int_set rbt_search_int_set rbt_delete_int_set
   in SML module_name RBT
 
- 
 section "Example -- Skew Heap" 
 fun btree_flat :: "'a::heap tree \<Rightarrow> 'a node ref option \<Rightarrow> Assertions.assn" where
   "btree_flat Tree.Leaf p = \<up>(p = None)"
@@ -444,24 +495,6 @@ transpile_prove maxn'' maxn'
 transpile_define maxn': maxn_def
 transpile_prove maxn' maxn
 
-
-
-(*
-definition remdups_impl_wrap :: "wrap list \<Rightarrow> wrap dynamic_array Heap_Time_Monad.Heap" where
-  "remdups_impl_wrap as = remdups_impl as"  
-
-transpile_define remdups_impl_wrap': remdups_impl_wrap_def[unfolded remdups_impl_def heap_WHILET_def]
-transpile_prove remdups_impl_wrap' remdups_impl_wrap
-
-lemma [transpile_rules]: "refines (remdups_impl_wrap' as) (remdups_impl as)"
-  using Transpile_Tests.remdups_impl_wrap'.correct_translate  unfolding remdups_impl_wrap_def
-  by auto
-
-thm remdups_impl_wrap'_def[no_vars]
-*)
-
-thm kruskal'_def 
-term sortEdges'
 transpile_define sortEdges'': sortEdges'_def
 transpile_prove sortEdges'' sortEdges'
 
@@ -475,8 +508,6 @@ transpile_prove uf_rep_of' uf_rep_of
 transpile_define uf_compress': uf_compress.simps
 transpile_prove uf_compress' uf_compress 
 
-
-
 transpile_define uf_rep_of_c': uf_rep_of_c_def[THEN meta_eq_to_obj_eq]
 transpile_prove uf_rep_of_c' uf_rep_of_c
 
@@ -486,8 +517,6 @@ transpile_prove uf_cmp' uf_cmp
 transpile_define uf_union' : uf_union_def[THEN meta_eq_to_obj_eq]
 transpile_prove uf_union' uf_union
  
-
-
 thm  kruskal_final_def[of getEdges_impl]
 definition "kruskal_final_final as = kruskal_final (Heap_Time_Monad.return as)"
 thm kruskal_final_final_def[unfolded kruskal_final_def kruskal'_def]
@@ -498,17 +527,154 @@ thm kruskal_final'_def
 definition "Kruskal_fun as \<equiv> do { k \<leftarrow> kruskal_final' as; a \<leftarrow> destroy' k; Array.freeze a}"
 prepare_code_thms (in -) Kruskal_fun_def[unfolded kruskal_final'_def]
 print_theorems
-
-
-
- 
-
  
 export_code integer_of_int int_of_integer
     integer_of_nat  nat_of_integer
     Kruskal_fun in SML module_name KRUSKAL
  
+subsection \<open>Floyd-Warshall\<close>
+
+
+lemma "(\<And>x. f x = g x) \<Longrightarrow> f = g" apply (rule ext) by simp
+lemma kl: "f = g \<Longrightarrow> (\<And>x. f x = g x)"  
+  by auto
+
+transpile_define mtx_get': mtx_get_def
+transpile_prove mtx_get' mtx_get
+
+transpile_define mtx_set': mtx_set_def
+transpile_prove mtx_set' mtx_set
+
+term fw_upd_impl
+thm fw_upd_impl_def
+transpile_define fw_upd_impl': fw_upd_impl_def[THEN meta_eq_to_obj_eq, 
+    THEN kl, THEN kl, THEN kl, THEN kl, unfolded PR_CONST_def]
+transpile_prove fw_upd_impl' fw_upd_impl
+
+
+term fw_impl
+thm fw_impl_def
+thm fw_impl_def[THEN meta_eq_to_obj_eq]
+transpile_define fw_impl': fw_impl_def[THEN meta_eq_to_obj_eq, THEN kl ]
+transpile_prove fw_impl' fw_impl
+lemmas [code del] = fw_impl'_def
+thm fw_impl'_def
+prepare_code_thms fw_impl'_def[unfolded to_meta_eq] 
+print_theorems
+
+subsection "Edmonds Karp"
+
+
+
+thm Network_Impl.edka_imp_correct
+term edka_imp
+
+thm refines_imp_for
+
+transpile_define mtx_tabulate': mtx_tabulate_def[THEN meta_eq_to_obj_eq]
+transpile_prove mtx_tabulate' mtx_tabulate
+
+transpile_define init_cf_impl': init_cf_impl_def[THEN meta_eq_to_obj_eq]
+transpile_prove init_cf_impl' init_cf_impl
+
+transpile_define edka_imp_tabulate': edka_imp_tabulate_def[THEN meta_eq_to_obj_eq]
+transpile_prove edka_imp_tabulate' edka_imp_tabulate
+
+transpile_define new_liam': new_liam_def
+transpile_prove new_liam' new_liam
+
+transpile_define update_liam': update_liam_def
+transpile_prove update_liam' new_liam
+
+transpile_define nth_liam': nth_liam_def
+transpile_prove nth_liam' nth_liam
+
+transpile_define dom_member_liam': dom_member_liam_def
+transpile_prove dom_member_liam' dom_member_liam
+
+transpile_define os_empty': os_empty_def
+transpile_prove os_empty' os_empty
+
+transpile_define os_prepend': os_prepend_def
+transpile_prove os_prepend' os_prepend
+
+transpile_define os_pop': os_pop_def
+transpile_prove os_pop' os_pop
+
+transpile_define list_set_pick_extract': list_set_pick_extract_def[ THEN kl ]
+transpile_prove list_set_pick_extract' list_set_pick_extract
+
+transpile_define list_set_empty': list_set_empty_def
+transpile_prove list_set_empty' list_set_empty
+
+transpile_define list_set_insert': list_set_insert_def
+transpile_prove list_set_insert' list_set_insert
+
+transpile_define list_set_isempty': list_set_isempty_def[unfolded os_is_empty_def, THEN kl ]
+transpile_prove list_set_isempty' list_set_isempty
+
+transpile_define init_state_impl': init_state_impl_def[THEN meta_eq_to_obj_eq]
+transpile_prove init_state_impl' init_state_impl
+
+transpile_define oappend': oappend_def
+transpile_prove oappend' oappend
+
  
+transpile_define bfs_impl': bfs_impl_def[THEN meta_eq_to_obj_eq]
+thm bfs_impl'_def
+print_theorems
+transpile_prove bfs_impl' bfs_impl
+print_theorems
+lemmas [code del] = bfs_impl'_def
+prepare_code_thms bfs_impl'_def[unfolded to_meta_eq] 
+
+transpile_define ps_get_imp': ps_get_imp_def[THEN meta_eq_to_obj_eq]
+transpile_prove ps_get_imp' ps_get_imp
+thm succ_imp_def
+transpile_define succ_imp': succ_imp_def[THEN meta_eq_to_obj_eq, unfolded PR_CONST_def]
+transpile_prove succ_imp' succ_imp
+lemmas [code del] = succ_imp'_def
+prepare_code_thms succ_imp'_def[unfolded to_meta_eq] 
+thm succ_imp'_def
+ 
+transpile_define bfsi'': bfsi'_def[THEN meta_eq_to_obj_eq, unfolded split_beta']
+transpile_prove bfsi'' bfsi'
+thm bfsi''_def
+
+transpile_define resCap_imp': resCap_imp_def[THEN meta_eq_to_obj_eq, unfolded PR_CONST_def]
+transpile_prove resCap_imp' resCap_imp
+lemmas [code del] = resCap_imp'_def
+prepare_code_thms resCap_imp'_def[unfolded to_meta_eq] 
+
+transpile_define augment_imp': augment_imp_def[THEN meta_eq_to_obj_eq, THEN kl,THEN kl,THEN kl,unfolded PR_CONST_def]
+transpile_prove augment_imp' augment_imp
+lemmas [code del] = augment_imp'_def
+prepare_code_thms augment_imp'_def[unfolded to_meta_eq] 
+
+
+transpile_define edka_imp_run': edka_imp_run_def[THEN meta_eq_to_obj_eq]
+transpile_prove edka_imp_run' edka_imp_run
+lemmas [code del] = edka_imp_run'_def
+prepare_code_thms edka_imp_run'_def[unfolded to_meta_eq] 
+
+transpile_define edka_imp': edka_imp_def[THEN meta_eq_to_obj_eq]
+transpile_prove edka_imp' edka_imp
+thm edka_imp'_def
+
+lemmas [code] = imp_for''.simps
+
+definition "edka c s t N am = do {
+          res \<leftarrow> edka_imp c s t N am;
+          r \<leftarrow> Array_Time.freeze res;
+          Heap_Time_Monad.return (r, length r)}"
+
+transpile_define  edka': edka_def
+transpile_prove  edka' edka
+ 
+
+export_code integer_of_int int_of_integer
+    integer_of_nat  nat_of_integer
+ edka' in SML module_name EDKA
 
 section "partial_function strangeness"
 
