@@ -6,11 +6,13 @@ session SepLogicTime_Base = HOL +
     Berlekamp_Zassenhaus
     Akra_Bazzi
     Amortized_Complexity
+    Median_Of_Medians_Selection
   theories [document = false]
     "Berlekamp_Zassenhaus.Karatsuba_Multiplication"
     "Akra_Bazzi.Akra_Bazzi_Method"
     "Amortized_Complexity.Splay_Tree_Analysis"
     "Amortized_Complexity.Skew_Heap_Analysis"
+    "Median_Of_Medians_Selection.Median_Of_Medians_Selection"
 
 session SepLogicTime_Fun = SepLogicTime_Base +
   description \<open>
@@ -34,7 +36,7 @@ session SepLogicTime_Impl = SepLogicTime_Fun +
   theories
     "SepLogicTime/Sep_Time_Examples"
 
-session SepLogicTime_RBTreeBasic = SepLogicTime_Base +
+session Imperative_HOL_Time = SepLogicTime_Base +
   sessions
     Auto2_HOL
   theories
