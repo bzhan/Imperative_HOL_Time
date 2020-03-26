@@ -2,7 +2,7 @@
 *)
 section \<open>Imperative Implementation of the Median-of-Medians Selection Algorithm with Runtime Analysis\<close>
 theory Select_Impl
-  imports "../Functional/Select" DynamicArray2 LinkedList
+  imports "../Functional/Select"  DynamicArray2 LinkedList
 begin
 
 subsection \<open>Choose the nth element by insertion sort\<close>
@@ -130,7 +130,7 @@ lemma medchop_time81: "medchop_time = 81"
 lemma helper2 [backward]: "(n::nat) > 0 \<Longrightarrow> (n-1) div 2 < n" by simp
 
 lemma median_sort [backward]: "xs \<noteq> [] \<Longrightarrow> median xs = sort xs ! ((length xs - 1) div 2)"
-  by (simp add: Select.select_def median_def)
+  by (simp add: Median_Of_Medians_Selection.select_def median_def)
 
 lemma chop_length_prop [resolve]: "n < length (chop 5 xs) \<Longrightarrow> 5 * n \<le> length xs"
   using nth_chop nth_chop_length by fastforce
@@ -218,7 +218,7 @@ lemma chopmed5_rule [hoare_triple]:
 lemma chopmed5_time_bound [asym_bound]: "(\<lambda>n. chopmed5_time n) \<in> \<Theta>(\<lambda>n. n)"
   unfolding chopmed5_time_def by auto2
 
-definition filter_impl :: "'a::heap array \<Rightarrow> ('a \<Rightarrow> bool) \<Rightarrow> 'a array Heap" where
+definition filter_impl :: "'a::{zero,heap} array \<Rightarrow> ('a \<Rightarrow> bool) \<Rightarrow> 'a array Heap" where
   "filter_impl a P = do {
      d <- dfilter_impl a P;
      destroy d
@@ -237,7 +237,7 @@ lemma filter_impl_time_bound [asym_bound]: "(\<lambda>n. filter_impl_time n) \<i
 
 setup \<open>del_prfstep_thm @{thm filter_impl_time_def}\<close>
 
-definition threeway_partition_impl :: "'a \<Rightarrow> ('a::{heap,linorder}) array \<Rightarrow> ('a array * 'a array * 'a array) Heap" where
+definition threeway_partition_impl :: "'a \<Rightarrow> ('a::{zero,heap,linorder}) array \<Rightarrow> ('a array * 'a array * 'a array) Heap" where
  "threeway_partition_impl med a = do {
       ls \<leftarrow> filter_impl a (\<lambda>x. x < med);
       es \<leftarrow> filter_impl a (\<lambda>x. x = med);
@@ -324,7 +324,7 @@ proof(induct m arbitrary: n rule: less_induct)
   qed
 qed
 
-partial_function (heap) select :: "nat \<Rightarrow> ('a::{heap,linorder}) array \<Rightarrow> 'a Heap" where
+partial_function (heap_time) select :: "nat \<Rightarrow> ('a::{zero,heap,linorder}) array \<Rightarrow> 'a Heap" where
   "select k a = do {
      len \<leftarrow> Array_Time.len a;
      if len \<le> 23 then do {
@@ -349,7 +349,7 @@ partial_function (heap) select :: "nat \<Rightarrow> ('a::{heap,linorder}) array
 
 lemma estim' [backward]:
   "xs \<noteq> [] \<Longrightarrow>
-   length [y\<leftarrow>xs. y < fast_select (((length xs + 4) div 5 - 1) div 2) (map median (chop 5 xs))] \<le> (7 * (length xs) + 9) div 10 + 6"
+   length [y\<leftarrow>xs. y < fast_select l (((length xs + 4) div 5 - 1) div 2) (map median (chop 5 xs))] \<le> (7 * (length xs) + 9) div 10 + 6"
   apply(rule size_less_greater_median_of_medians_5[where med=median, unfolded c[symmetric]])
   subgoal by blast
   subgoal apply(subst fast_select_correct) apply (simp add: length_chop) apply linarith 
@@ -359,7 +359,7 @@ lemma estim' [backward]:
 
 lemma estim'' [backward]:
   "xs \<noteq> [] \<Longrightarrow>
-   length [y\<leftarrow>xs . y > fast_select (((length xs + 4) div 5 - 1) div 2)  (map median (chop 5 xs))] \<le> (7 * (length xs) + 9) div 10 + 6"
+   length [y\<leftarrow>xs . y > fast_select l (((length xs + 4) div 5 - 1) div 2)  (map median (chop 5 xs))] \<le> (7 * (length xs) + 9) div 10 + 6"
   apply(rule size_less_greater_median_of_medians_5[where med=median, unfolded c[symmetric]])
   subgoal by blast
   subgoal apply(subst fast_select_correct) apply (simp add: length_chop) apply linarith 
@@ -398,16 +398,16 @@ setup \<open>fold add_rewrite_rule @{thms select_time.simps}\<close>
   
 lemma n_div_5_pos [backward]: "(n::nat) > 0 \<Longrightarrow> (n + 4) div 5 > 0" by linarith
 
-lemma select_rule_aux [hoare_triple]:
-  "k < length as \<Longrightarrow>
+lemma select_rule_aux:
+  "k < length as \<Longrightarrow> l = 23 \<Longrightarrow>
    <a \<mapsto>\<^sub>a as * $(select_time (length as))>
     select k a
-   <\<lambda>r. a \<mapsto>\<^sub>a as * \<up>(r = fast_select k as)>\<^sub>t"
-@proof @fun_induct "fast_select k as" arbitrary a
-  @unfold "fast_select k as"
+   <\<lambda>r. a \<mapsto>\<^sub>a as * \<up>(r = fast_select l k as)>\<^sub>t"
+@proof @fun_induct "fast_select l k as" arbitrary a
+  @unfold "fast_select l k as"
   @let "n = length as"
   @case "n \<le> 23"
-  @let "x = fast_select (((n + 4) div 5 - 1) div 2) (map median (chop 5 as))"
+  @let "x = fast_select l (((n + 4) div 5 - 1) div 2) (map median (chop 5 as))"
   @let "ls = filter (\<lambda>y. y < x) as"
   @let "es = filter (\<lambda>y. y = x) as"
   @let "gs = filter (\<lambda>y. y > x) as"
@@ -423,12 +423,19 @@ lemma select_rule_aux [hoare_triple]:
   @end
 @qed
 
+lemma select_rule_aux'[hoare_triple]:
+  "k < length as \<Longrightarrow>
+   <a \<mapsto>\<^sub>a as * $(select_time (length as))>
+    select k a
+   <\<lambda>r. a \<mapsto>\<^sub>a as * \<up>(r = fast_select 23 k as)>\<^sub>t"
+  using select_rule_aux by metis
+
 setup \<open>add_rewrite_rule @{thm fast_select_correct}\<close>
 lemma select_rule [hoare_triple]:
   "k < length as \<Longrightarrow>
    <a \<mapsto>\<^sub>a as * $(select_time (length as))>
     select k a
-   <\<lambda>r. a \<mapsto>\<^sub>a as * \<up>(r = Select.select k as)>\<^sub>t" by auto2
+   <\<lambda>r. a \<mapsto>\<^sub>a as * \<up>(r = Median_Of_Medians_Selection.select k as)>\<^sub>t" by auto2
 setup \<open>del_prfstep_thm @{thm fast_select_correct}\<close>
 
 corollary select_time_bound [asym_bound]:
