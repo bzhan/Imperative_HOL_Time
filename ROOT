@@ -45,4 +45,6 @@ session Imperative_HOL_Time = SepLogicTime_Base +
     "SepLogicTime/DynamicArray2"
     "Asymptotics/Asymptotics_2D"
     "SepLogicTime/MergeSort_Impl"
+    "Sep_Time_Main"
+    
                       
