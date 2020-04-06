@@ -54,7 +54,7 @@ lemma rotate_ll_rule [hoare_triple]:
     rotate_ll p
    <btree \<langle>\<langle>\<langle>A1, a', A2\<rangle>, a, B\<rangle>, b, CD\<rangle>>" by auto2
 
-partial_function (heap) splay_impl :: "'a::{heap,linorder} \<Rightarrow> 'a ptree \<Rightarrow> 'a ptree Heap" where
+partial_function (heap_time) splay_impl :: "'a::{heap,linorder} \<Rightarrow> 'a ptree \<Rightarrow> 'a ptree Heap" where
   "splay_impl x p = (case p of
      None \<Rightarrow> return None
    | Some pp \<Rightarrow> do {
@@ -188,7 +188,7 @@ lemma insert_correct [hoare_triple]:
   @cases V
 @qed
 
-partial_function (heap) splay_max_impl :: "'a::{heap,linorder} ptree \<Rightarrow> 'a ptree Heap" where
+partial_function (heap_time) splay_max_impl :: "'a::{heap,linorder} ptree \<Rightarrow> 'a ptree Heap" where
   "splay_max_impl p = (case p of
      None \<Rightarrow> return None
    | Some pp \<Rightarrow> do {

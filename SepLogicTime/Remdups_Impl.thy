@@ -46,7 +46,7 @@ lemma remdups3_correct[rewrite]: "fst (remdups3 xs (length xs)) = rev (remdups x
   
 
 
-fun remdups'_impl :: "('a::{heap,linorder}) array \<Rightarrow> nat \<Rightarrow> (('a, unit) rbt_node ref option \<times> 'a dynamic_array) Heap"  where
+fun remdups'_impl :: "('a::{zero,heap,linorder}) array \<Rightarrow> nat \<Rightarrow> (('a, unit) rbt_node ref option \<times> 'a dynamic_array) Heap"  where
   "remdups'_impl p 0 = do { 
             M \<leftarrow> tree_empty;
             A \<leftarrow> dyn_array_new;
@@ -120,7 +120,7 @@ lemma remdups'_impl_rule[hoare_triple]:
 @qed
 
 
-definition remdups_impl :: "('a::{heap,linorder}) array \<Rightarrow> 'a array Heap"  where [rewrite]:
+definition remdups_impl :: "('a::{zero,heap,linorder}) array \<Rightarrow> 'a array Heap"  where [rewrite]:
     "remdups_impl p = do {
         len \<leftarrow> Array_Time.len p;
         (_,A) \<leftarrow> remdups'_impl p len;
