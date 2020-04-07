@@ -1,5 +1,8 @@
 theory Splay_Tree_Impl
-  imports Tree_Impl Amortized_Complexity.Splay_Tree_Analysis "../Asymptotics/Asymptotics_1D"
+  imports 
+    Tree_Impl 
+    Amortized_Complexity.Splay_Tree_Analysis
+    "../Asymptotics/Asymptotics_1D"
 begin
 
 definition rotate_rr :: "'a::heap ptree \<Rightarrow> 'a ptree Heap" where
@@ -54,7 +57,7 @@ lemma rotate_ll_rule [hoare_triple]:
     rotate_ll p
    <btree \<langle>\<langle>\<langle>A1, a', A2\<rangle>, a, B\<rangle>, b, CD\<rangle>>" by auto2
 
-partial_function (heap) splay_impl :: "'a::{heap,linorder} \<Rightarrow> 'a ptree \<Rightarrow> 'a ptree Heap" where
+partial_function (heap_time) splay_impl :: "'a::{heap,linorder} \<Rightarrow> 'a ptree \<Rightarrow> 'a ptree Heap" where
   "splay_impl x p = (case p of
      None \<Rightarrow> return None
    | Some pp \<Rightarrow> do {
@@ -94,9 +97,38 @@ partial_function (heap) splay_impl :: "'a::{heap,linorder} \<Rightarrow> 'a ptre
                rrp' \<leftarrow> splay_impl x (rsub rt);
                rp := Node (lsub rt) (val rt) rrp';
                rotate_ll p })}) })"
-
+ 
 declare splay.simps(1) [rewrite]
-declare splay_code [rewrite]
+
+lemma splay_code': "splay x (Tree.Node AB b CD) =
+  (if x=b
+   then Tree.Node AB b CD
+   else if x < b
+        then case AB of
+          Leaf \<Rightarrow> Tree.Node AB b CD |
+          Tree.Node A a B \<Rightarrow>
+            (if x=a then Tree.Node A a (Tree.Node B b CD)
+             else if x < a
+                  then if A = Leaf then Tree.Node A a (Tree.Node B b CD)
+                       else case splay x A of
+                         Tree.Node A\<^sub>1 a' A\<^sub>2 \<Rightarrow> Tree.Node A\<^sub>1 a' (Tree.Node A\<^sub>2 a (Tree.Node B b CD))
+                  else if B = Leaf then Tree.Node A a (Tree.Node B b CD)
+                       else case splay x B of
+                         Tree.Node B\<^sub>1 b' B\<^sub>2 \<Rightarrow> Tree.Node (Tree.Node A a B\<^sub>1) b' (Tree.Node B\<^sub>2 b CD))
+        else case CD of
+          Leaf \<Rightarrow> Tree.Node AB b CD |
+          Tree.Node C c D \<Rightarrow>
+            (if x=c then Tree.Node (Tree.Node AB b C) c D
+             else if x < c
+                  then if C = Leaf then Tree.Node (Tree.Node AB b C) c D
+                       else case splay x C of
+                         Tree.Node C\<^sub>1 c' C\<^sub>2 \<Rightarrow> Tree.Node (Tree.Node AB b C\<^sub>1) c' (Tree.Node C\<^sub>2 c D)
+                  else if D=Leaf then Tree.Node (Tree.Node AB b C) c D
+                       else case splay x D of
+                         Tree.Node D\<^sub>1 d D\<^sub>2 \<Rightarrow> Tree.Node (Tree.Node (Tree.Node AB b C) c D\<^sub>1) d D\<^sub>2))"
+  by(auto split!: tree.split)
+
+declare splay_code' [rewrite]
 
 definition splay_time :: "'a::linorder \<Rightarrow> 'a tree \<Rightarrow> nat" where
   "splay_time a t = 15 * t_splay a t"
@@ -119,10 +151,12 @@ lemma splay_time_simp:
                else if rr = Leaf then 15 else splay_time a rr + 15))"
   by (auto split!: tree.split simp: splay_time_def)
 declare splay_time_simp [rewrite]
-setup \<open>add_fun_induct_rule (@{term_pat splay}, @{thm t_splay.induct})\<close>
+setup \<open>add_fun_induct_rule (@{term_pat splay}, @{thm t_splay.induct[simplified LT EQ GT]})\<close>
+ 
 
 lemma splay_not_Leaf: "splay x \<langle>l, a, r\<rangle> \<noteq> Leaf" by auto
 setup \<open>add_forward_prfstep_cond @{thm splay_not_Leaf} [with_term "splay ?x \<langle>?l, ?a, ?r\<rangle>"]\<close>
+
 
 lemma splay_correct [hoare_triple]:
   "<btree t a * $(splay_time x t)>
@@ -138,7 +172,8 @@ lemma splay_correct [hoare_triple]:
       @case "rt = Leaf"
     @end
   @endgoal @end
-@qed
+@qed 
+
 
 definition tree_constr_gen :: "'a::heap ptree \<Rightarrow> 'a \<Rightarrow> 'a ptree \<Rightarrow> 'a ptree Heap" where
   "tree_constr_gen lp v rp = do {
@@ -188,7 +223,7 @@ lemma insert_correct [hoare_triple]:
   @cases V
 @qed
 
-partial_function (heap) splay_max_impl :: "'a::{heap,linorder} ptree \<Rightarrow> 'a ptree Heap" where
+partial_function (heap_time) splay_max_impl :: "'a::{heap,linorder} ptree \<Rightarrow> 'a ptree Heap" where
   "splay_max_impl p = (case p of
      None \<Rightarrow> return None
    | Some pp \<Rightarrow> do {

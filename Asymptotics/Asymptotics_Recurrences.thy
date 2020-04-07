@@ -83,7 +83,7 @@ proof -
     have o: "G N \<le> G x" using x monoG by auto
     have "1 = (1/G N) * G N" using p by auto
     also have "\<dots> \<le> x * G N" using xi p apply auto
-      by (metis calculation linordered_field_class.sign_simps(24) real_mult_le_cancel_iff2) 
+      by (metis calculation mult.commute real_mult_le_cancel_iff2) 
     also have "\<dots> \<le> x * G x" using o  by (simp add:  mult_left_mono) 
     finally show "norm (((x) * (G x))) \<ge> 1"
       unfolding i .
@@ -152,7 +152,7 @@ proof -
   proof -
     fix n assume "n\<ge>Ng"
     then have "n \<le> norm (g n) / cg" using b nncg
-      by (simp add: linordered_field_class.sign_simps(24) pos_le_divide_eq)  
+      by (simp add: mult.commute pos_le_divide_eq)  
     also have "\<dots> = (1/cg) * norm (g n)" by auto
     also have "\<dots> \<le> ?cg * norm (g n)" apply(rule mult_right_mono) by auto 
     finally show "n \<le> max (1 / cg) 1 * norm (g n)" .
@@ -241,7 +241,7 @@ proof -
       using less_eq_real_def of_nat_le_iff by blast 
     then have "G n = norm (G n)" by auto
     also from n have "norm (G n) \<le> norm (g n) / cg" using b nncg
-      by (simp add: linordered_field_class.sign_simps(24) pos_le_divide_eq)  
+      by (simp add: mult.commute pos_le_divide_eq)  
     also have "\<dots> = (1/cg) * norm (g n)" by auto
     also have "\<dots> \<le> ?cg * norm (g n)" apply(rule mult_right_mono) by auto 
     finally show "G n \<le> max (1 / cg) 1 * norm (g n)" .
@@ -528,7 +528,7 @@ proof -
   from g obtain cg Ng where nncg: "cg > 0" and b: "\<forall>m\<ge>Ng. norm (g m) \<ge> cg * norm (m)"
     using bigOmegaE by blast
   from nncg have pff: "\<And>m. m \<ge> Ng \<Longrightarrow> m \<le> (1/cg) * g m " using gpos b apply auto
-    by (simp add: linordered_field_class.sign_simps(24) pos_le_divide_eq)
+    by (simp add: mult.commute pos_le_divide_eq)
 
   let ?N' = "max (max Ng npos) (2*?N)" 
  

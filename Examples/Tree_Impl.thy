@@ -1,5 +1,7 @@
 theory Tree_Impl
-  imports SepAuto_Time "HOL-Library.Tree"
+  imports 
+    "../SepLogicTime/SepAuto_Time"
+    "HOL-Library.Tree"
 begin
 
 section \<open>Abstract tree\<close>

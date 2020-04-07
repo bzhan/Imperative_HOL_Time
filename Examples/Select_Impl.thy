@@ -2,7 +2,7 @@
 *)
 section \<open>Imperative Implementation of the Median-of-Medians Selection Algorithm with Runtime Analysis\<close>
 theory Select_Impl
-  imports "../Functional/Select"  DynamicArray2 LinkedList
+  imports "../Functional/Select" DynamicArray2 LinkedList
 begin
 
 subsection \<open>Choose the nth element by insertion sort\<close>

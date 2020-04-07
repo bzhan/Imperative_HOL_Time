@@ -1,5 +1,8 @@
 theory Skew_Heap_Impl
-  imports Tree_Impl Amortized_Complexity.Skew_Heap_Analysis "../Asymptotics/Asymptotics_1D"
+  imports 
+    Tree_Impl
+    Amortized_Complexity.Skew_Heap_Analysis
+    "../Asymptotics/Asymptotics_1D"
 begin
 
 section \<open>Operations\<close>

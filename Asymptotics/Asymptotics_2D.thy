@@ -62,7 +62,7 @@ proof -
         also have "\<dots> \<le> (fc * norm (f n)) * (gc * norm (g m))" apply(rule mult_left_mono)
           using gO ev fc by auto
         also have "\<dots> = (fc*gc) * norm (f n * g m)" using fc gc
-          by (metis linordered_field_class.sign_simps(23) mult.left_commute norm_mult) 
+          by (metis mult.commute mult.left_commute norm_mult) 
         finally show "norm (f (c * n) * g (d * m)) \<le> (fc*gc) * norm (f n * g m)" .
       qed      
   qed
@@ -259,7 +259,7 @@ proof
     using bigOmegaE by blast
   then have "\<And>x y. x*y\<ge>NO \<Longrightarrow> CO * (real x * real y) \<le> real (f (x*y))" by fastforce
   then have Om': "\<And>x y. x*y\<ge>NO \<Longrightarrow> (real x * real y) \<le> real (f (x*y)) / CO"
-    using c0 by (simp add: linordered_field_class.sign_simps(24) pos_le_divide_eq)  
+    using c0 by (simp add: le_divide_eq mult.commute pos_le_divide_eq)  
   
   show "?f \<in> \<Omega>[?F](?g)"
     apply(rule bigomegaI[where c="(1/CO)"])
@@ -352,7 +352,7 @@ proof -
       and f1: "\<And>x. fst x\<ge>n1 \<Longrightarrow> snd x\<ge>n1 \<Longrightarrow> norm (f1 x) \<ge> c1 * norm (g1 x)" using bigOmega2E  by blast 
 
   then have f1:  "\<And>x. fst x\<ge>n1 \<Longrightarrow> snd x\<ge>n1 \<Longrightarrow> norm (g1 x) \<le>norm (f1 x) / c1" using c1
-    by (simp add: linordered_field_class.sign_simps(24) pos_le_divide_eq)                                                
+    by (simp add: mult.commute pos_le_divide_eq)                                                
 
   from a obtain c2a n2a :: nat where c2a: "c2a>0" and
       f2a: "\<And>x. x \<ge> n2a \<Longrightarrow> g2a x \<le> c2a * f2a x" using bigOmegaE_nat by blast

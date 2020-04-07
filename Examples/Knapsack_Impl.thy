@@ -1,7 +1,11 @@
 (* Author: Maximilian P. L. Haslbeck *)
 
 theory Knapsack_Impl
-  imports "../Functional/Knapsack" SepAuto_Time "../Asymptotics/Asymptotics_Recurrences" TwoDArray
+  imports
+    "../Functional/Knapsack"
+    "../SepLogicTime/SepAuto_Time"
+    "../Asymptotics/Asymptotics_Recurrences"
+    TwoDArray
 begin
 
 section \<open>functional hybrid version using list of lists\<close>

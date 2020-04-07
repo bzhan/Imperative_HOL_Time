@@ -2,7 +2,7 @@ theory Sep_Time_Examples
 
 imports
 
-(* Tests and simple examples *)
+  (* Tests and simple examples *)
 
   "../Asymptotics/Asymptotics_Test"
   

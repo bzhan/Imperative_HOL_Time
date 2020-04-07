@@ -99,7 +99,7 @@ proof (rule stablebiOI)
     also have "\<dots> \<le> (cf * norm (f x)) * norm (g (d*x))" using elim(1) by (auto intro!: mult_right_mono)
     also have "\<dots> \<le> (cf * norm (f x)) * (cg * norm (g x))" using cf elim(2,3) by (auto intro!: mult_left_mono)
     also have "\<dots> = ?c * (norm (f x * g x))" using cg cf
-        by (metis linordered_field_class.sign_simps(23) mult.left_commute norm_mult)  
+      by (metis mult.commute mult.left_commute norm_mult) 
     finally show ?case by auto
   qed                
 qed 
@@ -394,7 +394,7 @@ proof -
   from assms(2) obtain c1 and n1 :: nat where c1: "c1>0" and
       "\<And>x. x \<ge> n1 \<Longrightarrow>  c1 * norm (g1 x) \<le>norm (f1 x)" using bigOmegaE by blast
   then have f1: "\<And>x. x \<ge> n1 \<Longrightarrow>   norm (g1 x) \<le>norm (f1 x) / c1" using c1
-    by (simp add: linordered_field_class.sign_simps(24) pos_le_divide_eq)                                                
+    by (simp add: le_divide_eq mult.commute pos_le_divide_eq)                                                
 
   from assms(3) obtain c2 n2 :: nat where  c2: "c2>0"   and
     f2: "\<And>x. x \<ge> n2 \<Longrightarrow> g2 x \<le> c2 * f2 x" using bigOmegaE_nat by blast
@@ -575,8 +575,8 @@ proof -
     fix x assume a: "?n\<le>x" 
     from a P have z1: "f x > c" by auto
     
-    have "norm (g x) \<le> f x / c1" using f1  a
-      by (simp add: c1 linordered_field_class.sign_simps(24) mult_imp_le_div_pos)
+    have "norm (g x) \<le> f x / c1" using f1  a      
+      by (simp add: c1 mult_imp_le_div_pos le_divide_eq mult.commute)
     also have "\<dots> \<le> real (c*2) * real (f x div c) /c1" using estim z1 c0 by (simp add: c1 frac_le)        
     also have "\<dots> = ( real (c*2) / c1) * (f x div c)"  by auto
     also have "\<dots> = ( real (c*2) / c1) * norm (real (f x div c))" by auto
@@ -674,7 +674,7 @@ proof
   from Th have "(\<lambda>n. f n) \<in> \<Omega>(g)" by auto
   then obtain n ::nat and  c where c: "c>0" and "\<forall>x\<ge>n. c * norm (g x) \<le> norm (f x)" using bigOmegaE by blast
   then have Om: "\<And>x. x\<ge>n \<Longrightarrow> norm (g x) \<le> norm (f x) / c "
-    by (simp add: linordered_field_class.sign_simps(24) pos_le_divide_eq) 
+    by (simp add: le_divide_eq mult.commute) 
   let ?n = "max N n"
   show "(\<lambda>n. real (nat \<lceil>f n\<rceil>)) \<in> \<Omega>(g)"
   proof (rule bigomegaI[where c="(1/c)"], rule eventually_sequentiallyI[where c="?n"]) 

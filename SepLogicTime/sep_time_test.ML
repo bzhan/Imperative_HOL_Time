@@ -8,7 +8,7 @@ in
 
 val test_normalize_time =
     let
-      val ctxt' = ctxt |> fold Variable.auto_fixes [
+      val ctxt' = ctxt |> fold Proof_Context.augment [
             Free ("P", assnT), Free ("S", natT --> assnT),
             Free ("T", natT --> assnT)]
       val test = Util.test_conv ctxt' (SepUtil.normalize_assn_cv ctxt')

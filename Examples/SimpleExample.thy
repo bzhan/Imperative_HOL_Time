@@ -1,5 +1,7 @@
 theory SimpleExample
-  imports SepAuto_Time "../Asymptotics/Asymptotics_1D"
+  imports 
+    "../SepLogicTime/SepAuto_Time"
+    "../Asymptotics/Asymptotics_1D"
 begin
 
 section \<open>f1 doubles\<close>
