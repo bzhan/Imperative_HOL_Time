@@ -1,6 +1,6 @@
-theory Skew_Heap_Impl
+theory IHT_Skew_Heap
   imports 
-    Tree_Impl
+    IHT_Tree
     Amortized_Complexity.Skew_Heap_Analysis
     "../Asymptotics/Asymptotics_1D"
 begin

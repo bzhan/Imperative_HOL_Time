@@ -1,6 +1,6 @@
-theory SimpleExample
+theory IHT_Small_Examples
   imports 
-    "../SepLogicTime/SepAuto_Time"
+    "../SepLogicTime/SLTC_Main"
     "../Asymptotics/Asymptotics_1D"
 begin
 

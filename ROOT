@@ -29,8 +29,8 @@ session Imperative_HOL_Time = SepLogicTime_Prereq +
     "SepLogicTime"
     "Functional"
   theories
-    "Sep_Time_Examples"
-    "Sep_Time_Main"
+    "IHT_Examples"
+    "SLTC_Main"
 
 (* smaller sessions *)
 session Imperative_HOL_Time_Base in "Imperative_HOL_Time_Base" = HOL +
@@ -43,7 +43,7 @@ session SepLogicTime_Base in "SepLogicTime_Base" =  Imperative_HOL_Time_Base +
   sessions
     Imperative_HOL_Time
   theories
-    "Imperative_HOL_Time.Sep_Time_Main"
+    "Imperative_HOL_Time.SLTC_Main"
 
 session SepLogicTime_Asymptotics in "SepLogicTime_Asymptotics" = Akra_Bazzi +
   sessions
@@ -71,10 +71,10 @@ session Imperative_HOL_Time_Entry in "SepLogicTime_Entry" = SepLogicTime_Fun +
   sessions
     Imperative_HOL_Time
   theories
-    "Imperative_HOL_Time.RBTree_Impl"
-    "Imperative_HOL_Time.LinkedList"
-    "Imperative_HOL_Time.DynamicArray2"
+    "Imperative_HOL_Time.SLTC_Main"
+    "Imperative_HOL_Time.IHT_Red_Black_Tree"
+    "Imperative_HOL_Time.IHT_Linked_List"
+    "Imperative_HOL_Time.IHT_Dynamic_Array_More"
     "Imperative_HOL_Time.Asymptotics_2D"
-    "Imperative_HOL_Time.MergeSort_Impl"
-    "Imperative_HOL_Time.Sep_Time_Main"
+    "Imperative_HOL_Time.IHT_Mergesort"
                       

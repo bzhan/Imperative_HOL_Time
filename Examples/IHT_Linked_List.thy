@@ -1,7 +1,7 @@
 (* Example in linked lists *)
 
-theory LinkedList
-imports "../SepLogicTime/SepAuto_Time" "../Asymptotics/Asymptotics_Recurrences"
+theory IHT_Linked_List
+imports "../SepLogicTime/SLTC_Main" "../Asymptotics/Asymptotics_Recurrences"
 begin
 
 section \<open>List assertion\<close>

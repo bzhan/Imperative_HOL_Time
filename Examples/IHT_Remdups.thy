@@ -1,7 +1,7 @@
-theory Remdups_Impl 
-  imports RBTree_Impl DynamicArray2
+theory IHT_Remdups 
+  imports IHT_Red_Black_Tree IHT_Dynamic_Array_More
     "../Asymptotics/Asymptotics_Recurrences"
-    Rev_Impl
+    IHT_Reverse
     "HOL-Library.Code_Target_Numeral"
 begin
 
@@ -152,7 +152,7 @@ lemma remdups_impl_rule[hoare_triple]: "<p \<mapsto>\<^sub>a xs * $(remdups_impl
 
 
 declare rbt_ins.simps[code]
-declare RBTree_Impl.rbt_search.simps[code]
+declare IHT_Red_Black_Tree.rbt_search.simps[code]
 
 definition "remdups_int_impl \<equiv> remdups_impl :: int array \<Rightarrow> _"
 

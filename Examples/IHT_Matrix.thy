@@ -1,7 +1,6 @@
-theory TwoDArray
+theory IHT_Matrix
   imports 
-    "../SepLogicTime/SepAuto_Time"
-    "../Asymptotics/Asymptotics_2D"
+    SLTC_Main Asymptotics_2D
 begin
 
 section \<open>Some lemmas about indexing\<close>

@@ -1,11 +1,11 @@
 (* Author: Maximilian P. L. Haslbeck *)
 
-theory Knapsack_Impl
+theory IHT_Knapsack
   imports
     "../Functional/Knapsack"
-    "../SepLogicTime/SepAuto_Time"
+    "../SepLogicTime/SLTC_Main"
     "../Asymptotics/Asymptotics_Recurrences"
-    TwoDArray
+    IHT_Matrix
 begin
 
 section \<open>functional hybrid version using list of lists\<close>

@@ -1,6 +1,6 @@
-theory Splay_Tree_Impl
+theory IHT_Splay_Tree
   imports 
-    Tree_Impl 
+    IHT_Tree 
     Amortized_Complexity.Splay_Tree_Analysis
     "../Asymptotics/Asymptotics_1D"
 begin

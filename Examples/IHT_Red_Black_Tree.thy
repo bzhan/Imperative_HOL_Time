@@ -1,9 +1,9 @@
 (* Verification of imperative red-black trees. *)
 
-theory RBTree_Impl
+theory IHT_Red_Black_Tree
   imports
     Auto2_Imperative_HOL.RBTree
-    "../SepLogicTime/SepAuto_Time"
+    "../SepLogicTime/SLTC_Main"
     "../Asymptotics/Asymptotics_2D"
 begin
 

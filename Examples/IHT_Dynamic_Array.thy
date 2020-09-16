@@ -1,5 +1,5 @@
-theory DynamicArray
-  imports "../SepLogicTime/SepAuto_Time" Arrays_Impl
+theory IHT_Dynamic_Array
+  imports "../SepLogicTime/SLTC_Main" IHT_Arrays
 begin
 
 datatype 'a dynamic_array = Dyn_Array (alen: nat) (aref: "'a array")

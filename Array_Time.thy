@@ -1,8 +1,10 @@
-(*  Title:      HOL/Imperative_HOL/Array_Time.thy
-    Author:     John Matthews, Galois Connections; Alexander Krauss, Lukas Bulwahn & Florian Haftmann, TU Muenchen
+(*  Title:      Imperative_HOL_Time/Array_Time.thy
+    Author:     Maximilian P. L. Haslbeck & Bohua Zhan, TU Muenchen
 *)
-
 section \<open>Monadic arrays\<close>
+
+text \<open>This theory is an adaptation of \<open>HOL/Imperative_HOL/Array_Time.thy\<close>,
+ adding time bookkeeping.\<close>
 
 theory Array_Time
 imports Heap_Time_Monad

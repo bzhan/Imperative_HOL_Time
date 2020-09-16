@@ -1,7 +1,7 @@
-theory BinarySearch_Impl
+theory IHT_Binary_Search
   imports
     "../Functional/BinarySearch" 
-    "../SepLogicTime/SepAuto_Time"
+    "../SepLogicTime/SLTC_Main"
     "../Asymptotics/Asymptotics_1D"
 begin
 

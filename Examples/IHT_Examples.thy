@@ -1,4 +1,4 @@
-theory Sep_Time_Examples
+theory IHT_Examples
 
 imports
 
@@ -6,61 +6,61 @@ imports
 
   "../Asymptotics/Asymptotics_Test"
   
-  SimpleExample
+  IHT_Small_Examples
 
   (* Linked lists *)
 
-  LinkedList
+  IHT_Linked_List
 
   (* Standard procedures on arrays *)
 
-  Arrays_Impl
+  IHT_Arrays
 
   (* Implementing matrices using arrays *)
 
-  TwoDArray
+  IHT_Matrix
 
 (* Examples with Akra-Bazzi Theorem *)
 
   (* Binary search *)
 
-  BinarySearch_Impl
+  IHT_Binary_Search
 
   (* Merge sort *)
 
-  MergeSort_Impl
+  IHT_Mergesort
 
   (* Median-of-medians selection *)
-  Select_Impl
+  IHT_Select
 
   (* Karatsuba's algorithm for polynomial multiplication *)
 
-  Karatsuba_Impl
+  IHT_Karatsuba
 
 (* Amortized analysis *)
 
   (* Dynamic array *)
 
-  DynamicArray2
+  IHT_Dynamic_Array_More
 
   (* Skew heap *)
 
-  Skew_Heap_Impl
+  IHT_Skew_Heap
 
   (* Splay tree *)
 
-  Splay_Tree_Impl
+  IHT_Splay_Tree
 
 (* Two-variable case *)
 
   (* Knapsack algorithm *)
-
-  Knapsack_Impl
+         
+  IHT_Knapsack
 
 
 (* Further examples *)
 
-  Remdups_Impl
+  IHT_Remdups
 
 begin
 

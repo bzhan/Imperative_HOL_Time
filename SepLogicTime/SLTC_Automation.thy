@@ -1,6 +1,6 @@
-theory Sep_Time_Automation
+theory SLTC_Automation
 imports
-  "HOL-Eisbach.Eisbach" Sep_Time_Misc   Automatic_Refinement.Automatic_Refinement
+  "HOL-Eisbach.Eisbach" SLTC_More Automatic_Refinement.Automatic_Refinement
  
 begin
 
@@ -638,9 +638,9 @@ struct
 
   (* Extract existential quantifiers from entailment goal *)
   fun extract_ex_tac ctxt i st = let
-    fun count_ex (Const (@{const_name SepAuto_Time.entails},_)$_$c) = 
+    fun count_ex (Const (@{const_name SLTC.entails},_)$_$c) = 
       count_ex c RS @{thm HOL.mp}
-    | count_ex (Const (@{const_name SepAuto_Time.ex_assn},_)$Abs (_,_,t))
+    | count_ex (Const (@{const_name SLTC.ex_assn},_)$Abs (_,_,t))
       = count_ex t RS @{thm enorm_exI'}
     | count_ex _ = @{thm imp_refl};
 
@@ -1002,7 +1002,7 @@ lemma assert_rule_alt:
   "(Q \<Longrightarrow>\<^sub>A true * \<up>(P x)) \<Longrightarrow>
      <Q * $1> assert P x <\<lambda> _. Q * \<up>(P x)>"
   unfolding assert_def
-  apply (sep_auto heap: SepAuto_Time.return_rule decon: assert_rule)
+  apply (sep_auto heap: SLTC.return_rule decon: assert_rule)
   unfolding hoare_triple_def
   using mod_starD by blast
 
@@ -1048,7 +1048,7 @@ lemmas [sep_decon_rules] =
           option_rule prod_rule prod_pre_split
                  
 lemmas [sep_heap_rules] =
-          length_rule SepAuto_Time.return_rule
+          length_rule SLTC.return_rule
           new_rule make_rule
           ref_rule lookup_rule upd_rule'
           update_rule 

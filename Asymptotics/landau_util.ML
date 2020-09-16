@@ -478,7 +478,7 @@ fun asym_bound_th ctxt t =
               val (nm, _) = Term.dest_Const f
               val th1 =
                   case find_asym_bound thy nm of
-                      NONE => raise Fail "Asymptotic bound not found."
+                      NONE => raise Fail ("Asymptotic bound not found." ^ nm)
                     | SOME th => th |> apply_to_thm' (
                                   Conv.arg_conv (
                                     Conv.arg_conv (norm_poly_log_abs ctxt)))

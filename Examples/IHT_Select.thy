@@ -1,8 +1,8 @@
 (* Author: Max P.L. Haslbeck, Bohua Zhan
 *)
 section \<open>Imperative Implementation of the Median-of-Medians Selection Algorithm with Runtime Analysis\<close>
-theory Select_Impl
-  imports "../Functional/Select" DynamicArray2 LinkedList
+theory IHT_Select
+  imports "../Functional/Select" IHT_Dynamic_Array_More IHT_Linked_List
 begin
 
 subsection \<open>Choose the nth element by insertion sort\<close>

@@ -1,8 +1,11 @@
-(*  Title:      HOL/Imperative_HOL/Heap_Time_Monad.thy
-    Author:     John Matthews, Galois Connections; Alexander Krauss, Lukas Bulwahn & Florian Haftmann, TU Muenchen
+(*  Title:      Imperative_HOL_Time/Heap_Time_Monad.thy
+    Author:     Maximilian P. L. Haslbeck & Bohua Zhan, TU Muenchen
 *)
 
-section \<open>A monad with a polymorphic heap and primitive reasoning infrastructure\<close>
+section \<open>A monad with a polymorphic heap and time and primitive reasoning infrastructure\<close>
+
+text \<open>This theory is an adapted version of \<open>Imperative_HOL/Heap_Time_Monad\<close>, where the heap is 
+  extended by time bookkeeping.\<close>
 
 theory Heap_Time_Monad
 imports

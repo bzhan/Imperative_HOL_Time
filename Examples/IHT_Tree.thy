@@ -1,6 +1,6 @@
-theory Tree_Impl
+theory IHT_Tree
   imports 
-    "../SepLogicTime/SepAuto_Time"
+    "../SepLogicTime/SLTC_Main"
     "HOL-Library.Tree"
 begin
 

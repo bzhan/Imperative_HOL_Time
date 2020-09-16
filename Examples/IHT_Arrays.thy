@@ -1,6 +1,6 @@
-theory Arrays_Impl
+theory IHT_Arrays
   imports
-    "../SepLogicTime/SepAuto_Time"
+    "../SepLogicTime/SLTC_Main"
     "../Asymptotics/Asymptotics_1D"
     Auto2_Imperative_HOL.Arrays_Ex
 begin

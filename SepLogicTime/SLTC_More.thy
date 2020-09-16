@@ -1,5 +1,5 @@
-theory Sep_Time_Misc
-imports SepAuto_Time
+theory SLTC_More
+imports SLTC
 begin
 
 

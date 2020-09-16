@@ -1,7 +1,11 @@
-(* The development here follows Separation_Logic_Imperative_HOL
-   (by Lammich and Meis) in the AFP *)
+(*  Title:      Imperative_HOL_Time/SepLogicTime/SLTC.thy
+    Author:     Maximilian P. L. Haslbeck & Bohua Zhan, TU Muenchen
+*)
 
-theory SepAuto_Time
+text \<open>The development here follows Separation_Logic_Imperative_HOL
+   (by Lammich and Meis) in the AFP \<close>
+
+theory SLTC
   imports Auto2_Imperative_HOL.SepLogic_Base "../Imperative_HOL_Time"
 begin                         
 

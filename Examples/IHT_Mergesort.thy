@@ -1,5 +1,5 @@
-theory MergeSort_Impl
-  imports "../Functional/MergeSort" Arrays_Impl
+theory IHT_Mergesort
+  imports "../Functional/MergeSort" IHT_Arrays
 begin
 
 section \<open>Imperative version\<close>
@@ -53,7 +53,7 @@ lemma mergeinto_correct [hoare_triple]:
   "length as = la \<Longrightarrow> length bs = lb \<Longrightarrow> length cs = la + lb \<Longrightarrow>
     <a \<mapsto>\<^sub>a as * b \<mapsto>\<^sub>a bs * c \<mapsto>\<^sub>a cs * $(mergeinto_time (length cs))>
     mergeinto la lb a b c
-    <\<lambda>_. a \<mapsto>\<^sub>a as * b \<mapsto>\<^sub>a bs * c \<mapsto>\<^sub>a merge_list as bs>\<^sub>t"
+    <\<lambda>_. a \<mapsto>\<^sub>a as * b \<mapsto>\<^sub>a bs * c \<mapsto>\<^sub>a MergeSort.merge_list as bs>\<^sub>t"
 @proof @have "mergeinto_time (length cs) \<ge>\<^sub>t 4 * (la + lb) + 2" @qed  (* TODO: why need this? *)
 
 lemma mergeinto_time_bound [asym_bound]: "(\<lambda>n. mergeinto_time n) \<in> \<Theta>(\<lambda>n. n)"
