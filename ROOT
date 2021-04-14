@@ -29,8 +29,8 @@ session Imperative_HOL_Time = SepLogicTime_Prereq +
     "SepLogicTime"
     "Functional"
   theories
-    "IHT_Examples"
-    "SLTC_Main"
+    "Examples/IHT_Examples"
+    "SepLogicTime/SLTC_Main"
 
 (* smaller sessions *)
 session Imperative_HOL_Time_Base in "Imperative_HOL_Time_Base" = HOL +

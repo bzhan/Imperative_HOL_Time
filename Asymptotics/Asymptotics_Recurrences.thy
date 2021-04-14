@@ -48,7 +48,8 @@ proof -
         also have "\<dots> \<le> (?nfN * ?cg * norm (real (n * n))) + norm (g n)" using step(3) by simp
         also have "\<dots> \<le> (?nfN * ?cg * norm (real (n * n))) + ?nfN * ?cg * norm (real n) " using ii by simp
         also have "\<dots> = ?nfN * ?cg * (norm (real (n * n)) + norm (real n))" by algebra
-        also have "\<dots> \<le> ?nfN * ?cg * norm (real (Suc n * Suc n))" by fastforce
+        also have "\<dots> \<le> ?nfN * ?cg * norm (real (Suc n * Suc n))"
+          by(auto intro: mult_left_mono)
         also have "\<dots> = ?nfN * ?cg * norm (real (Suc n) * real (Suc n))"
           by (metis of_nat_mult)  
         finally show ?case .
@@ -82,8 +83,7 @@ proof -
     have p: "G (real N) > 0" using posG by auto
     have o: "G N \<le> G x" using x monoG by auto
     have "1 = (1/G N) * G N" using p by auto
-    also have "\<dots> \<le> x * G N" using xi p apply auto
-      by (metis calculation mult.commute real_mult_le_cancel_iff2) 
+    also have "\<dots> \<le> x * G N" using xi p by (auto simp: divide_le_eq)
     also have "\<dots> \<le> x * G x" using o  by (simp add:  mult_left_mono) 
     finally show "norm (((x) * (G x))) \<ge> 1"
       unfolding i .
@@ -111,7 +111,7 @@ proof -
         from ii have zz: "norm (G (real n)) > 0"  by auto
         from step(1) b2 have ii: "norm (g n) \<le> ?cg * norm (G n)" by auto
         also have "\<dots> \<le> nfN * ?cg * norm (G n)" using z nncg zz
-          by (simp add: mult_le_cancel_right1) 
+          by (simp add: max_def)
         finally have ii: "norm (g n) \<le> nfN * ?cg * norm (G n) " .
         have kl: "G n \<le> G (Suc n)" using monoG nN by auto
         have t: "norm (real n * G n) + norm (G n) = (n * G n) + (G n)" using   ii
@@ -127,7 +127,7 @@ proof -
         also have "\<dots> \<le> (nfN * ?cg * norm (real n * G n)) + norm (g n)" using step(3) by simp
         also have "\<dots> \<le> (nfN * ?cg * norm (real n * G n)) + nfN * ?cg * norm (G n) " using ii by simp
         also have "\<dots> = nfN * ?cg * (norm (real n * G n) + norm (G n))" by algebra
-        also have "\<dots> \<le>  nfN * ?cg * norm (real (Suc n) * G (Suc n))" using pf z by auto 
+        also have "\<dots> \<le>  nfN * ?cg * norm (real (Suc n) * G (Suc n))" using pf z by (auto intro: mult_left_mono) 
         finally show ?case .
       qed
       done

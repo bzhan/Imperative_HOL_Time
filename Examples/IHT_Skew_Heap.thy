@@ -27,7 +27,7 @@ partial_function (heap_time) merge_impl :: "'a::{heap,linorder} ptree \<Rightarr
 setup \<open>fold add_rewrite_rule @{thms Skew_Heap.merge.simps}\<close>
 
 definition merge_time :: "'a::linorder tree \<Rightarrow> 'a tree \<Rightarrow> nat" where
-  "merge_time t1 t2 = 4 * t_merge t1 t2"
+  "merge_time t1 t2 = 4 * T_merge t1 t2"
 
 lemma merge_time_simps [rewrite]:
   "merge_time Leaf h = 4"
@@ -55,7 +55,7 @@ definition insert_impl :: "'a::{heap,linorder} \<Rightarrow> 'a ptree \<Rightarr
      merge_impl s t
    }"
 
-setup \<open>add_rewrite_rule @{thm Skew_Heap.insert_def}\<close>
+setup \<open>add_rewrite_rule @{thm skew_heap.insert.simps}\<close>
 
 partial_function (heap_time) del_min_impl :: "'a::{heap,linorder} ptree \<Rightarrow> 'a ptree Heap" where
   "del_min_impl a = (case a of
@@ -65,7 +65,7 @@ partial_function (heap_time) del_min_impl :: "'a::{heap,linorder} ptree \<Righta
       merge_impl (lsub t) (rsub t)
     })"
 
-setup \<open>fold add_rewrite_rule @{thms Skew_Heap.del_min.simps}\<close>
+setup \<open>fold add_rewrite_rule @{thms skew_heap.del_min.simps}\<close>
 
 fun del_min_time :: "'a::linorder tree \<Rightarrow> nat" where
   "del_min_time Leaf = 4"
@@ -75,7 +75,7 @@ setup \<open>fold add_rewrite_rule @{thms del_min_time.simps}\<close>
 lemma skew_heap_del_min_correct [hoare_triple]:
   "<btree t a * $(del_min_time t)>
     del_min_impl a
-   <btree (del_min t)>\<^sub>t"
+   <btree (skew_heap.del_min t)>\<^sub>t"
 @proof @case "t = Leaf" @qed
 
 section \<open>Amortized analysis\<close>
@@ -94,14 +94,14 @@ lemma merge_P_rule [resolve]:
    skew_heap_P t1 + skew_heap_P t2 + merge_atime (size1 t1) (size1 t2)"
 proof -
   have a_merge':
-    "t_merge t1 t2 + nat (\<Phi> (Skew_Heap.merge t1 t2)) \<le>
+    "T_merge t1 t2 + nat (\<Phi> (Skew_Heap.merge t1 t2)) \<le>
      nat (\<Phi> t1) + nat (\<Phi> t2) + nat (\<lceil>3 * log 2 (real (size1 t1 + size1 t2))\<rceil> + 1)" (is "?lhs \<le> ?rhs")
   proof -
     have a_merge'': "real ?lhs \<le> real ?rhs"
     proof -
       have rhs_ge_zero: "\<lceil>3 * log 2 (size1 t1 + size1 t2)\<rceil> + 1 \<ge> 0" 
         by (smt Glog ceiling_mono ceiling_zero of_nat_0_le_iff of_nat_add zero_le_log_cancel_iff)
-      have a_merge''': "real_of_int (int (t_merge t1 t2) + \<Phi> (Skew_Heap.merge t1 t2) - \<Phi> t1 - \<Phi> t2) \<le>
+      have a_merge''': "real_of_int (int (T_merge t1 t2) + \<Phi> (Skew_Heap.merge t1 t2) - \<Phi> t1 - \<Phi> t2) \<le>
                         \<lceil>3 * log 2 (real (size1 t1 + size1 t2))\<rceil> + 1"
         using a_merge by (smt le_of_int_ceiling of_int_1 of_int_diff)
       show ?thesis
@@ -146,28 +146,28 @@ definition del_min_atime :: "nat \<Rightarrow> nat" where
   "del_min_atime n = 4 * nat (\<lceil>3 * log 2 (n + 2)\<rceil> + 2)"
 
 lemma del_min_time_rule:
-  "del_min_time t = 4 * nat (t_del_min t)"
-  by (induct t) (simp_all add: t_del_min_def merge_time_def)
+  "del_min_time t = 4 * nat (T_del_min t)"
+  by (induct t) (simp_all add: T_del_min_def merge_time_def)
 
 lemma del_min_P_rule [resolve]:
-  "del_min_time t + skew_heap_P (del_min t) \<le> skew_heap_P t + del_min_atime (size1 t)"
+  "del_min_time t + skew_heap_P (skew_heap.del_min t) \<le> skew_heap_P t + del_min_atime (size1 t)"
 proof -
   have a_del_min':
-    "nat (t_del_min t) + nat (\<Phi> (del_min t)) \<le>
+    "nat (T_del_min t) + nat (\<Phi> (skew_heap.del_min t)) \<le>
      nat (\<Phi> t) + nat (\<lceil>3 * log 2 (real (size1 t + 2)) + 2\<rceil>)" (is "?lhs \<le> ?rhs")
   proof -
     have a_del_min'': "real ?lhs \<le> real ?rhs"
     proof -
       have rhs_ge_zero: "\<lceil>3 * log 2 (real (size1 t))\<rceil> + 2 \<ge> 0"
         by (smt Glog ceiling_mono ceiling_zero of_nat_0_le_iff)
-      have a_del_min''': "real_of_int (t_del_min t + \<Phi> (del_min t) - \<Phi> t) \<le>
+      have a_del_min''': "real_of_int (T_del_min t + \<Phi> (skew_heap.del_min t) - \<Phi> t) \<le>
                           \<lceil>3 * log 2 (real (size1 t + 2))\<rceil> + 2"
         using a_del_min
         by (smt ceiling_diff_of_int le_of_int_ceiling of_int_1 of_int_minus)
       show ?thesis
         apply (simp add: \<Phi>_nneg)
         apply (subst of_nat_nat)
-        using rhs_ge_zero t_del_min_def [of t] apply auto
+        using rhs_ge_zero T_del_min_def [of t] apply auto
         using a_del_min''' by simp
     qed
     show ?thesis using a_del_min'' of_nat_le_iff by blast
@@ -180,9 +180,9 @@ qed
 lemma skew_heap_del_min_to_fun' [hoare_triple]:
   "<skew_heap t a * $(del_min_atime (size1 t))>
     del_min_impl a
-   <skew_heap (del_min t)>\<^sub>t"
+   <skew_heap (skew_heap.del_min t)>\<^sub>t"
 @proof
-  @have "skew_heap_P t + del_min_atime (size1 t) \<ge>\<^sub>t del_min_time t + skew_heap_P (del_min t)"
+  @have "skew_heap_P t + del_min_atime (size1 t) \<ge>\<^sub>t del_min_time t + skew_heap_P (skew_heap.del_min t)"
 @qed
 
 lemma del_min_atime_alt: "del_min_atime n = 8 + 4 * real (nat (\<lceil>3 * log 2 (2 + real n)\<rceil>))"
@@ -204,7 +204,7 @@ lemma skew_heap_constr_size [rewrite]: "size1 \<langle>Leaf, x, Leaf\<rangle> = 
 lemma skew_heap_insert_to_fun' [hoare_triple]:
   "<skew_heap t a * $(insert_atime (size1 t))>
    insert_impl x a
-   <skew_heap (Skew_Heap.insert x t)>\<^sub>t"
+   <skew_heap (skew_heap.insert x t)>\<^sub>t"
 @proof
   @have "insert_atime (size1 t) \<ge>\<^sub>t merge_atime (size1 \<langle>Leaf, x, Leaf\<rangle>) (size1 t) + 2"
 @qed
@@ -222,26 +222,30 @@ section \<open>Abstract assertion\<close>
 definition skew_heap_mset :: "'a::{heap,linorder} multiset \<Rightarrow> 'a ptree \<Rightarrow> assn" where [rewrite_ent]:
   "skew_heap_mset S a = (\<exists>\<^sub>At. skew_heap t a * \<up>(heap t) * \<up>(mset_tree t = S))"
 
-setup \<open>add_resolve_prfstep @{thm skew_heap.invar_empty}\<close>
+lemma invar_empty: "heap Leaf"
+  using skew_heap.PQM.invar_empty Heaps.Heap.empty_def by auto
+setup \<open>add_resolve_prfstep @{thm invar_empty}\<close>
 setup \<open>fold add_rewrite_rule @{thms mset_tree.simps}\<close>
 
 lemma size1_mset_tree [rewrite]:
   "size (mset_tree t) + 1 = size1 t" by (simp add: size1_size)
 
 lemma skew_heap_empty_rule'' [hoare_triple]:
-  "<$1> skew_heap_empty <skew_heap_mset {#}>\<^sub>t" by auto2
+  "<$1> skew_heap_empty <skew_heap_mset {#}>\<^sub>t"
+  by auto2
 
+thm skew_heap.PQM.invar_insert
 setup \<open>add_forward_prfstep @{thm Skew_Heap.heap_merge}\<close>
 setup \<open>add_rewrite_rule @{thm Skew_Heap.mset_merge}\<close>
-setup \<open>add_forward_prfstep @{thm Skew_Heap.heap_insert}\<close>
-setup \<open>add_rewrite_rule @{thm Skew_Heap.mset_insert}\<close>
-setup \<open>add_forward_prfstep @{thm Skew_Heap.heap_del_min}\<close>
-setup \<open>add_rewrite_rule @{thm Skew_Heap.mset_del_min}\<close>
+setup \<open>add_forward_prfstep_cond @{thm skew_heap.PQM.invar_insert} [with_term "skew_heap.insert ?x ?q"]\<close>
+setup \<open>add_rewrite_rule @{thm skew_heap.PQM.mset_insert}\<close>
+setup \<open>add_forward_prfstep @{thm skew_heap.PQM.invar_del_min}\<close>
+setup \<open>add_rewrite_rule @{thm skew_heap.PQM.mset_del_min}\<close>
 
-setup \<open>register_wellform_data ("get_min h", ["h \<noteq> Leaf"])\<close>
-setup \<open>add_prfstep_check_req ("get_min h", "h \<noteq> Leaf")\<close>
+setup \<open>register_wellform_data ("value h", ["h \<noteq> Leaf"])\<close>
+setup \<open>add_prfstep_check_req ("value h", "h \<noteq> Leaf")\<close>
 
-setup \<open>add_rewrite_rule @{thm Skew_Heap.get_min}\<close>
+setup \<open>add_rewrite_rule @{thm skew_heap.PQM.mset_get_min}\<close>
 
 lemma skew_heap_merge_rule [hoare_triple]:
   "<skew_heap_mset S a * skew_heap_mset T b * $(merge_atime (size S + 1) (size T + 1))>
@@ -251,7 +255,7 @@ lemma skew_heap_merge_rule [hoare_triple]:
 lemma skew_heap_insert_rule [hoare_triple]:
   "<skew_heap_mset S a * $(insert_atime (size S + 1))>
     insert_impl x a
-   <skew_heap_mset ({#x#} + S)>\<^sub>t" by auto2
+   <skew_heap_mset ({#x#} + S)>\<^sub>t" by auto2 
 
 lemma skew_heap_del_min_rule [hoare_triple]:
   "S \<noteq> {#} \<Longrightarrow>

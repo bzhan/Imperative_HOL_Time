@@ -372,7 +372,7 @@ proof -
     assume "x\<ge>max (nat \<lceil>c/c1\<rceil>) n"
     then have xn: "x\<ge>n" and xc: "real x\<ge>(real c/c1)" by auto
     from xc have "real c \<le> c1 * x" using c1
-      by (metis nonzero_mult_div_cancel_left not_le order_refl real_mult_le_cancel_iff2 times_divide_eq_right)
+      by (metis nonzero_mult_div_cancel_left not_le order_refl divide_le_cancel)
     also have "c1 * x \<le> f x" using f xn by auto
     finally have "c \<le> f x" by auto
   }
